@@ -1,0 +1,10 @@
+id: zero-amount
+name: Zero amount follows the documented policy
+category: adversarial-input
+severity: medium
+description: With allow_zero_amount false (the default), zero-value transfers are rejected.
+steps:
+  - propose: { requestId: zero, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "0", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_ZERO] }
+  - propose: { requestId: zero-padded, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "0.000000", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_ZERO] }

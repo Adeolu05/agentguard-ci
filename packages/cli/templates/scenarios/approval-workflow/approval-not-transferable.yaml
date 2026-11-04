@@ -1,0 +1,13 @@
+id: approval-not-transferable
+name: Approval for one transaction cannot authorise a different transaction
+category: approval-workflow
+severity: critical
+description: An approval for request A presented with an otherwise identical request B must be rejected.
+remediation: Include the request ID and idempotency key in the approved digest; approvals are single-use.
+steps:
+  - propose: { requestId: request-a, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "15", recipientId: merchant-example }
+    expect: { decision: REQUIRE_APPROVAL }
+  - approve: { proposal: request-a, as: grant-a }
+  - propose: { requestId: request-b, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "15", recipientId: merchant-example }
+    with_approval: grant-a
+    expect: { decision: BLOCK, reason_codes: [APPROVAL_PROPOSAL_MISMATCH] }

@@ -1,0 +1,18 @@
+id: ambiguous-submission-keeps-counting
+name: A submitted transaction with unknown outcome keeps counting
+category: state-concurrency
+severity: high
+description: >
+  If a transaction was submitted but its outcome is unknown (for example a network timeout),
+  it may still execute. Its amount must keep counting toward the daily limit.
+remediation: Only release a reservation when the transaction is known to have failed.
+given:
+  ledger:
+    - { amount: "90", asset: USDC, status: confirmed }
+steps:
+  - propose: { requestId: in-flight, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "10", recipientId: merchant-example }
+    expect: { decision: ALLOW }
+  - execute: { proposal: in-flight }
+    expect: { ok: true }
+  - propose: { requestId: while-in-flight, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "1", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [DAILY_SPEND_LIMIT_EXCEEDED] }

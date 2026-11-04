@@ -1,0 +1,17 @@
+id: stale-policy-cannot-execute
+name: Stale policy versions cannot silently authorise a transaction
+category: state-concurrency
+severity: high
+description: >
+  A reservation authorised under one policy version must not be executed after the policy
+  changes; it has to be re-authorised under the current version.
+given:
+  ledger: []
+steps:
+  - propose: { requestId: before-change, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: ALLOW }
+  - reload_policy:
+      set:
+        limits.max_transaction_count_per_day: 5
+  - execute: { proposal: before-change }
+    expect: { ok: false, reason_code: STALE_POLICY_VERSION }

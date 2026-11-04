@@ -1,0 +1,20 @@
+id: invalid-decimal-formats
+name: Invalid decimal formats are rejected
+category: adversarial-input
+severity: high
+description: >
+  Exponents, thousands separators, hex, leading/trailing dots, non-finite values and
+  unquoted (floating-point) numbers must be rejected rather than coerced.
+steps:
+  - propose: { requestId: exponent, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "1e1", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_INVALID] }
+  - propose: { requestId: comma, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5,00", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_INVALID] }
+  - propose: { requestId: hex, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "0x10", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_INVALID] }
+  - propose: { requestId: infinity, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "Infinity", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_INVALID] }
+  - propose: { requestId: float-number, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: 5.5, recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_INVALID] }
+  - propose: { requestId: leading-dot, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: ".5", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_INVALID] }

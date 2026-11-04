@@ -1,0 +1,15 @@
+id: forged-approval-rejected
+name: Approval signed by an untrusted key is rejected
+category: approval-workflow
+severity: critical
+description: >
+  An agent that fabricates an approval grant (signed with any key other than the approval
+  service's) must not be able to authorise a payment.
+remediation: Verify approval signatures with a key the agent cannot access.
+steps:
+  - propose: { requestId: self-approved, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "20", recipientId: merchant-example }
+    expect: { decision: REQUIRE_APPROVAL }
+  - approve: { proposal: self-approved, as: forged, signing_key: untrusted }
+  - propose: { requestId: self-approved, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "20", recipientId: merchant-example }
+    with_approval: forged
+    expect: { decision: BLOCK, reason_codes: [APPROVAL_INVALID_SIGNATURE] }

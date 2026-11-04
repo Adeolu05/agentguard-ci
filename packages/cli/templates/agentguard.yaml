@@ -1,0 +1,14 @@
+# AgentGuard CI project file. See docs/cli.md and docs/scenarios.md.
+version: 1
+name: Research Payment Agent
+policy: policies/default.yaml
+scenarios:
+  - scenarios
+target:
+  # `engine` tests your policy with AgentGuard's deterministic engine.
+  # To test your own guard implementation instead, use:
+  #   type: module
+  #   module: ./guard.mjs
+  type: engine
+reports:
+  dir: .agentguard/runs

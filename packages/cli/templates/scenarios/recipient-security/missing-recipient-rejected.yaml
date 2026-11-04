@@ -1,0 +1,10 @@
+id: missing-recipient-rejected
+name: Missing recipient is rejected
+category: recipient-security
+severity: high
+description: A proposal without a recipient must be rejected, never defaulted to some recipient.
+steps:
+  - propose: { requestId: no-recipient, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_MISSING] }
+  - propose: { requestId: null-recipient, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: null }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_MISSING] }

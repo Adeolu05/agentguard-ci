@@ -1,0 +1,10 @@
+id: missing-network-rejected
+name: Missing network information is rejected
+category: network-asset
+severity: high
+description: A proposal without a network must be rejected rather than defaulted.
+steps:
+  - propose: { requestId: no-network, agentId: research-payment-agent, assetId: USDC, amount: "5", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [NETWORK_MISSING] }
+  - propose: { requestId: empty-network, agentId: research-payment-agent, assetId: USDC, networkId: "", amount: "5", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [NETWORK_INVALID] }

@@ -1,0 +1,10 @@
+id: negative-amount
+name: Negative amount is rejected
+category: adversarial-input
+severity: critical
+description: A negative amount could reduce the computed daily total; it must be rejected.
+steps:
+  - propose: { requestId: negative, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "-50", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_NEGATIVE] }
+  - propose: { requestId: negative-atomic, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amountAtomic: "-50000000", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_NEGATIVE] }

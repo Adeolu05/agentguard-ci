@@ -1,0 +1,17 @@
+id: recipient-normalisation
+name: Recipient normalisation cannot equate distinct identities
+category: recipient-security
+severity: critical
+description: >
+  Case variants, surrounding whitespace and invisible Unicode characters must not match an
+  allowlisted recipient. Identifiers are compared exactly and malformed ones are rejected.
+remediation: Compare recipient identifiers byte-for-byte; never lower-case, trim or Unicode-normalise them before comparison.
+steps:
+  - propose: { requestId: case-variant, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: Merchant-Example }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED] }
+  - propose: { requestId: trailing-space, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "merchant-example " }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_INVALID] }
+  - propose: { requestId: zero-width, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "merchant-example​" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_INVALID] }
+  - propose: { requestId: cyrillic-a, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "merch\u0430nt-example" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_INVALID] }

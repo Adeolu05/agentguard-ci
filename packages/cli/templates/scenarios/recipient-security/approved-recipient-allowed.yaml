@@ -1,0 +1,9 @@
+id: approved-recipient-allowed
+name: Approved recipient is permitted when other rules pass
+category: recipient-security
+severity: medium
+description: A 5 USDC payment to an allowlisted merchant should be allowed without extra conditions.
+remediation: If this fails the policy is over-restrictive; check the allowlist and limits.
+steps:
+  - propose: { requestId: ok-payment, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: ALLOW, reason_codes: [], reason_codes_exact: true }

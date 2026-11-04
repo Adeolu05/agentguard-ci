@@ -1,0 +1,12 @@
+id: daily-count-limit
+name: Transaction count above the daily maximum is blocked
+category: transaction-limits
+severity: high
+description: Twenty small transactions have already been made today; the 21st must be blocked.
+remediation: Enforce max_transaction_count_per_day across all assets.
+given:
+  ledger:
+    - { amount: "0.01", asset: USDC, status: confirmed, repeat: 20 }
+steps:
+  - propose: { requestId: tx-21, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "1", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [DAILY_COUNT_LIMIT_EXCEEDED] }

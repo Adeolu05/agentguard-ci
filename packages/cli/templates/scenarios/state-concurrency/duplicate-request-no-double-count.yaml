@@ -1,0 +1,12 @@
+id: duplicate-request-no-double-count
+name: Duplicate request does not create duplicate accounting entries
+category: state-concurrency
+severity: critical
+description: Retrying the same payment with the same idempotency key returns the original reservation and records nothing new.
+remediation: Deduplicate on an idempotency key (or request ID) inside the same atomic section that reserves budget.
+steps:
+  - propose: { requestId: order-1001, idempotencyKey: order-1001, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: ALLOW, replay: false }
+  - propose: { requestId: order-1001, idempotencyKey: order-1001, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: ALLOW, reason_codes: [IDEMPOTENT_REPLAY], replay: true }
+  - expect_ledger: { asset: USDC, reservations_created: 1, active_amount: "5" }

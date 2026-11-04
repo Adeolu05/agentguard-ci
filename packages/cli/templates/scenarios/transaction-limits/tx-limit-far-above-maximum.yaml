@@ -1,0 +1,9 @@
+id: tx-limit-far-above-maximum
+name: Transaction far above the maximum is blocked
+category: transaction-limits
+severity: critical
+description: A 5,000 USDC payment is far above the per-transaction limit and must be blocked regardless of approval.
+remediation: Restore max_transaction_amount and make sure approvals cannot override hard limits.
+steps:
+  - propose: { requestId: far-above, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5000", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_EXCEEDS_TRANSACTION_LIMIT] }
