@@ -16,15 +16,28 @@ A custom **scenario target** (see [scenarios.md](scenarios.md#custom-targets)) i
 
 ### Sources and verification
 
+Checked on 2026-11-04. `docs.near.org` itself was unreachable from the build environment, so official documentation was read from its source repository, `github.com/near/docs` at commit `e2d2ea1` (2026-11-01).
+
 | Item | Source | Status |
 | --- | --- | --- |
-| SDK choice: `near-api-js@7.4.0` | npm registry metadata and the package README. v7 is a single package, and the README directs users of the older `@near-js/*` packages to migrate to it. | Verified from the published package |
-| `new Account(accountId, provider, signer)`, `Account.signAndSendTransaction({ receiverId, actions, waitUntil, throwOnFailure })`, `actions.transfer(deposit: bigint)` | The published `.d.ts` files in `near-api-js@7.4.0` | Verified at type level, and exercised at runtime against a local RPC stub |
-| `JsonRpcProvider({ url })`, `getNetworkId()` (reads `chain_id` from the `status` RPC), `viewTransactionStatus({ txHash, accountId, waitUntil })` | The published `.d.ts` files and compiled JS | Verified as above |
-| `FinalExecutionStatus` = `NotStarted \| Started \| { Failure } \| { SuccessValue }`; the hash is `transaction_outcome.id` | The published types | Verified at type level |
-| Default testnet RPC `https://test.rpc.fastnear.com` | The `near-api-js` README examples | **Not contacted.** It can be overridden with `NEAR_TESTNET_RPC_URL` |
-| NEAR account-ID rules (2 to 64 characters; lowercase alphanumerics with non-adjacent `-`, `_` and `.` separators; implicit and ETH-implicit forms) | NEAR protocol account-ID rules | Implemented from protocol knowledge; `docs.near.org` was unreachable, so re-check against the current docs |
-| Official NEAR documentation (`docs.near.org`) and hackathon rules (`nearhackathon.com`) | | **Not reachable** from the build environment |
+| SDK: `near-api-js@7.4.0` (latest on npm, not deprecated) | npm registry; the package README directs users of the older `@near-js/*` packages to migrate to it | Verified |
+| `new JsonRpcProvider({ url })`, `new Account(accountId, provider, privateKey)`, private key passed as `KeyPairString` from the environment | Official docs `tools/near-api.mdx` (send-tokens and account examples) and the published `.d.ts` | Verified against docs and types; exercised at runtime against a local RPC stub |
+| `Account.signAndSendTransaction({ receiverId, actions, waitUntil, throwOnFailure, retries })`, `actions.transfer(deposit: bigint)` | Published `.d.ts` and compiled JS of `near-api-js@7.4.0`. The docs show the higher-level `account.transfer()`, which throws on an on-chain failure; AgentGuard uses the lower-level call so that a failed transfer still returns its hash. | Verified at type level and at runtime against the stub |
+| `provider.viewTransactionStatus({ txHash, accountId, waitUntil })` | Official docs `tools/near-api.mdx` and the published types | Verified against docs and types |
+| `getNetworkId()` reads `chain_id` from the `status` RPC | Compiled JS of `near-api-js@7.4.0` | Verified (stub) |
+| Default testnet RPC `https://test.rpc.fastnear.com` | Official docs examples | Documented endpoint; **not contacted** (blocked by the network policy). Override with `NEAR_TESTNET_RPC_URL`. |
+| Account-ID rules: 2 to 64 characters, lowercase `a-z`, `0-9` and `.` `-` `_` separators; implicit (64 hex), ETH-like (`0x`), deterministic (`0s`) and universal (`0u`) forms | Official docs `protocol/accounts-contracts/account-id.mdx` | Verified. The validator also rejects leading, trailing or adjacent separators (protocol rule). It accepts `0s` and `0u` recipients; the executor accepts only `*.testnet` and implicit signers, which is stricter than necessary for universal accounts. |
+| Testnet funding: the faucet on the docs site (native NEAR) and `near-faucet.io` | Official docs `getting-started/faucet.mdx` | Verified as documented; not used |
+| Hackathon rules (`nearhackathon.com/HACKATHON.md`) | | **Not reachable.** The docs repo's "Hackathon Guide" page is a general resource list, not the rules. |
+
+### Broadcast retries (fixed)
+
+Inspecting the `near-api-js@7.4.0` source showed two automatic retry layers:
+
+- `JsonRpcProvider` re-sends a request (including a signed transaction) on HTTP 500, 503 or 408, or on a fetch error. By default it tries up to 12 times.
+- `Account.signAndSendTransaction` **re-signs with a new nonce** and sends again on `InvalidNonceError`, by default up to 10 times.
+
+If a first broadcast landed but its response was lost, these could combine into a second, different transfer. The stub tests reproduced both paths with the previous client: each produced two `send_tx` requests. The client now routes broadcasts through a provider with a single HTTP attempt and passes `retries: 0`. Reads keep the default retries. Exactly one transaction is broadcast per authorised reservation. Any failure after signing returns `unknown`, and the reservation stays `submitted` (still counting toward limits) until `reconcile()` settles it.
 
 ### What works
 
@@ -33,7 +46,7 @@ A custom **scenario target** (see [scenarios.md](scenarios.md#custom-targets)) i
   1. Refuses unless the reservation is `near-testnet` and `NEAR`, the recipient is a valid account ID, and the signer is a testnet account.
   2. Calls `getNetworkId()` and refuses unless it returns `testnet`. Nothing has been signed at this point.
   3. Calls `engine.beginExecution()`, which rejects stale policies and double execution.
-  4. Signs and broadcasts one native transfer with `waitUntil: "FINAL"` and `throwOnFailure: false`.
+  4. Signs and broadcasts exactly one native transfer with `waitUntil: "FINAL"` and `throwOnFailure: false`. There is no automatic re-send or re-sign (see "Broadcast retries" above).
   5. Records `confirmed` or `failed` with the hash returned by the network. On a thrown error, a timeout or a missing hash it returns `unknown` and leaves the reservation `submitted`.
 
   When a transfer is still pending, the network's hash is stored on the reservation. `reconcile(reservationId, hash)` re-reads the status by hash. It accepts only the stored hash or, when none was stored because the broadcast outcome was ambiguous, a transaction whose signer, receiver and exact amount match the reservation. An unrelated hash cannot settle or release a reservation. The stub test decodes the signed transaction and checks the signer, receiver, a single transfer action with the exact deposit, `wait_until: FINAL`, and that the ed25519 signature verifies over `sha256(borsh(tx))`.
@@ -48,14 +61,29 @@ A custom **scenario target** (see [scenarios.md](scenarios.md#custom-targets)) i
 
 ### What is not done
 
-- **No live testnet transaction has been executed or verified.** The build environment's network policy blocked NEAR endpoints. Until someone runs `examples/near-testnet/demo.mjs` with a funded testnet account and checks the printed hash on a block explorer, treat the on-chain path as **unverified**.
+- **No live testnet transaction has been executed or verified.** The build environment's network policy blocks every NEAR RPC endpoint, and no testnet credentials were provided. There is therefore no transaction hash, and none is claimed. Treat the on-chain path as **unverified** until the procedure below has been run.
 - Only native NEAR transfers. Fungible tokens (NEP-141), function calls and meta-transactions are not supported.
 - No mainnet support, by design.
 
-### Verifying the integration yourself
+### Performing and verifying a real testnet transfer
 
-1. Create a testnet account and fund it from the official faucet (see the NEAR docs).
-2. Add an existing testnet account you control as a recipient in `examples/near-testnet/policy.yaml`.
-3. Run the demo with the environment variables above and `RECIPIENT=<that account>`.
-4. Check that the printed hash exists on a testnet explorer, with the same sender, receiver and amount, and that the demo's re-read status matches.
-5. Record the hash and the date in this document. Only after that should the on-chain integration be described as working.
+You need a machine with network access to NEAR testnet, and a testnet account you control. **Never use a mainnet key.**
+
+1. **Create a sender account.** Use any NEAR wallet listed in the official docs (for example a web wallet) and switch it to testnet. Export its private key (`ed25519:…`). Keep it out of the repository and out of shell history; your CI secret store or a local `.env` excluded by `.gitignore` are suitable.
+2. **Fund it** with the faucet on `docs.near.org` (Getting Started → Get Testnet Tokens) or with `near-faucet.io`.
+3. **Choose a recipient** that already exists on testnet. A second account you control is best. Add it to `recipients.allowed` in `examples/near-testnet/policy.yaml`. The demo refuses to run otherwise, and never edits the policy itself.
+4. **Run the demo** from the repository root after `pnpm install && pnpm build`:
+
+   ```bash
+   AGENTGUARD_NEAR_EXECUTION=testnet \
+   NEAR_TESTNET_ACCOUNT_ID=<sender>.testnet \
+   NEAR_TESTNET_PRIVATE_KEY=ed25519:<testnet key> \
+   RECIPIENT=<recipient>.testnet \
+   node examples/near-testnet/demo.mjs
+   ```
+
+   Expected output:
+   - The two policy-violating proposals print `BLOCK` and "Stopped before the execution boundary". No RPC request is made for them; this is verified by the stub test "blocked and unapproved proposals never reach signing or broadcasting".
+   - The 0.01 NEAR proposal passes the execution gate and is broadcast once. The demo prints the transaction hash taken from the network response, then re-reads the status from the RPC.
+5. **Verify independently.** Look up the hash on a NEAR testnet block explorer and check the sender, receiver and amount (0.01 NEAR = 10^22 yoctoNEAR), and that the status is successful. Check the recipient's balance changed by the same amount.
+6. **Record the evidence here:** date, hash, explorer link, sender, receiver and amount. Only after that should the on-chain integration be described as verified.

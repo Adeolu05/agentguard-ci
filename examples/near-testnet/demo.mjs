@@ -27,6 +27,10 @@ if (!loaded.ok) {
 }
 const engine = new PolicyEngine({ policy: loaded.policy, ledger: new InMemoryLedger(), validators: [nearAccountIdValidator()] });
 const recipient = process.env.RECIPIENT ?? "merchant-example.testnet";
+if (!loaded.policy.allowedRecipients.has(recipient)) {
+  console.error(`RECIPIENT "${recipient}" is not in recipients.allowed in policy.yaml. Add it there first: the demo will not change the policy for you.`);
+  process.exit(2);
+}
 const base = { agentId: "near-research-agent", assetId: "NEAR", networkId: "near-testnet" };
 
 const proposals = [
