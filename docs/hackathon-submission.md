@@ -1,6 +1,16 @@
 # Hackathon submission checklist and demo script
 
-> The official rules at `https://nearhackathon.com/HACKATHON.md` could **not** be read from the build environment (the host was blocked by its network policy). Before submitting, read the current rules and confirm the deadline, the required deliverables and the eligible tracks. Then adjust this checklist to match. Nothing here assumes specific rules.
+> **The official rules are unverified.** `https://nearhackathon.com/HACKATHON.md` could not be retrieved (the build environment's network policy refused the host on 2026-11-04, on every attempt). The NEAR docs repository's "Hackathon Guide" page is a general resource list, not the rules. No deadline, track, judging criterion or deliverable below comes from the official rules. Before submitting, read the current rules yourself and adjust this checklist to match.
+
+### Requirement status
+
+| Requirement | Status |
+| --- | --- |
+| Deadline, tracks, eligibility, judging criteria, required deliverables (video, links, team) | **Unconfirmed**: the rules are unreadable from the build environment |
+| Public repository with source | Done (https://github.com/Adeolu05/agentguard-ci). *Required by the rules?* Unconfirmed |
+| Working, reproducible demo | Done ([demo.md](demo.md), verified from a fresh clone). *Format required?* Unconfirmed |
+| NEAR integration | Partially done: offline NEAR policy suite and a stub-verified executor. **A live testnet transaction is still missing.** *Whether the rules require on-chain activity is unconfirmed* |
+| Recording, demo post, submission form | **Incomplete**: these need you |
 
 ## Checklist
 
@@ -41,6 +51,7 @@
 - [x] No private keys are committed or exposed
 - [ ] **Claimed on-chain operations verified against the network.** None is claimed yet. Run `examples/near-testnet/demo.mjs` with a testnet account and record the hash first.
 - [x] Integration limitations documented (`docs/integrations.md`)
+- [x] Blocked proposals verified to make no RPC request; at most one broadcast per reservation (near-api-js retry layers neutralised)
 
 ### Project delivery
 - [x] Repository is public: https://github.com/Adeolu05/agentguard-ci
@@ -49,67 +60,14 @@
 - [x] License (Apache-2.0)
 - [x] Environment variables documented without values (`.env.example`)
 - [x] No known unresolved critical defect
-- [x] Demo instructions are reproducible (below)
-- [ ] Recording, screenshots and the public demo post
+- [x] Demo instructions are reproducible ([demo.md](demo.md))
+- [x] Dashboard screenshots of a real CLI run (`docs/images/`)
+- [ ] Recording and the public demo post
 - [ ] Submission links, as required by the rules
 
-## Three-minute demo script
+## Demo script
 
-Run from the repository root after `pnpm install && pnpm build`. The alias is used only for readability.
-
-```bash
-alias agentguard="node $PWD/packages/cli/dist/bin.js"
-```
-
-**1. The problem (about 30 s).**
-
-```bash
-pnpm --filter @agentguard/example-basic-agent demo
-```
-
-A simulated agent (no LLM) reads a poisoned tool response and proposes "500 USDC → attacker-wallet". AgentGuard blocks it deterministically. A retry after a timeout is recognised as a replay, so there is no double payment. Execution is simulated, and the output says so.
-
-**2. Baseline (about 20 s).**
-
-```bash
-cd /tmp && rm -rf demo && mkdir demo && cd demo
-agentguard init && agentguard test --quiet
-```
-
-40 of 40 scenarios pass, exit code 0.
-
-**3. A violation (about 40 s).** Someone "temporarily" allowlists a new payee:
-
-```bash
-sed -i 's/    - data-provider-example/    - data-provider-example\n    - attacker-wallet/' policies/default.yaml
-agentguard test --quiet; echo "exit code: $?"
-```
-
-The output shows `FAIL instruction-injection-in-memo`, a CRITICAL finding and exit code 1. Point out that the injected 5 USDC payment stays under every amount limit, so only the allowlist was protecting against it.
-
-**4. Fix and rerun (about 15 s).**
-
-```bash
-sed -i '/attacker-wallet/d' policies/default.yaml && agentguard test --quiet
-```
-
-The suite passes again.
-
-**5. The developer workflow (about 40 s).**
-
-- `agentguard report`: the Markdown report with reproduction steps.
-- `pnpm dashboard:demo`: the overview, the failed run, the finding page and scenario history.
-- Show `.github/workflows/ci.yml`, especially the `regression-gate` job.
-- Testing your own guard: `pnpm --filter @agentguard/example-basic-agent test:naive` gives 16 failures for a hand-rolled guard using `parseFloat`.
-
-**6. NEAR (about 30 s).**
-
-```bash
-pnpm --filter @agentguard/example-near-testnet test
-pnpm --filter @agentguard/example-near-testnet demo
-```
-
-The suite covers yoctoNEAR precision, `*.near` accounts on testnet, mainnet blocking and concurrent limits. The demo prints "Simulation only…" unless testnet execution is configured. **Say plainly that the on-chain path is implemented and stub-tested but not yet verified on testnet.** If you have run it with a real testnet account before recording, show the hash in an explorer instead. Never show a hash you did not get from the network.
+See [demo.md](demo.md): a verified three-minute script with the real output of every command.
 
 ## Evidence to include
 
