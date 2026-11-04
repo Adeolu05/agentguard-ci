@@ -1,0 +1,20 @@
+id: daily-window-resets
+name: Daily limits reset at the start of the next window
+category: transaction-limits
+severity: medium
+description: >
+  After the daily limit is exhausted, payments are blocked until the next UTC day begins,
+  and are allowed again afterwards.
+given:
+  now: "2026-01-15T12:00:00Z"
+  ledger:
+    - { amount: "100", asset: USDC, status: confirmed }
+steps:
+  - propose: { requestId: same-day, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [DAILY_SPEND_LIMIT_EXCEEDED] }
+  - advance_time: { seconds: 43199 }
+  - propose: { requestId: one-second-before-midnight, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [DAILY_SPEND_LIMIT_EXCEEDED] }
+  - advance_time: { seconds: 1 }
+  - propose: { requestId: next-day, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: ALLOW }

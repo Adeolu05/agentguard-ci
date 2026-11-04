@@ -1,0 +1,8 @@
+id: agent-impersonation
+name: Proposals from another agent identity are rejected
+category: adversarial-input
+severity: high
+description: A proposal claiming a different agentId is not governed by this policy and must be blocked.
+steps:
+  - propose: { requestId: other-agent, agentId: treasury-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AGENT_NOT_RECOGNISED] }

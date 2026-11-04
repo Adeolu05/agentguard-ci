@@ -1,0 +1,11 @@
+id: unsupported-network-blocked
+name: Unsupported network is blocked
+category: network-asset
+severity: critical
+description: The policy only allows near-testnet; a mainnet payment must be blocked.
+remediation: Keep networks.allowed limited to the networks the agent is meant to use.
+steps:
+  - propose: { requestId: mainnet, agentId: research-payment-agent, assetId: USDC, networkId: near-mainnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [NETWORK_NOT_ALLOWED] }
+  - propose: { requestId: case-variant-net, agentId: research-payment-agent, assetId: USDC, networkId: NEAR-TESTNET, amount: "5", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [NETWORK_NOT_ALLOWED] }

@@ -1,0 +1,15 @@
+id: changed-recipient-invalidates-approval
+name: A changed recipient invalidates an earlier approval
+category: recipient-security
+severity: critical
+description: >
+  An approval granted for paying merchant-example must not authorise the same payment to a
+  different recipient, even another allowlisted one.
+remediation: Bind approvals to a digest of every material proposal field, including the recipient.
+steps:
+  - propose: { requestId: approve-then-swap, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "15", recipientId: merchant-example }
+    expect: { decision: REQUIRE_APPROVAL }
+  - approve: { proposal: approve-then-swap, as: grant }
+  - propose: { requestId: approve-then-swap, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "15", recipientId: data-provider-example }
+    with_approval: grant
+    expect: { decision: BLOCK, reason_codes: [APPROVAL_PROPOSAL_MISMATCH] }

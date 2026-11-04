@@ -1,0 +1,26 @@
+id: failed-and-cancelled-release-budget
+name: Failed and cancelled reservations follow the documented accounting rules
+category: state-concurrency
+severity: high
+description: >
+  Reserved, submitted and confirmed amounts count toward the daily limit. A reservation
+  that definitively failed or was cancelled releases its budget.
+given:
+  ledger:
+    - { amount: "80", asset: USDC, status: confirmed }
+steps:
+  - propose: { requestId: will-fail, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "10", recipientId: merchant-example }
+    expect: { decision: ALLOW }
+  - propose: { requestId: will-cancel, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "10", recipientId: merchant-example }
+    expect: { decision: ALLOW }
+  - propose: { requestId: over-while-reserved, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [DAILY_SPEND_LIMIT_EXCEEDED] }
+  - execute: { proposal: will-fail }
+    expect: { ok: true }
+  - record_outcome: { proposal: will-fail, outcome: failed }
+    expect: { ok: true }
+  - cancel: { proposal: will-cancel }
+    expect: { ok: true }
+  - expect_ledger: { asset: USDC, active_amount: "80" }
+  - propose: { requestId: after-release, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "10", recipientId: merchant-example }
+    expect: { decision: ALLOW }

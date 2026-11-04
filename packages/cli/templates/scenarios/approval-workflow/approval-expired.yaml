@@ -1,0 +1,13 @@
+id: approval-expired
+name: Expired approval is rejected
+category: approval-workflow
+severity: high
+description: An approval valid for 60 seconds must be rejected 61 seconds later.
+steps:
+  - propose: { requestId: slow-approval, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "15", recipientId: merchant-example }
+    expect: { decision: REQUIRE_APPROVAL }
+  - approve: { proposal: slow-approval, as: grant, ttl_seconds: 60 }
+  - advance_time: { seconds: 61 }
+  - propose: { requestId: slow-approval, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "15", recipientId: merchant-example }
+    with_approval: grant
+    expect: { decision: BLOCK, reason_codes: [APPROVAL_EXPIRED] }

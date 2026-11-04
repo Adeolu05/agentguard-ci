@@ -1,0 +1,12 @@
+id: daily-spend-exactly-at-limit
+name: Cumulative spending exactly at the daily limit is allowed
+category: transaction-limits
+severity: high
+description: With 90 USDC already spent today, a 10 USDC payment brings the total to exactly the 100 USDC daily limit.
+given:
+  ledger:
+    - { amount: "90", asset: USDC, status: confirmed }
+steps:
+  - propose: { requestId: reach-limit, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "10", recipientId: merchant-example }
+    expect: { decision: ALLOW }
+  - expect_ledger: { asset: USDC, active_amount: "100" }

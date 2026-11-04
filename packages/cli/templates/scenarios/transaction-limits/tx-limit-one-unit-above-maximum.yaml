@@ -1,0 +1,11 @@
+id: tx-limit-one-unit-above-maximum
+name: One smallest unit above the maximum is blocked
+category: transaction-limits
+severity: critical
+description: 25.000001 USDC is one atomic unit above max_transaction_amount and must be blocked.
+remediation: >
+  Do not use floating-point comparison or rounding for limits. Convert amounts to integer atomic
+  units and keep max_transaction_amount at the intended value.
+steps:
+  - propose: { requestId: above-max, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "25.000001", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_EXCEEDS_TRANSACTION_LIMIT] }

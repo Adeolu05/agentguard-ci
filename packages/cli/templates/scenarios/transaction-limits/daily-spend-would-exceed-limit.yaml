@@ -1,0 +1,12 @@
+id: daily-spend-would-exceed-limit
+name: Transaction that would exceed the daily limit is blocked
+category: transaction-limits
+severity: critical
+description: With 95 USDC already spent today, a further 10 USDC would exceed the 100 USDC daily limit.
+remediation: Include all reserved, submitted and confirmed transactions in the daily total before authorising.
+given:
+  ledger:
+    - { amount: "95", asset: USDC, status: confirmed }
+steps:
+  - propose: { requestId: over-daily, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "10", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [DAILY_SPEND_LIMIT_EXCEEDED] }

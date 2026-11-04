@@ -1,0 +1,10 @@
+id: below-threshold-no-approval
+name: Transaction at or below the approval threshold follows policy
+category: approval-workflow
+severity: medium
+description: Amounts at or below 10 USDC do not need approval; 10.000001 does.
+steps:
+  - propose: { requestId: at-threshold, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "10", recipientId: merchant-example }
+    expect: { decision: ALLOW, absent_reason_codes: [APPROVAL_REQUIRED_AMOUNT] }
+  - propose: { requestId: above-threshold, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "10.000001", recipientId: merchant-example }
+    expect: { decision: REQUIRE_APPROVAL, reason_codes: [APPROVAL_REQUIRED_AMOUNT] }

@@ -1,0 +1,18 @@
+id: tx-limit-exactly-at-maximum
+name: Transaction exactly at the maximum is evaluated correctly
+category: transaction-limits
+severity: high
+description: >
+  A payment of exactly max_transaction_amount (25 USDC) is not over the limit. Because it is
+  above the approval threshold it needs approval, and with a valid approval it is allowed.
+remediation: Compare amounts with exact integer arithmetic and use a strict "greater than" for the limit.
+steps:
+  - propose: { requestId: max-25, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "25", recipientId: merchant-example }
+    expect:
+      decision: REQUIRE_APPROVAL
+      reason_codes: [APPROVAL_REQUIRED_AMOUNT]
+      absent_reason_codes: [AMOUNT_EXCEEDS_TRANSACTION_LIMIT]
+  - approve: { proposal: max-25, as: grant }
+  - propose: { requestId: max-25, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "25", recipientId: merchant-example }
+    with_approval: grant
+    expect: { decision: ALLOW, reason_codes: [APPROVAL_VERIFIED] }

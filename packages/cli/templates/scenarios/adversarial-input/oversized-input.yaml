@@ -1,0 +1,15 @@
+id: oversized-input
+name: Oversized input is handled safely
+category: adversarial-input
+severity: medium
+description: Very large fields are rejected with a validation error instead of being processed.
+steps:
+  - propose: { requestId: huge-memo, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    fill: { memo: { char: "A", length: 100000 } }
+    expect: { decision: BLOCK, reason_codes: [PROPOSAL_TOO_LARGE] }
+  - propose: { requestId: huge-amount, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, recipientId: merchant-example }
+    fill: { amount: { char: "9", length: 300 } }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_TOO_LARGE] }
+  - propose: { agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    fill: { requestId: { char: "r", length: 500 } }
+    expect: { decision: BLOCK, reason_codes: [REQUEST_ID_INVALID] }

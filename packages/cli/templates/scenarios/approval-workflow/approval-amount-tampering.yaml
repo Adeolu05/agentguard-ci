@@ -1,0 +1,12 @@
+id: approval-amount-tampering
+name: Raising the amount after approval invalidates the approval
+category: approval-workflow
+severity: critical
+description: An approval for 15 USDC must not authorise 24 USDC for the same request.
+steps:
+  - propose: { requestId: bump-amount, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "15", recipientId: merchant-example }
+    expect: { decision: REQUIRE_APPROVAL }
+  - approve: { proposal: bump-amount, as: grant }
+  - propose: { requestId: bump-amount, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "24", recipientId: merchant-example }
+    with_approval: grant
+    expect: { decision: BLOCK, reason_codes: [APPROVAL_PROPOSAL_MISMATCH] }

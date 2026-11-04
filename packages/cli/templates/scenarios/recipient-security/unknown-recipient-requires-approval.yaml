@@ -1,0 +1,14 @@
+id: unknown-recipient-requires-approval
+name: Unknown recipient requires approval in allowlist_or_approval mode
+category: recipient-security
+severity: high
+description: >
+  When the policy is switched to allowlist_or_approval, an unknown recipient must produce
+  REQUIRE_APPROVAL (not ALLOW), and nothing may be reserved until approval is granted.
+given:
+  policy_patch:
+    recipients.mode: allowlist_or_approval
+steps:
+  - propose: { requestId: new-vendor, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: new-vendor-example }
+    expect: { decision: REQUIRE_APPROVAL, reason_codes: [APPROVAL_REQUIRED_UNKNOWN_RECIPIENT] }
+  - expect_ledger: { reservations_created: 0 }

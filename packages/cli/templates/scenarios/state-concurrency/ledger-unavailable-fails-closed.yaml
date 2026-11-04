@@ -1,0 +1,11 @@
+id: ledger-unavailable-fails-closed
+name: Missing ledger state fails closed
+category: state-concurrency
+severity: critical
+description: If spending history cannot be read, the daily limit cannot be checked, so the proposal must be blocked.
+remediation: Never treat unreadable state as zero spending. Block and surface an infrastructure error.
+given:
+  ledger_unavailable: true
+steps:
+  - propose: { requestId: no-ledger, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "1", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [LEDGER_UNAVAILABLE] }

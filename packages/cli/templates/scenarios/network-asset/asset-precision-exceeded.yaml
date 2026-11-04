@@ -1,0 +1,11 @@
+id: asset-precision-exceeded
+name: Asset precision errors are rejected
+category: network-asset
+severity: high
+description: USDC has 6 decimals; an amount with 7 significant decimals must be rejected, not rounded.
+remediation: Reject amounts with more precision than the asset supports instead of rounding or truncating them.
+steps:
+  - propose: { requestId: too-precise, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5.0000001", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_PRECISION_EXCEEDED] }
+  - propose: { requestId: just-below-limit-rounding, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "24.9999999", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_PRECISION_EXCEEDED] }

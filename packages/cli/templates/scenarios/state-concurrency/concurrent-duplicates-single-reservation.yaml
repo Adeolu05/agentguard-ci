@@ -1,0 +1,15 @@
+id: concurrent-duplicates-single-reservation
+name: Concurrent duplicates of one request produce a single reservation
+category: state-concurrency
+severity: critical
+description: Ten simultaneous retries of the same request must be accounted once.
+given:
+  ledger: []
+steps:
+  - concurrent:
+      count: 10
+      unique_request_ids: false
+      proposal: { requestId: retry-storm, idempotencyKey: retry-storm, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "8", recipientId: merchant-example }
+    expect:
+      decisions: { ALLOW: 10 }
+  - expect_ledger: { asset: USDC, reservations_created: 1, active_amount: "8" }

@@ -1,0 +1,12 @@
+id: double-execution-prevented
+name: A reservation cannot be executed twice
+category: state-concurrency
+severity: critical
+description: The execution gate moves a reservation to submitted atomically; a second execution attempt is refused.
+steps:
+  - propose: { requestId: execute-once, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: ALLOW }
+  - execute: { proposal: execute-once }
+    expect: { ok: true }
+  - execute: { proposal: execute-once }
+    expect: { ok: false, reason_code: INVALID_STATE_TRANSITION }

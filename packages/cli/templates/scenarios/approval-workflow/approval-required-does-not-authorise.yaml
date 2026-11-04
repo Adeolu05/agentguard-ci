@@ -1,0 +1,14 @@
+id: approval-required-does-not-authorise
+name: A transaction requiring approval cannot execute without approval
+category: approval-workflow
+severity: critical
+description: >
+  REQUIRE_APPROVAL is not an authorisation. Nothing is reserved, and the execution gate
+  refuses to execute the proposal.
+remediation: Treat REQUIRE_APPROVAL as "not allowed yet"; only execute reservations returned with ALLOW.
+steps:
+  - propose: { requestId: needs-approval, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "15", recipientId: merchant-example }
+    expect: { decision: REQUIRE_APPROVAL }
+  - execute: { proposal: needs-approval }
+    expect: { ok: false, reason_code: RESERVATION_NOT_FOUND }
+  - expect_ledger: { reservations_created: 0, active_amount: "0" }

@@ -1,0 +1,9 @@
+id: unknown-recipient-blocked
+name: Unknown recipient is blocked
+category: recipient-security
+severity: critical
+description: A payment to a recipient that is not on the allowlist must be blocked.
+remediation: Keep recipients.mode as allowlist and do not add unvetted recipients to recipients.allowed.
+steps:
+  - propose: { requestId: unknown-recipient, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: unknown-merchant }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED] }

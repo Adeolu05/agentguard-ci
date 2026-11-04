@@ -1,0 +1,8 @@
+id: ambiguous-amount-fields
+name: Conflicting amount fields are rejected
+category: adversarial-input
+severity: high
+description: Supplying both amount and amountAtomic is ambiguous (which one would be paid?) and must be rejected.
+steps:
+  - propose: { requestId: two-amounts, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "1", amountAtomic: "90000000", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_AMBIGUOUS] }

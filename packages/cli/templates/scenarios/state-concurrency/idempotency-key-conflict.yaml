@@ -1,0 +1,10 @@
+id: idempotency-key-conflict
+name: Reusing an idempotency key for a different payment is rejected
+category: state-concurrency
+severity: high
+description: An idempotency key already bound to a 5 USDC payment cannot be reused for a 6 USDC payment.
+steps:
+  - propose: { requestId: key-a, idempotencyKey: shared-key, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: ALLOW }
+  - propose: { requestId: key-b, idempotencyKey: shared-key, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "6", recipientId: merchant-example }
+    expect: { decision: BLOCK, reason_codes: [IDEMPOTENCY_KEY_CONFLICT] }
