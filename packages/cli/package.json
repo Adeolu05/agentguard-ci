@@ -1,0 +1,28 @@
+{
+  "name": "@agentguard/cli",
+  "version": "0.1.0",
+  "description": "AgentGuard CI: test whether an AI agent's proposed financial actions comply with explicit transaction policies.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "agentguard": "./dist/bin.js"
+  },
+  "main": "./dist/main.js",
+  "types": "./dist/main.d.ts",
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@agentguard/core": "workspace:*",
+    "@agentguard/near": "workspace:*",
+    "@agentguard/runner": "workspace:*"
+  }
+}

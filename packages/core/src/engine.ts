@@ -124,6 +124,11 @@ export class PolicyEngine {
     }, "submitted");
   }
 
+  /** Read a reservation (for adapters that must inspect it before passing the execution gate). */
+  async getReservation(reservationId: string): Promise<Reservation | undefined> {
+    return (await this.ledger.list()).find((r) => r.reservationId === reservationId);
+  }
+
   /** Record the definitive outcome of a submitted transaction. */
   recordOutcome(
     reservationId: string,
