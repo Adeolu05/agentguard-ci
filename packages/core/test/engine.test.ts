@@ -171,6 +171,17 @@ describe("mandatory rules", () => {
       expect(e.reasonCodes).toContain(code);
     });
 
+    it("reads each field once, so getters cannot change values after validation", async () => {
+      const { engine } = setup();
+      let reads = 0;
+      const tricky = proposal();
+      Object.defineProperty(tricky, "amount", { enumerable: true, get: () => (reads++ === 0 ? "1" : "1000") });
+      const e = await engine.authorize(tricky);
+      expect(e.decision).toBe("ALLOW");
+      expect(e.reservation?.amountAtomic).toBe(1_000_000n);
+      expect(reads).toBe(1);
+    });
+
     it("rejects oversized proposals before parsing fields", async () => {
       const { engine } = setup();
       const e = await engine.authorize(proposal({ memo: "a".repeat(5000) }));

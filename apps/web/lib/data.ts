@@ -65,7 +65,12 @@ export async function loadRuns(): Promise<RunsResult> {
   }
   const runs: RunReport[] = [];
   const invalid: InvalidReport[] = [];
-  for (const name of names.sort().slice(-MAX_RUNS)) {
+  // Run ids are random, so recency comes from file modification times.
+  const dated = await Promise.all(
+    names.map(async (name) => ({ name, mtime: await stat(path.join(source.runsDir, name)).then((s) => s.mtimeMs, () => 0) })),
+  );
+  const newest = dated.sort((a, b) => b.mtime - a.mtime).slice(0, MAX_RUNS).map((d) => d.name);
+  for (const name of newest) {
     try {
       const report = await readReport(path.join(source.runsDir, name));
       if (`${report.runId}.json` !== name && RUN_ID_RE.test(name.replace(/\.json$/, ""))) {
