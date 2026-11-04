@@ -77,12 +77,15 @@ export const runReportSchema = z.object({
   status: z.enum(RUN_STATUSES),
   exitCode: z.int(),
   agentguardVersion: z.string(),
+  /** How proposals were handled during this run. Scenario runs are always "simulation". */
   executionMode: z.enum(["simulation", "testnet"]),
   project: z.object({ name: z.string().optional() }),
   policy: z.object({
     file: z.string(),
     hash: z.string(),
     agentId: z.string(),
+    /** `execution.mode` declared in the policy (the run itself is always a simulation). */
+    declaredExecutionMode: z.enum(["simulation", "testnet"]),
     warnings: z.array(z.string()),
     /** The validated policy document (no secrets: policies never contain credentials). */
     document: z.unknown().optional(),

@@ -1,0 +1,8 @@
+id: near-mainnet-account-on-testnet
+name: A mainnet (.near) account on testnet is blocked
+category: integration
+severity: high
+description: Paying merchant-example.near on testnet is a cross-network mistake and must be blocked.
+steps:
+  - propose: { requestId: wrong-net-account, agentId: near-research-agent, assetId: NEAR, networkId: near-testnet, amount: "0.1", recipientId: merchant-example.near }
+    expect: { decision: BLOCK, reason_codes: [ADAPTER_VALIDATION_FAILED, RECIPIENT_NOT_ALLOWED] }

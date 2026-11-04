@@ -1,0 +1,23 @@
+# Policy for an agent that pays for services in native NEAR on testnet.
+version: 1
+agent:
+  id: near-research-agent
+  name: NEAR research agent
+execution:
+  mode: testnet   # informational: execution still requires AGENTGUARD_NEAR_EXECUTION=testnet
+assets:
+  - id: NEAR
+    decimals: 24                    # 1 NEAR = 10^24 yoctoNEAR
+    max_transaction_amount: "0.5"
+    max_daily_spend: "2"
+    approval_required_above: "0.25"
+limits:
+  max_transaction_count_per_day: 10
+recipients:
+  mode: allowlist
+  allowed:
+    - merchant-example.testnet
+    - data-provider-example.testnet
+networks:
+  allowed:
+    - near-testnet

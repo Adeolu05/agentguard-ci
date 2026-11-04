@@ -1,0 +1,13 @@
+{
+  "name": "@agentguard/example-near-testnet",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node ../../packages/cli/dist/bin.js test --config agentguard.yaml",
+    "demo": "node demo.mjs"
+  },
+  "dependencies": {
+    "@agentguard/core": "workspace:*",
+    "@agentguard/near": "workspace:*"
+  }
+}

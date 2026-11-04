@@ -1,0 +1,14 @@
+id: near-yocto-precision
+name: yoctoNEAR amounts are handled exactly
+category: integration
+severity: critical
+description: >
+  NEAR has 24 decimals, beyond the exact range of floating-point numbers. One yoctoNEAR above
+  the limit must be blocked, and a 25th decimal place must be rejected.
+steps:
+  - propose: { requestId: one-yocto-over, agentId: near-research-agent, assetId: NEAR, networkId: near-testnet, amount: "0.500000000000000000000001", recipientId: merchant-example.testnet }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_EXCEEDS_TRANSACTION_LIMIT] }
+  - propose: { requestId: atomic-over, agentId: near-research-agent, assetId: NEAR, networkId: near-testnet, amountAtomic: "500000000000000000000001", recipientId: merchant-example.testnet }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_EXCEEDS_TRANSACTION_LIMIT] }
+  - propose: { requestId: too-precise, agentId: near-research-agent, assetId: NEAR, networkId: near-testnet, amount: "0.1000000000000000000000001", recipientId: merchant-example.testnet }
+    expect: { decision: BLOCK, reason_codes: [AMOUNT_PRECISION_EXCEEDED] }

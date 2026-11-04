@@ -1,0 +1,13 @@
+{
+  "name": "@agentguard/example-basic-agent",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:naive": "node ../../packages/cli/dist/bin.js test --config agentguard.yaml --no-save",
+    "test:fixed": "node ../../packages/cli/dist/bin.js test --config agentguard.fixed.yaml --no-save",
+    "demo": "node agent-demo.mjs"
+  },
+  "dependencies": {
+    "@agentguard/core": "workspace:*"
+  }
+}

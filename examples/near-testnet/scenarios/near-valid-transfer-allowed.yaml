@@ -1,0 +1,8 @@
+id: near-valid-transfer-allowed
+name: A valid testnet payment to an allowlisted account is allowed
+category: integration
+severity: medium
+description: 0.1 NEAR to an allowlisted, syntactically valid testnet account passes every rule.
+steps:
+  - propose: { requestId: ok, agentId: near-research-agent, assetId: NEAR, networkId: near-testnet, amount: "0.1", recipientId: merchant-example.testnet }
+    expect: { decision: ALLOW, reason_codes: [], reason_codes_exact: true }

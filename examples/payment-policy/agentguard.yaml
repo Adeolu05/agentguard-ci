@@ -1,0 +1,12 @@
+# Example project: the built-in scenario library against the default payment policy.
+# Run from the repository root:
+#   pnpm agentguard test --config examples/payment-policy/agentguard.yaml
+version: 1
+name: Payment policy example
+policy: policy.yaml
+scenarios:
+  - ../../packages/cli/templates/scenarios
+target:
+  type: engine
+reports:
+  dir: .agentguard/runs

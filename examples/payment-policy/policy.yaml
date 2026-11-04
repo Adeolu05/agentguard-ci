@@ -1,0 +1,36 @@
+# AgentGuard transaction policy. Schema reference: docs/policy-schema.md
+# Amounts are quoted decimal strings in whole asset units; unquoted numbers are rejected.
+version: 1
+
+agent:
+  id: research-payment-agent
+  name: Research Payment Agent
+
+execution:
+  mode: simulation   # local simulation only; no transaction is ever signed or sent
+  fail_closed: true  # cannot be disabled
+
+assets:
+  - id: USDC
+    decimals: 6
+    max_transaction_amount: "25"
+    max_daily_spend: "100"
+    approval_required_above: "10"   # amounts strictly above 10 USDC need human approval
+
+limits:
+  max_transaction_count_per_day: 20
+  daily_window_utc_offset: "+00:00"  # calendar day in UTC
+  allow_zero_amount: false
+
+recipients:
+  mode: allowlist   # unknown recipients are blocked (use allowlist_or_approval to require approval instead)
+  allowed:
+    - merchant-example
+    - data-provider-example
+
+networks:
+  allowed:
+    - near-testnet
+
+approval:
+  max_age_seconds: 900

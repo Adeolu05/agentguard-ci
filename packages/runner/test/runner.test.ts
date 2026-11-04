@@ -61,6 +61,7 @@ describe("detecting unsafe policy changes", () => {
   it("adding an attacker to the allowlist is caught", async () => {
     const report = await runWithPolicyYaml(defaultYaml.replace("    - data-provider-example", "    - data-provider-example\n    - attacker-wallet"));
     expect(statusOf(report, "instruction-injection-in-memo")).toBe("FAIL");
+    expect(report.findings.find((f) => f.scenarioId === "instruction-injection-in-memo")?.severity).toBe("critical");
     expect(report.status).toBe("FAILED");
   });
 

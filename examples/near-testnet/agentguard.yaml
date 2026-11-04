@@ -1,0 +1,10 @@
+version: 1
+name: NEAR testnet agent
+policy: policy.yaml
+scenarios:
+  - scenarios
+target:
+  type: engine
+integrations:
+  near:
+    validate_account_ids: true
