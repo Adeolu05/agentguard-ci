@@ -75,6 +75,10 @@ agentguard test --quiet        # exit code 1, with a CRITICAL finding for tx-lim
 agentguard report              # Markdown report of the latest run
 ```
 
+## Use it in your own project
+
+The packages are not on npm yet. `pnpm pack:local <dir>` builds installable tarballs, and [docs/adoption.md](docs/adoption.md) shows how to install them in any npm or pnpm project, commit them for CI, and generate the GitHub workflow. It also includes a checklist for external users trying the tool. That path has been verified in a fresh, unrelated npm project.
+
 ## How it works
 
 1. **Policy** (`policies/default.yaml`): limits per asset, a daily window, recipient, network and asset allowlists, and an approval threshold. It is validated strictly: unknown keys, unquoted numbers and excess precision are all errors. See [docs/policy-schema.md](docs/policy-schema.md).
@@ -96,7 +100,7 @@ An infrastructure error or a skipped scenario is never counted as a pass.
 
 ## CI
 
-Run `agentguard init --github-actions` to add `.github/workflows/agentguard.yml`. It uses read-only permissions and actions pinned to commit SHAs, validates the policy and scenarios, runs the suite, writes a job summary and uploads the reports. It assumes `@agentguard/cli` is a dev dependency, which requires publishing the package first. Until then, [this repository's CI](.github/workflows/ci.yml) shows the same steps run from source. It includes a `regression-gate` job that deliberately allowlists an attacker and requires the suite to exit with code 1.
+Run `agentguard init --github-actions` to add `.github/workflows/agentguard.yml`. It uses read-only permissions and actions pinned to commit SHAs, installs with `npm ci` (pnpm variant in the comments), validates the policy and scenarios, runs the suite, writes a job summary and uploads the reports. It expects `@agentguard/cli` as a dev dependency; before npm publication, use the vendored tarballs described in [docs/adoption.md](docs/adoption.md). [This repository's CI](.github/workflows/ci.yml) runs the same steps from source. It includes a `regression-gate` job that deliberately allowlists an attacker and requires the suite to exit with code 1.
 
 ## Dashboard
 
@@ -119,7 +123,9 @@ The dashboard is read-only. Every report is validated against the same schema th
 
 Verified in the build environment (Node 22.23, Linux):
 
-- `pnpm check` runs lint, build, the dashboard build, typecheck and 215 automated tests, and all of it passes.
+- `pnpm check` runs lint, build, the dashboard build, typecheck and 228 automated tests, and all of it passes.
+- From a fresh clone with an empty package cache (cold install from npm, frozen lockfile), the quick-start, the unsafe-policy demo (exit code 1) and an independent cross-check of the reports all pass. Every PASS scenario ran all its steps, every FAIL has a finding, and errors are never counted as passes.
+- AgentGuard was installed from local tarballs into an unrelated npm project, and its generated GitHub workflow steps were executed there ([docs/adoption.md](docs/adoption.md)).
 - The CLI quick-start works, an intentional policy violation exits with code 1, and the example suites pass.
 - Policy evaluation averages 25 to 35 µs (p99 under 0.2 ms) on a 2.1 GHz Xeon, against a target of under 10 ms. The 40-scenario suite takes about 20 ms in the runner, or about 0.3 s wall time including Node startup.
 
@@ -144,6 +150,8 @@ Passing the suite shows that the tested behaviours hold under the tested conditi
 - [Findings and severity](docs/findings.md)
 - [Threat model](docs/threat-model.md)
 - [Integrations (NEAR)](docs/integrations.md)
+- [Using it in your own project](docs/adoption.md)
+- [Three-minute demo](docs/demo.md)
 - [Limitations](docs/limitations.md)
 - [Hackathon submission checklist and demo script](docs/hackathon-submission.md)
 - [Implementation assessment](docs/assessment.md)

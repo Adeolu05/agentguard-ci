@@ -16,7 +16,8 @@
     "test:watch": "vitest",
     "agentguard": "node packages/cli/dist/bin.js",
     "check": "pnpm lint && pnpm build && pnpm build:web && pnpm -r typecheck && pnpm test",
-    "dashboard:demo": "pnpm build && pnpm build:web && AGENTGUARD_DEMO=1 pnpm --filter @agentguard/web start"
+    "dashboard:demo": "pnpm build && pnpm build:web && AGENTGUARD_DEMO=1 pnpm --filter @agentguard/web start",
+    "pack:local": "bash scripts/pack-local.sh"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -37,6 +37,6 @@ A passing suite means the tested behaviours hold for the scenarios you ran, unde
 
 ## Operational
 
-- `@agentguard/*` packages are not published to npm yet. The user workflow template assumes `@agentguard/cli` is installed as a dev dependency.
+- `@agentguard/*` packages are not published to npm yet. Other projects install them from local tarballs (`pnpm pack:local`, see [adoption.md](adoption.md)).
 - The dashboard has no authentication. Run it locally, or behind your own access control. It is read-only.
 - SARIF output is not implemented.

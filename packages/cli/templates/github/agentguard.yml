@@ -1,5 +1,5 @@
 # AgentGuard CI security tests for agent transaction policies.
-# Requires @agentguard/cli as a devDependency and a committed pnpm-lock.yaml.
+# Requires @agentguard/cli as a devDependency (see docs/adoption.md) and a committed lockfile.
 # Third-party actions are pinned to full commit SHAs (tag shown in the comment).
 name: AgentGuard
 
@@ -23,18 +23,18 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      # pnpm projects: uncomment the next line and replace `npm ci` below with `pnpm install --frozen-lockfile`.
+      # - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: npm ci
       - name: Validate policy and scenarios
         run: |
-          pnpm exec agentguard policy validate
-          pnpm exec agentguard scenarios validate
+          npx --no-install agentguard policy validate
+          npx --no-install agentguard scenarios validate
       - name: Run AgentGuard security suite
-        run: pnpm exec agentguard test --no-color --json agentguard-report.json --markdown agentguard-report.md --github-summary
+        run: npx --no-install agentguard test --no-color --json agentguard-report.json --markdown agentguard-report.md --github-summary
       - name: Upload report
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

@@ -9,3 +9,4 @@ coverage/
 !.env.example
 *.log
 next-env.d.ts
+dist-packages/

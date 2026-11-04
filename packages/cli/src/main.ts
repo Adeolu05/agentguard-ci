@@ -117,7 +117,15 @@ async function integrationValidators(project: LoadedProject): Promise<{ validato
   const validators: ProposalValidator[] = [];
   const names: string[] = [];
   if (project.config.integrations.near?.validate_account_ids) {
-    const near = await import("@agentguard/near");
+    let near: typeof import("@agentguard/near");
+    try {
+      near = await import("@agentguard/near");
+    } catch {
+      // @agentguard/near is an optional peer dependency: projects without NEAR do not pay for it.
+      throw new UsageError(
+        "integrations.near is enabled in agentguard.yaml, but the @agentguard/near package is not installed. Install it next to @agentguard/cli, or remove integrations.near.",
+      );
+    }
     validators.push(near.nearAccountIdValidator());
     names.push("near:account-id-validation");
   }
