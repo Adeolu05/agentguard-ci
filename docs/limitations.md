@@ -37,7 +37,6 @@ A passing suite means the tested behaviours hold for the scenarios you ran, unde
 
 ## Operational
 
-- The GitHub Actions workflows were written and their action versions and inputs verified, but they have not yet been run on GitHub.
 - `@agentguard/*` packages are not published to npm yet. The user workflow template assumes `@agentguard/cli` is installed as a dev dependency.
 - The dashboard has no authentication. Run it locally, or behind your own access control. It is read-only.
 - SARIF output is not implemented.

@@ -10,6 +10,19 @@ export interface NearTxView {
   /** `FinalExecutionStatus`: "NotStarted" | "Started" | { Failure } | { SuccessValue }. */
   status: unknown;
   transaction_outcome: { id: string };
+  /** `SignedTransactionView`: present in RPC transaction-status responses. */
+  transaction?: { signer_id?: string; receiver_id?: string; actions?: unknown[] };
+}
+
+/** True if the RPC transaction view is exactly one native transfer matching the reservation. */
+export function transactionMatches(tx: NearTxView, signerId: string, r: Reservation): boolean {
+  const t = tx.transaction;
+  if (!t || t.signer_id !== signerId || t.receiver_id !== r.recipientId || !Array.isArray(t.actions) || t.actions.length !== 1) {
+    return false;
+  }
+  const action = t.actions[0] as { Transfer?: { deposit?: unknown } } | null;
+  const deposit = action?.Transfer?.deposit;
+  return (typeof deposit === "string" || typeof deposit === "bigint") && BigInt(deposit) === r.amountAtomic;
 }
 
 export interface NearClient {
@@ -119,28 +132,71 @@ export class NearTestnetExecutor {
     return this.record(reservation.reservationId, hash, classifyStatus(tx.status));
   }
 
-  /** Re-check a submitted reservation against the network using its transaction hash. */
+  /**
+   * Re-check a submitted reservation against the network. The hash must be the one
+   * recorded for this reservation; if none was recorded (the broadcast outcome was
+   * ambiguous), the on-chain transaction must match the reservation's signer, receiver
+   * and exact amount. An unrelated hash can therefore never settle a reservation.
+   */
   async reconcile(reservationId: string, transactionHash: string): Promise<NearExecutionResult> {
+    let reservation: Reservation | undefined;
+    try {
+      reservation = await this.engine.getReservation(reservationId);
+    } catch (err) {
+      return { status: "unknown", transactionHash, message: `ledger unavailable: ${(err as Error).message}` };
+    }
+    if (!reservation) return { status: "refused", reasonCode: "RESERVATION_NOT_FOUND", transactionHash, message: "no such reservation" };
+    if (reservation.status !== "submitted") {
+      return { status: "refused", reasonCode: "INVALID_STATE_TRANSITION", transactionHash, reservation, message: `reservation is ${reservation.status}` };
+    }
+    if (reservation.transactionReference !== undefined && reservation.transactionReference !== transactionHash) {
+      return {
+        status: "refused",
+        reasonCode: "TRANSACTION_MISMATCH",
+        transactionHash,
+        reservation,
+        message: "hash does not match the transaction recorded for this reservation",
+      };
+    }
     let tx: NearTxView;
     try {
       tx = await this.withTimeout(this.client.transactionStatus(transactionHash), "status query");
     } catch (err) {
-      return { status: "unknown", transactionHash, message: `status query failed: ${(err as Error).message}` };
+      return { status: "unknown", transactionHash, reservation, message: `status query failed: ${(err as Error).message}` };
     }
     if (tx?.transaction_outcome?.id !== transactionHash) {
-      return { status: "unknown", transactionHash, message: "status response did not match the requested transaction" };
+      return { status: "unknown", transactionHash, reservation, message: "status response did not match the requested transaction" };
+    }
+    if (reservation.transactionReference === undefined && !transactionMatches(tx, this.client.signerAccountId, reservation)) {
+      return {
+        status: "refused",
+        reasonCode: "TRANSACTION_MISMATCH",
+        transactionHash,
+        reservation,
+        message: "on-chain transaction does not match this reservation (signer, receiver or amount)",
+      };
     }
     return this.record(reservationId, transactionHash, classifyStatus(tx.status));
   }
 
   private async record(reservationId: string, hash: string, outcome: "confirmed" | "failed" | "pending"): Promise<NearExecutionResult> {
     if (outcome === "pending") {
-      const reservation = await this.engine.getReservation(reservationId);
+      // Store the network's hash so reconcile() can only settle this exact transaction.
+      // Whatever happens, the hash from the network is still returned to the caller.
+      let reservation: Reservation | undefined;
+      let note = "";
+      try {
+        const r = await this.engine.recordTransactionReference(reservationId, hash);
+        reservation = r.reservation;
+        if (!r.ok) note = ` (could not store the hash: ${r.reason.message})`;
+      } catch (err) {
+        note = ` (could not store the hash: ${(err as Error).message})`;
+      }
       return {
         status: "pending",
         transactionHash: hash,
         ...(reservation ? { reservation } : {}),
-        message: "transaction not final yet; reservation remains submitted",
+        message: `transaction not final yet; reservation remains submitted${note}`,
       };
     }
     const r = await this.engine.recordOutcome(reservationId, outcome, { transactionReference: hash });

@@ -24,7 +24,7 @@
 - [x] Quick-start works in a clean directory (`agentguard init` → `policy validate` → `test`)
 - [x] Help and error messages include file, line and field locations
 - [x] JSON and Markdown reports
-- [ ] GitHub Actions workflows **run on GitHub**. They are written, with action SHAs and inputs verified, but not yet executed because no remote repository was available.
+- [x] GitHub Actions workflows run on GitHub: all four jobs passed on the first run ([Actions](https://github.com/Adeolu05/agentguard-ci/actions))
 - [x] An intentional policy violation makes the suite exit with code 1. This is verified locally, and CI has a `regression-gate` job for it.
 
 ### Dashboard
@@ -43,7 +43,7 @@
 - [x] Integration limitations documented (`docs/integrations.md`)
 
 ### Project delivery
-- [ ] Repository is public (needs a remote; currently a local Git repository)
+- [x] Repository is public: https://github.com/Adeolu05/agentguard-ci
 - [x] README with a working quick-start
 - [x] Architecture and threat model documented
 - [x] License (Apache-2.0)
@@ -114,7 +114,7 @@ The suite covers yoctoNEAR precision, `*.near` accounts on testnet, mainnet bloc
 ## Evidence to include
 
 - `pnpm check` output (all tests passing).
-- A CI run link, once the repository is pushed.
+- A CI run link from https://github.com/Adeolu05/agentguard-ci/actions.
 - JSON and Markdown reports from steps 2 and 3.
 - Dashboard screenshots, light and dark.
 - A NEAR testnet transaction hash and explorer link, **only** if actually executed.

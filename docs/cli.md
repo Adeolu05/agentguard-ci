@@ -60,7 +60,7 @@ Unknown keys are rejected. `--config` selects another project file. The default 
 | 0 | All required scenarios passed. |
 | 1 | At least one required scenario **failed**. This takes precedence over errors, because a confirmed violation is the most actionable signal. |
 | 2 | Configuration, scenario validation or usage error. Nothing was run. |
-| 3 | No required scenario failed, but at least one **errored**, or nothing was evaluated at all (for example, every scenario was skipped). The run is incomplete. Unexpected internal errors also exit with 3. |
+| 3 | No required scenario failed, but at least one **errored**, or no required scenario was evaluated at all (for example, every required scenario was skipped). The run is incomplete. Optional scenarios cannot turn this into a pass. Unexpected internal errors also exit with 3. |
 
 Non-required scenarios (`required: false`) are reported but never affect the exit code.
 

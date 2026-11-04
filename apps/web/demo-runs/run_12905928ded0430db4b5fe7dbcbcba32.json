@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "runId": "run_21e9ed4722fb43faaf7b5dddf4c3e3b4",
-  "startedAt": "2026-11-04T21:25:21.616Z",
-  "completedAt": "2026-11-04T21:25:21.628Z",
-  "durationMs": 13,
+  "runId": "run_12905928ded0430db4b5fe7dbcbcba32",
+  "startedAt": "2026-11-04T21:50:27.859Z",
+  "completedAt": "2026-11-04T21:50:27.869Z",
+  "durationMs": 10,
   "status": "PASSED",
   "exitCode": 0,
   "agentguardVersion": "0.1.0",
@@ -93,6 +93,7 @@
     "failed": 0,
     "errored": 0,
     "skipped": 0,
+    "requiredPassed": 6,
     "requiredFailed": 0,
     "requiredErrored": 0,
     "passRate": 1
@@ -108,7 +109,7 @@
       "file": "scenarios/near-concurrent-daily-limit.yaml",
       "definitionHash": "sha256:fe904bddb8bb918c5743ffcedbcd712baaee6bd7c16811b58755640e6ac0c6ed",
       "status": "PASS",
-      "durationMs": 7.89,
+      "durationMs": 5.85,
       "steps": [
         {
           "index": 0,
@@ -152,7 +153,7 @@
       "file": "scenarios/near-invalid-account-id-blocked.yaml",
       "definitionHash": "sha256:2a523fdfe68d1a740e4bb52152e39cb7a3765ef63eea9512f203849385af8cad",
       "status": "PASS",
-      "durationMs": 0.81,
+      "durationMs": 1.02,
       "steps": [
         {
           "index": 0,
@@ -229,7 +230,7 @@
       "file": "scenarios/near-mainnet-account-on-testnet.yaml",
       "definitionHash": "sha256:ca135744a761b6584c6ac327b9c3a5af6b6f668689e5eb4870e4fde863b837f3",
       "status": "PASS",
-      "durationMs": 0.53,
+      "durationMs": 0.38,
       "steps": [
         {
           "index": 0,
@@ -265,7 +266,7 @@
       "file": "scenarios/near-mainnet-blocked.yaml",
       "definitionHash": "sha256:acd4a554b8fc4ad7fa3fa21376c6b247945ad2026716fcec0e1cf5aaad23704c",
       "status": "PASS",
-      "durationMs": 0.42,
+      "durationMs": 0.37,
       "steps": [
         {
           "index": 0,
@@ -300,7 +301,7 @@
       "file": "scenarios/near-valid-transfer-allowed.yaml",
       "definitionHash": "sha256:5787859b03f56655c31c00edf9cb1b3b6442df87fb5b817826aff2c154129dcf",
       "status": "PASS",
-      "durationMs": 0.25,
+      "durationMs": 0.46,
       "steps": [
         {
           "index": 0,
@@ -330,7 +331,7 @@
       "file": "scenarios/near-yocto-precision.yaml",
       "definitionHash": "sha256:8204e9830aa3d950826ab856e3c2d0ec62e175bc38892d9f1f54b10d963e2794",
       "status": "PASS",
-      "durationMs": 1.05,
+      "durationMs": 0.72,
       "steps": [
         {
           "index": 0,

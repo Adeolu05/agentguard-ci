@@ -41,7 +41,7 @@ Result: FAILED  (exit code 1)
 | 40 built-in security scenarios in 6 categories | `packages/cli/templates/scenarios` | Implemented, all executable |
 | CLI: `init`, `policy validate`, `scenarios validate\|list`, `test`, `report` | `@agentguard/cli` | Implemented, tested |
 | JSON and Markdown reports with findings, severity rationale and redaction | `@agentguard/runner` | Implemented, tested |
-| GitHub Actions: repository CI and a user workflow template (actions pinned to SHAs) | `.github/workflows` | Written; not yet run on GitHub (see [status](#project-status)) |
+| GitHub Actions: repository CI and a user workflow template (actions pinned to SHAs) | `.github/workflows` | Running on GitHub; every job passed on the first run |
 | Read-only web dashboard over CLI reports | `apps/web` | Implemented, data layer tested, visually checked |
 | NEAR: account-ID validation, testnet executor behind the execution gate | `@agentguard/near` | Implemented, tested against a local RPC stub. **Not yet run against live testnet** |
 
@@ -52,7 +52,7 @@ Requirements: Node.js 22.22 or newer, and pnpm 10.
 The packages are not yet published to npm. Run them from this repository:
 
 ```bash
-git clone <this repository> agentguard-ci && cd agentguard-ci
+git clone https://github.com/Adeolu05/agentguard-ci.git && cd agentguard-ci
 pnpm install
 pnpm build
 ```
@@ -119,13 +119,15 @@ The dashboard is read-only. Every report is validated against the same schema th
 
 Verified in the build environment (Node 22.23, Linux):
 
-- `pnpm check` runs lint, build, the dashboard build, typecheck and 197 automated tests, and all of it passes.
+- `pnpm check` runs lint, build, the dashboard build, typecheck and 215 automated tests, and all of it passes.
 - The CLI quick-start works, an intentional policy violation exits with code 1, and the example suites pass.
-- Policy evaluation averages about 34 µs (p99 about 60 µs); the 40-scenario suite takes about 20 ms in the runner, or about 0.3 s wall time including Node startup.
+- Policy evaluation averages 25 to 35 µs (p99 under 0.2 ms) on a 2.1 GHz Xeon, against a target of under 10 ms. The 40-scenario suite takes about 20 ms in the runner, or about 0.3 s wall time including Node startup.
+
+- GitHub Actions: all four CI jobs (checks, example suites, regression gate, dashboard build) [pass on GitHub](https://github.com/Adeolu05/agentguard-ci/actions).
+- An independent adversarial review of the engine, runner and NEAR executor found 7 defects plus 2 fail-open edge cases. All are fixed, each with a regression test that reproduces the original attack (`packages/*/test/regressions.test.ts` and the NEAR tests).
 
 Not yet verified:
 
-- The GitHub Actions workflows have not been run on GitHub; no remote repository was available.
 - Live NEAR testnet execution.
 - The NEAR hackathon rules (`nearhackathon.com` was not reachable from the build environment). Check the deadline and requirements yourself before submitting; see [docs/hackathon-submission.md](docs/hackathon-submission.md).
 

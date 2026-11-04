@@ -15,7 +15,7 @@ export const EXIT_CODES = {
   FAILED: 1,
   /** Configuration, scenario validation or usage error; nothing was run. */
   USAGE: 2,
-  /** No required scenario failed, but at least one could not be evaluated (ERROR), or nothing was evaluated at all: the run is incomplete. */
+  /** No required scenario failed, but at least one errored, or no required scenario was evaluated at all: the run is incomplete. */
   ERROR: 3,
 } as const;
 
@@ -113,6 +113,7 @@ export const runReportSchema = z.object({
     failed: z.int(),
     errored: z.int(),
     skipped: z.int(),
+    requiredPassed: z.int(),
     requiredFailed: z.int(),
     requiredErrored: z.int(),
     /** passed / (passed + failed + errored); null when nothing was evaluated or a required scenario errored. */
@@ -137,6 +138,7 @@ export function summarise(results: readonly ScenarioResult[]): RunReport["summar
     failed,
     errored,
     skipped: count("SKIPPED"),
+    requiredPassed: count("PASS", true),
     requiredFailed: count("FAIL", true),
     requiredErrored,
     passRate: evaluated === 0 || requiredErrored > 0 ? null : passed / evaluated,
@@ -146,7 +148,10 @@ export function summarise(results: readonly ScenarioResult[]): RunReport["summar
 export function runStatus(summary: RunReport["summary"]): { status: RunStatus; exitCode: number } {
   if (summary.requiredFailed > 0) return { status: "FAILED", exitCode: EXIT_CODES.FAILED };
   if (summary.requiredErrored > 0) return { status: "ERROR", exitCode: EXIT_CODES.ERROR };
-  // A run in which nothing was actually evaluated (everything skipped) is not a pass.
-  if (summary.passed + summary.failed + summary.errored === 0) return { status: "ERROR", exitCode: EXIT_CODES.ERROR };
+  // A run in which no *required* scenario was actually evaluated is not a pass, even if
+  // optional scenarios ran (they never affect the exit code).
+  if (summary.requiredPassed + summary.requiredFailed + summary.requiredErrored === 0) {
+    return { status: "ERROR", exitCode: EXIT_CODES.ERROR };
+  }
   return { status: "PASSED", exitCode: EXIT_CODES.PASSED };
 }

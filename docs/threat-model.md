@@ -35,9 +35,15 @@ AgentGuard evaluates **proposed** financial actions against an explicit policy, 
 | A developer misconfigures the policy | Strict schema; an empty allowlist means "no one", never "everyone"; warnings for unreachable thresholds; CI fails on loosened limits | policy tests, `regression-gate` CI job |
 | A malicious or incorrect custom target or adapter | Results are shape-checked; exceptions and timeouts become `ERROR`; all-skipped runs are incomplete; reports are redacted | runner tests |
 | Wrong-network execution (mainnet) | Adapter executes only `near-testnet` and `NEAR`; requires the RPC to report `testnet` and a testnet signer; rejects mainnet-looking RPC URLs | NEAR tests |
-| Secrets leaking into reports or logs | Key- and pattern-based redaction plus exact-match redaction of secret environment values | redaction tests |
+| In-process tampering: getters or proxies on proposals or grants, or mutating returned records | JSON snapshots read each field once; reservations and policy objects are deeply frozen; malformed ledger results fail closed | `packages/core/test/regressions.test.ts` |
+| An unrelated transaction hash used to settle (or release) a reservation | The executor stores the network hash on a pending reservation; `reconcile` accepts only that hash, or, when none was stored, a transaction matching the signer, receiver and exact amount | NEAR tests |
+| Secrets leaking into reports or logs | Key- and pattern-based redaction (applied before values are turned into strings) plus exact-match redaction of secret environment values | redaction tests, runner regressions |
 | Dashboard misuse | Read-only; route parameters checked against strict patterns (no path traversal); every report schema-validated; security headers | data-layer tests |
 | Compromised dependency | Lockfile and frozen installs in CI; actions pinned to commit SHAs; small dependency set | CI configuration |
+
+## Review
+
+An independent adversarial review (November 2026) tried to break these guarantees and confirmed 7 defects plus 2 fail-open edge cases. They were: TOCTOU on approval grants; live ledger records returned to callers; an exit status that optional scenarios could flip to a pass; an unbound NEAR `reconcile`; a redaction gap; an unchecked `replay` expectation; and replays ignoring blocking reasons. The two edge cases were unparseable grant timestamps and unvalidated ledger usage. All are fixed, and each has a regression test that fails on the old code.
 
 ## Out of scope and residual risks
 

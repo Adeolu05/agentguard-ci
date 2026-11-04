@@ -177,13 +177,13 @@ function buildPolicy(doc: PolicyDocument, source: string): PolicyLoadResult {
         source,
       });
     }
-    assets.set(a.id, {
+    assets.set(a.id, Object.freeze({
       id: a.id,
       decimals: a.decimals,
       maxTransactionAtomic: maxTx,
       maxDailySpendAtomic: maxDaily,
       approvalRequiredAboveAtomic: approvalAbove,
-    });
+    }));
   });
 
   for (const [field, list] of [
@@ -226,9 +226,17 @@ function buildPolicy(doc: PolicyDocument, source: string): PolicyLoadResult {
     allowedRecipients: new Set(doc.recipients.allowed),
     allowedNetworks: new Set(doc.networks.allowed),
     approvalMaxAgeSeconds: doc.approval.max_age_seconds,
-    document: doc,
+    document: deepFreeze(structuredClone(doc)),
   });
   return { ok: true, policy, warnings };
+}
+
+function deepFreeze<T>(value: T): T {
+  if (value && typeof value === "object") {
+    for (const v of Object.values(value)) deepFreeze(v);
+    Object.freeze(value);
+  }
+  return value;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;

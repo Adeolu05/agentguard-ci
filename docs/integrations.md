@@ -36,7 +36,7 @@ A custom **scenario target** (see [scenarios.md](scenarios.md#custom-targets)) i
   4. Signs and broadcasts one native transfer with `waitUntil: "FINAL"` and `throwOnFailure: false`.
   5. Records `confirmed` or `failed` with the hash returned by the network. On a thrown error, a timeout or a missing hash it returns `unknown` and leaves the reservation `submitted`.
 
-  `reconcile(reservationId, hash)` re-reads the status by hash. The stub test decodes the signed transaction and checks the signer, receiver, a single transfer action with the exact deposit, `wait_until: FINAL`, and that the ed25519 signature verifies over `sha256(borsh(tx))`.
+  When a transfer is still pending, the network's hash is stored on the reservation. `reconcile(reservationId, hash)` re-reads the status by hash. It accepts only the stored hash or, when none was stored because the broadcast outcome was ambiguous, a transaction whose signer, receiver and exact amount match the reservation. An unrelated hash cannot settle or release a reservation. The stub test decodes the signed transaction and checks the signer, receiver, a single transfer action with the exact deposit, `wait_until: FINAL`, and that the ed25519 signature verifies over `sha256(borsh(tx))`.
 - **Configuration** is off by default:
 
   ```bash

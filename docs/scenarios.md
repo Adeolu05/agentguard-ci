@@ -69,10 +69,10 @@ References (`proposal:`, `with_approval:`) must point to **earlier** steps; this
 | --- | --- |
 | `PASS` | Every step matched its expectation. |
 | `FAIL` | A step's observed behaviour differed from the expectation. A finding is produced. |
-| `ERROR` | The scenario could not be evaluated. Causes include a target that threw or returned a malformed result, a timeout (15 seconds by default), or an invalid `policy_patch`. **Never counted as a pass.** |
+| `ERROR` | The scenario could not be evaluated. Causes include a target that threw or returned a malformed result, a timeout (15 seconds by default, covering target creation as well as the steps), or an invalid `policy_patch`. **Never counted as a pass.** |
 | `SKIPPED` | `skip:` was set, or the target lacks a capability the scenario needs. |
 
-A run in which no scenario was evaluated (everything skipped) is reported as incomplete (exit code 3), not as a pass.
+A run in which no *required* scenario was evaluated (for example, all of them were skipped) is reported as incomplete (exit code 3), not as a pass, even if optional scenarios ran.
 
 Every scenario runs in isolation, with a fresh ledger, its own clock and a fresh approval key. Results are deterministic: two runs produce the same statuses and observed decisions. Only IDs and timings differ.
 
@@ -110,7 +110,7 @@ export function createTarget(context) {
 Rules:
 
 - Only `propose` is required. Results are shape-checked: a missing or unknown decision, or non-string reason codes, make the scenario `ERROR`.
-- If `reasonCodes` is false, scenarios are checked on **decisions only**. The step records "reason codes not checked", and nothing is skipped because of it.
+- If `reasonCodes` is false, scenarios are checked on **decisions only**. The step records "reason codes not checked", and nothing is skipped because of it. A `replay` expectation is checked whenever the target reports `replay`; if it does not, the step records "replay not checked".
 - Scenarios needing approvals, lifecycle, ledger inspection, policy reload or failure injection are `SKIPPED` for targets that lack them, and the skip reason names the missing capability.
 - `context.seed` contains the historical reservations the scenario starts with. A guard that keeps no spending history cannot honour it, so daily-limit scenarios will (correctly) fail.
 

@@ -166,16 +166,30 @@ export class InMemoryLedger implements Ledger {
         if (!canTransition(existing.status, r.status) && existing.status !== r.status) {
           throw new Error(`invalid transition ${existing.status} -> ${r.status}`);
         }
-        this.records.set(r.reservationId, r);
+        this.records.set(r.reservationId, freezeReservation(r));
       },
     };
   }
 
-  private store(r: Reservation): void {
+  private store(input: Reservation): void {
+    const r = freezeReservation(input);
     this.records.set(r.reservationId, r);
     this.byKey.set(keyOf(r.agentId, r.idempotencyKey), r.reservationId);
     if (r.approvalId) this.consumedApprovals.add(r.approvalId);
   }
+}
+
+/**
+ * Return a deeply frozen copy of a reservation. Ledgers store and hand out only frozen
+ * records, so a caller holding a reservation (e.g. from an evaluation result) cannot
+ * change the amount, recipient or status the ledger accounts for.
+ */
+export function freezeReservation(r: Reservation): Reservation {
+  if (Object.isFrozen(r) && Object.isFrozen(r.history)) return r;
+  return Object.freeze({
+    ...r,
+    history: Object.freeze(r.history.map((h) => Object.freeze({ ...h }))),
+  });
 }
 
 function keyOf(agentId: string, key: string): string {

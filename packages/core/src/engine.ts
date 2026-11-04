@@ -4,6 +4,7 @@ import { newId } from "./canonical.js";
 import {
   ACTIVE_STATUSES,
   canTransition,
+  freezeReservation,
   type Ledger,
   type LedgerSession,
   type LifecycleStatus,
@@ -126,7 +127,30 @@ export class PolicyEngine {
 
   /** Read a reservation (for adapters that must inspect it before passing the execution gate). */
   async getReservation(reservationId: string): Promise<Reservation | undefined> {
-    return (await this.ledger.list()).find((r) => r.reservationId === reservationId);
+    const r = (await this.ledger.list()).find((x) => x.reservationId === reservationId);
+    return r ? freezeReservation(r) : undefined;
+  }
+
+  /**
+   * Attach the network's transaction reference to a submitted reservation whose outcome
+   * is not yet known, so later reconciliation can be checked against it. A reference,
+   * once set, cannot be replaced by a different one.
+   */
+  recordTransactionReference(reservationId: string, transactionReference: string): Promise<LifecycleResult> {
+    return this.mutate(
+      reservationId,
+      (r) => {
+        if (r.status !== "submitted") {
+          return reason("INVALID_STATE_TRANSITION", `reservation is ${r.status}; references are attached while submitted`);
+        }
+        if (r.transactionReference !== undefined && r.transactionReference !== transactionReference) {
+          return reason("INVALID_STATE_TRANSITION", "reservation already has a different transaction reference");
+        }
+        return undefined;
+      },
+      "submitted",
+      { transactionReference, note: "transaction reference recorded" },
+    );
   }
 
   /** Record the definitive outcome of a submitted transaction. */
@@ -164,12 +188,13 @@ export class PolicyEngine {
         const current = await session.get(reservationId);
         if (!current) return { ok: false, reason: reason("RESERVATION_NOT_FOUND"), reservation: undefined };
         const blocked = guard(current);
-        if (blocked) return { ok: false, reason: blocked, reservation: current };
-        if (!canTransition(current.status, to)) {
+        if (blocked) return { ok: false, reason: blocked, reservation: freezeReservation(current) };
+        const sameStatusUpdate = current.status === to && to === "submitted" && details.transactionReference !== undefined;
+        if (!sameStatusUpdate && !canTransition(current.status, to)) {
           return {
             ok: false,
             reason: reason("INVALID_STATE_TRANSITION", `cannot move a ${current.status} reservation to ${to}`),
-            reservation: current,
+            reservation: freezeReservation(current),
           };
         }
         const at = this.clock.now().toISOString();
@@ -180,7 +205,7 @@ export class PolicyEngine {
           history: [...current.history, { status: to, at, ...(details.note ? { note: details.note } : {}) }],
         };
         await session.replace(next);
-        return { ok: true, reservation: next };
+        return { ok: true, reservation: freezeReservation(next) };
       });
     } catch {
       return { ok: false, reason: reason("LEDGER_UNAVAILABLE"), reservation: undefined };
@@ -207,7 +232,7 @@ export class PolicyEngine {
         evaluatedAt: now.toISOString(),
         proposalDigest: proposal?.digest,
         proposal,
-        reservation,
+        reservation: reservation ? freezeReservation(reservation) : undefined,
         replay,
       });
 
@@ -324,12 +349,18 @@ export class PolicyEngine {
       if (existing.status === "reserved" && existing.policyHash !== policy.hash) {
         return result("BLOCK", [reason("STALE_POLICY_VERSION")], p, existing);
       }
-      // Same proposal, same key: return the existing reservation; record nothing new.
+      // Same proposal, same key: return the existing reservation and record nothing new.
+      // Blocking reasons found earlier (e.g. a forged approval, or a rule the current
+      // policy now fails) still apply: the replay is then reported as BLOCK.
+      if (reasons.some((r) => r.blocking)) {
+        return result("BLOCK", [...reasons, reason("IDEMPOTENT_REPLAY")], p, existing, true);
+      }
       return result("ALLOW", [reason("IDEMPOTENT_REPLAY")], p, existing, true);
     }
 
     const window = dailyWindow(policy, now);
     const usage = await session.windowUsage(p.agentId, window.start, window.end);
+    assertValidUsage(usage);
     const asset = policy.assets.get(p.assetId);
     if (asset) {
       const spent = usage.spentByAsset.get(asset.id) ?? 0n;
@@ -385,6 +416,17 @@ export class PolicyEngine {
     };
     await session.insert(reservation);
     return result("ALLOW", finalReasons, p, reservation);
+  }
+}
+
+/** Fail closed on a ledger that returns malformed usage (e.g. a missing count would compare as NaN). */
+function assertValidUsage(usage: unknown): void {
+  const u = usage as { count?: unknown; spentByAsset?: unknown } | null;
+  if (!u || !Number.isSafeInteger(u.count) || (u.count as number) < 0 || !(u.spentByAsset instanceof Map)) {
+    throw new Error("ledger returned malformed window usage");
+  }
+  for (const v of u.spentByAsset.values()) {
+    if (typeof v !== "bigint" || v < 0n) throw new Error("ledger returned malformed window usage");
   }
 }
 
