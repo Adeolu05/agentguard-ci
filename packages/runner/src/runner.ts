@@ -135,7 +135,9 @@ function seedReservations(s: Scenario, policy: Policy): Reservation[] {
   return out;
 }
 
-function checkDecision(expect: DecisionExpectation, observed: TargetProposeResult, reasonCodesSupported: boolean): void {
+/** Throws StepFailure on a mismatch; returns notes about expectations that could not be checked. */
+function checkDecision(expect: DecisionExpectation, observed: TargetProposeResult, reasonCodesSupported: boolean): string[] {
+  const notes: string[] = [];
   const codes = new Set(observed.reasonCodes ?? []);
   const obs = {
     decision: observed.decision,
@@ -146,7 +148,25 @@ function checkDecision(expect: DecisionExpectation, observed: TargetProposeResul
     const dir = PERMISSIVENESS[observed.decision] > PERMISSIVENESS[expect.decision] ? "permissive" : "restrictive";
     throw new StepFailure(expect, obs, dir, `expected ${expect.decision}, observed ${observed.decision}`);
   }
-  if (!reasonCodesSupported) return;
+  // Replay is a decision-level property: check it whenever the target reports it.
+  if (expect.replay !== undefined) {
+    if (observed.replay === undefined) {
+      notes.push("replay not checked (target does not report it)");
+    } else if (observed.replay !== expect.replay) {
+      throw new StepFailure(
+        expect,
+        obs,
+        expect.replay ? "permissive" : "different",
+        `expected replay=${expect.replay}, observed replay=${String(observed.replay)}`,
+      );
+    }
+  }
+  if (!reasonCodesSupported) {
+    if (expect.reason_codes.length > 0 || expect.absent_reason_codes.length > 0 || expect.reason_codes_exact) {
+      notes.push("reason codes not checked (target does not report them)");
+    }
+    return notes;
+  }
   const missing = expect.reason_codes.filter((c) => !codes.has(c));
   if (missing.length > 0) {
     throw new StepFailure(expect, obs, "different", `decision matched but expected reason code(s) missing: ${missing.join(", ")}`);
@@ -159,14 +179,7 @@ function checkDecision(expect: DecisionExpectation, observed: TargetProposeResul
     const extra = [...codes].filter((c) => !expect.reason_codes.includes(c as never));
     if (extra.length > 0) throw new StepFailure(expect, obs, "different", `unexpected additional reason code(s): ${extra.join(", ")}`);
   }
-  if (expect.replay !== undefined && observed.replay !== expect.replay) {
-    throw new StepFailure(
-      expect,
-      obs,
-      expect.replay ? "permissive" : "different",
-      `expected replay=${expect.replay}, observed replay=${String(observed.replay)}`,
-    );
-  }
+  return notes;
 }
 
 function checkLifecycle(expect: { ok: boolean; reason_code?: string | undefined }, observed: LifecycleOutcome): void {
@@ -208,13 +221,11 @@ async function runStep(
     const observed = await target.propose(proposal, approval === undefined ? {} : { approval });
     const ref = step.as ?? (typeof step.propose.requestId === "string" ? step.propose.requestId : undefined);
     if (ref) state.results.set(ref, observed);
-    checkDecision(step.expect, observed, target.capabilities.reasonCodes);
-    const unchecked =
-      !target.capabilities.reasonCodes && (step.expect.reason_codes.length > 0 || step.expect.absent_reason_codes.length > 0);
+    const notes = checkDecision(step.expect, observed, target.capabilities.reasonCodes);
     return {
       expected: step.expect,
       observed: { decision: observed.decision, reason_codes: observed.reasonCodes ?? [], replay: observed.replay },
-      ...(unchecked ? { message: "decision checked; reason codes not checked (target does not report them)" } : {}),
+      ...(notes.length > 0 ? { message: `decision checked; ${notes.join("; ")}` } : {}),
     };
   }
   if ("approve" in step) {
@@ -268,7 +279,11 @@ async function runStep(
       throw new StepFailure(
         expected,
         counts,
-        counts.ALLOW > expected.ALLOW ? "permissive" : "restrictive",
+        // More ALLOWs, or the same ALLOWs with approvals where blocks were expected, is more permissive.
+        counts.ALLOW > expected.ALLOW ||
+          (counts.ALLOW === expected.ALLOW && counts.REQUIRE_APPROVAL > expected.REQUIRE_APPROVAL)
+          ? "permissive"
+          : "restrictive",
         `decision counts differ: expected ${JSON.stringify(expected)}, observed ${JSON.stringify(counts)}`,
       );
     }
@@ -342,6 +357,8 @@ export async function runScenario(
   if (s.skip) return { result: { ...base, status: "SKIPPED", durationMs: 0, steps: [], skipReason: s.skip } };
 
   const steps: StepResult[] = [];
+  const timeoutMs = opts.scenarioTimeoutMs ?? 15_000;
+  let aborted = false;
   let target: GuardTarget | undefined;
   try {
     let policy = opts.policy;
@@ -354,14 +371,19 @@ export async function runScenario(
     }
     const clock = new ScenarioClock(Date.parse(s.given.now));
     const factory = opts.target?.type === "module" ? opts.target.factory : engineTargetFactory;
-    target = await factory({
-      policyDocument: policy.document,
-      policy,
-      clock,
-      seed: seedReservations(s, policy),
-      ledgerUnavailable: s.given.ledger_unavailable,
-      validators: opts.validators ?? [],
-    });
+    target = await withTimeout(
+      Promise.resolve(
+        factory({
+          policyDocument: policy.document,
+          policy,
+          clock,
+          seed: seedReservations(s, policy),
+          ledgerUnavailable: s.given.ledger_unavailable,
+          validators: opts.validators ?? [],
+        }),
+      ),
+      timeoutMs,
+    );
     const missing = requiredCapabilities(s).filter((c) => !target!.capabilities[c]);
     if (missing.length > 0) {
       return {
@@ -380,6 +402,7 @@ export async function runScenario(
     const activeTarget = target;
     const runAll = async (): Promise<FailureInfo | undefined> => {
       for (const [index, step] of s.steps.entries()) {
+        if (aborted) return undefined; // the scenario already timed out: run nothing more
         const kind = stepKind(step);
         try {
           const out = await runStep(step, activeTarget, state, clock, () => currentPolicy);
@@ -400,7 +423,7 @@ export async function runScenario(
       }
       return undefined;
     };
-    const failure = await withTimeout(runAll(), opts.scenarioTimeoutMs ?? 15_000);
+    const failure = await withTimeout(runAll(), timeoutMs);
     if (failure) {
       return {
         result: {
@@ -409,31 +432,35 @@ export async function runScenario(
           durationMs: elapsed(),
           steps,
           failedStep: failure.step,
-          expected: JSON.stringify(failure.failure.expected),
-          observed: JSON.stringify(failure.failure.observed),
+          // Redact structured values before they become strings: key-based redaction cannot see inside a string.
+          expected: JSON.stringify(redact(failure.failure.expected)),
+          observed: JSON.stringify(redact(failure.failure.observed)),
         },
         failure,
       };
     }
     return { result: { ...base, status: "PASS", durationMs: elapsed(), steps } };
   } catch (err) {
+    aborted = true;
+    // Snapshot: a step still running after a timeout must not change the reported result.
+    const done = steps.slice();
     if (err instanceof SkipScenario) {
-      return { result: { ...base, status: "SKIPPED", durationMs: elapsed(), steps, skipReason: err.message } };
+      return { result: { ...base, status: "SKIPPED", durationMs: elapsed(), steps: done, skipReason: err.message } };
     }
-    const failedStep = steps.findIndex((st) => st.status === "error");
+    const failedStep = done.findIndex((st) => st.status === "error");
     return {
       result: {
         ...base,
         status: "ERROR",
         durationMs: elapsed(),
-        steps,
+        steps: done,
         ...(failedStep >= 0 ? { failedStep } : {}),
         error: { code: "SCENARIO_EXECUTION_ERROR", message: (err as Error)?.message ?? String(err) },
       },
     };
   } finally {
     try {
-      await target?.dispose?.();
+      if (target?.dispose) await withTimeout(Promise.resolve(target.dispose()), 5_000);
     } catch {
       // A dispose failure must not turn a result into a pass or hide the original outcome.
     }

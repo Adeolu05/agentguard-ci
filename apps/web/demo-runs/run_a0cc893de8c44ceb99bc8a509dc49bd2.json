@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "runId": "run_035fd49405af4682bac059bf3efb40d0",
-  "startedAt": "2026-11-04T21:25:20.289Z",
-  "completedAt": "2026-11-04T21:25:20.297Z",
-  "durationMs": 8,
+  "runId": "run_a0cc893de8c44ceb99bc8a509dc49bd2",
+  "startedAt": "2026-11-04T21:50:26.599Z",
+  "completedAt": "2026-11-04T21:50:26.613Z",
+  "durationMs": 13,
   "status": "FAILED",
   "exitCode": 1,
   "agentguardVersion": "0.1.0",
@@ -85,6 +85,7 @@
     "failed": 16,
     "errored": 0,
     "skipped": 17,
+    "requiredPassed": 7,
     "requiredFailed": 16,
     "requiredErrored": 0,
     "passRate": 0.30434782608695654
@@ -100,7 +101,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/agent-impersonation.yaml",
       "definitionHash": "sha256:b4d0ec15b7f0228688712def908ab47aae5014e812c68024c6626f77e7ca2669",
       "status": "FAIL",
-      "durationMs": 1.08,
+      "durationMs": 1.6,
       "steps": [
         {
           "index": 0,
@@ -134,7 +135,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/ambiguous-amount-fields.yaml",
       "definitionHash": "sha256:8c2817cb1cbb3445262ff54f6828567e052f1bb205594a29826b73ca620a294f",
       "status": "FAIL",
-      "durationMs": 0.13,
+      "durationMs": 0.22,
       "steps": [
         {
           "index": 0,
@@ -169,7 +170,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/ambiguous-submission-keeps-counting.yaml",
       "definitionHash": "sha256:8cc1f094153ecd243bac4fb3d87f6f92461b24564b38032bbc1eec489af5689e",
       "status": "SKIPPED",
-      "durationMs": 0.45,
+      "durationMs": 0.79,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: lifecycle"
     },
@@ -183,7 +184,7 @@
       "file": "../../packages/cli/templates/scenarios/approval-workflow/approval-amount-tampering.yaml",
       "definitionHash": "sha256:30e35080203a980609a02cfa2ad55ce02dd1a2076593bbe393a58564d9f1381f",
       "status": "SKIPPED",
-      "durationMs": 0.08,
+      "durationMs": 0.19,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: approvals"
     },
@@ -197,7 +198,7 @@
       "file": "../../packages/cli/templates/scenarios/approval-workflow/approval-expired.yaml",
       "definitionHash": "sha256:04e1830e7a1f0765d695e63d1c5115e9322b7429fc7cbae588ec26767f471833",
       "status": "SKIPPED",
-      "durationMs": 0.03,
+      "durationMs": 0.11,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: approvals"
     },
@@ -212,7 +213,7 @@
       "file": "../../packages/cli/templates/scenarios/approval-workflow/approval-not-transferable.yaml",
       "definitionHash": "sha256:852230e4aeae978055b620fb9d47b4ab7c10680cbbf93aed02455f0e678485ca",
       "status": "SKIPPED",
-      "durationMs": 0.02,
+      "durationMs": 0.06,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: approvals"
     },
@@ -227,7 +228,7 @@
       "file": "../../packages/cli/templates/scenarios/approval-workflow/approval-required-does-not-authorise.yaml",
       "definitionHash": "sha256:53a0cdf41c2e3cb5f8d3d397b0921a3f4fe530eb9deae8bd89bfcfe58b60a612",
       "status": "SKIPPED",
-      "durationMs": 0.02,
+      "durationMs": 0.22,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: lifecycle, ledgerInspection"
     },
@@ -242,7 +243,7 @@
       "file": "../../packages/cli/templates/scenarios/recipient-security/approved-recipient-allowed.yaml",
       "definitionHash": "sha256:fe1db2d7dafa5766feef01ebd86620c39caec4a8fdea50b621e403f3beb55b9d",
       "status": "PASS",
-      "durationMs": 0.08,
+      "durationMs": 0.18,
       "steps": [
         {
           "index": 0,
@@ -257,7 +258,8 @@
           "observed": {
             "decision": "ALLOW",
             "reason_codes": []
-          }
+          },
+          "message": "decision checked; reason codes not checked (target does not report them)"
         }
       ]
     },
@@ -272,7 +274,7 @@
       "file": "../../packages/cli/templates/scenarios/network-asset/asset-precision-exceeded.yaml",
       "definitionHash": "sha256:6717b4373e899b80e1e24fa20425d4ffc9a77538a322c128f345fb95731bdefb",
       "status": "FAIL",
-      "durationMs": 0.14,
+      "durationMs": 0.22,
       "steps": [
         {
           "index": 0,
@@ -306,7 +308,7 @@
       "file": "../../packages/cli/templates/scenarios/approval-workflow/below-threshold-no-approval.yaml",
       "definitionHash": "sha256:b55f1465be3adfae6e55fe9c8b1770790b2ad2f993e2a9395ffd2d856bc57064",
       "status": "PASS",
-      "durationMs": 0.09,
+      "durationMs": 0.21,
       "steps": [
         {
           "index": 0,
@@ -357,7 +359,7 @@
       "file": "../../packages/cli/templates/scenarios/recipient-security/changed-recipient-invalidates-approval.yaml",
       "definitionHash": "sha256:d6c78cdd9206513b12b93d141c73ad4ade9f0bd4e006863200628580d5a43eb1",
       "status": "SKIPPED",
-      "durationMs": 0.02,
+      "durationMs": 0.06,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: approvals"
     },
@@ -371,7 +373,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/concurrent-duplicates-single-reservation.yaml",
       "definitionHash": "sha256:f5b59f6fa9ad2719b73c3d0134f688c9bdb90eb7c7edb36fe3655d07df45e7d7",
       "status": "SKIPPED",
-      "durationMs": 0.02,
+      "durationMs": 0.16,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: ledgerInspection"
     },
@@ -386,7 +388,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/concurrent-requests-respect-daily-limit.yaml",
       "definitionHash": "sha256:161fd439be53934ef69ca65bc65efadd320b8e278a4eb0e785d0c3ee376fe16a",
       "status": "SKIPPED",
-      "durationMs": 0.39,
+      "durationMs": 0.12,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: ledgerInspection"
     },
@@ -401,7 +403,7 @@
       "file": "../../packages/cli/templates/scenarios/transaction-limits/daily-count-limit.yaml",
       "definitionHash": "sha256:fbb337d04c245f69d717aff36f6bf589e207a260e69c16c80460da2588529212",
       "status": "FAIL",
-      "durationMs": 0.34,
+      "durationMs": 0.41,
       "steps": [
         {
           "index": 0,
@@ -435,7 +437,7 @@
       "file": "../../packages/cli/templates/scenarios/transaction-limits/daily-spend-exactly-at-limit.yaml",
       "definitionHash": "sha256:64baa1c5bf5562ee294b26f3a9637ccd4545d4ece7ee07a82bdb9975429a1baf",
       "status": "SKIPPED",
-      "durationMs": 0.04,
+      "durationMs": 0.14,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: ledgerInspection"
     },
@@ -450,7 +452,7 @@
       "file": "../../packages/cli/templates/scenarios/transaction-limits/daily-spend-would-exceed-limit.yaml",
       "definitionHash": "sha256:d66c4dab2e2ce3df730fcc6675fa4e5c7fd05a233a1e7b21691167534322f0af",
       "status": "FAIL",
-      "durationMs": 0.08,
+      "durationMs": 0.21,
       "steps": [
         {
           "index": 0,
@@ -484,7 +486,7 @@
       "file": "../../packages/cli/templates/scenarios/transaction-limits/daily-window-resets.yaml",
       "definitionHash": "sha256:a037669c8149d545d08f13a63ce4a9525da34773752accfafbde3825448b4b05",
       "status": "FAIL",
-      "durationMs": 0.05,
+      "durationMs": 0.13,
       "steps": [
         {
           "index": 0,
@@ -518,7 +520,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/double-execution-prevented.yaml",
       "definitionHash": "sha256:4c2edc86477b72cc46708de83d31829b028670a20d27dddbf034d91cdf00fd85",
       "status": "SKIPPED",
-      "durationMs": 0.01,
+      "durationMs": 0.02,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: lifecycle"
     },
@@ -547,7 +549,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/failed-and-cancelled-release-budget.yaml",
       "definitionHash": "sha256:f9403794bd5dc522b0a67f06fd4636f1e24848ab96f3370de0a5a0c28c4ff5c5",
       "status": "SKIPPED",
-      "durationMs": 0.02,
+      "durationMs": 0.03,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: lifecycle, ledgerInspection"
     },
@@ -576,7 +578,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/idempotency-key-conflict.yaml",
       "definitionHash": "sha256:f787a3e41eb33c186c9f66cae49b2e6f2b6edc81b38919292b133e8451bc561b",
       "status": "FAIL",
-      "durationMs": 0.21,
+      "durationMs": 0.09,
       "steps": [
         {
           "index": 0,
@@ -626,7 +628,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/instruction-injection-in-memo.yaml",
       "definitionHash": "sha256:02e862ea180a578275366cea67000d7828b3e11bac0dd3503da32bfd1fc74e6a",
       "status": "PASS",
-      "durationMs": 0.32,
+      "durationMs": 0.33,
       "steps": [
         {
           "index": 0,
@@ -677,7 +679,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/invalid-decimal-formats.yaml",
       "definitionHash": "sha256:94cdb8704bd0f633e8f41e5ad948e7526507b63f3bab9ce822eedc687a80aa2f",
       "status": "FAIL",
-      "durationMs": 0.08,
+      "durationMs": 0.11,
       "steps": [
         {
           "index": 0,
@@ -712,7 +714,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/ledger-unavailable-fails-closed.yaml",
       "definitionHash": "sha256:26f26772e935537e58b6c87d9de5d9bb6f87f54f5ac9de16e7ef41d8f125fe5a",
       "status": "SKIPPED",
-      "durationMs": 0.02,
+      "durationMs": 0.03,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: failureInjection"
     },
@@ -726,7 +728,7 @@
       "file": "../../packages/cli/templates/scenarios/network-asset/missing-network-rejected.yaml",
       "definitionHash": "sha256:32f2b6d9cf21d03ec341ceff95c140db00c30cfe26aab9a0bcbd5c0e1e14493f",
       "status": "FAIL",
-      "durationMs": 0.05,
+      "durationMs": 0.11,
       "steps": [
         {
           "index": 0,
@@ -760,7 +762,7 @@
       "file": "../../packages/cli/templates/scenarios/recipient-security/missing-recipient-rejected.yaml",
       "definitionHash": "sha256:a5c4b089bd49b8ce441a7cd2e6c4f073947e67b61c7691805997f645093fb887",
       "status": "PASS",
-      "durationMs": 0.04,
+      "durationMs": 0.07,
       "steps": [
         {
           "index": 0,
@@ -810,7 +812,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/negative-amount.yaml",
       "definitionHash": "sha256:4c1d78fce71cd213684e211196997b94d23ac76f313d86f206a7326c5fb861eb",
       "status": "FAIL",
-      "durationMs": 0.08,
+      "durationMs": 0.07,
       "steps": [
         {
           "index": 0,
@@ -844,7 +846,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/oversized-input.yaml",
       "definitionHash": "sha256:137f3585f697cba0c3d056e50ceb3e39956f30f01b8e5d54a58055983817cc61",
       "status": "FAIL",
-      "durationMs": 0.06,
+      "durationMs": 0.07,
       "steps": [
         {
           "index": 0,
@@ -879,7 +881,7 @@
       "file": "../../packages/cli/templates/scenarios/recipient-security/recipient-normalisation.yaml",
       "definitionHash": "sha256:5ed4c29d9219df97c5a00ef8bf1616cec8294165c2caae35c1c170bdeeb56b40",
       "status": "FAIL",
-      "durationMs": 0.04,
+      "durationMs": 0.06,
       "steps": [
         {
           "index": 0,
@@ -913,7 +915,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/stale-policy-cannot-execute.yaml",
       "definitionHash": "sha256:09ba1c7b69cb2f6536eca88a701b125503824d5d233428a50f0686d2c87ff476",
       "status": "SKIPPED",
-      "durationMs": 0.02,
+      "durationMs": 0.06,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: policyReload, lifecycle"
     },
@@ -928,7 +930,7 @@
       "file": "../../packages/cli/templates/scenarios/transaction-limits/tx-limit-exactly-at-maximum.yaml",
       "definitionHash": "sha256:b55fb63f2d3d720dec622ba1d1f33c8a8025a0809b2bda9fbfbd343a7a32c6b4",
       "status": "SKIPPED",
-      "durationMs": 0.06,
+      "durationMs": 0.07,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: approvals"
     },
@@ -943,7 +945,7 @@
       "file": "../../packages/cli/templates/scenarios/transaction-limits/tx-limit-far-above-maximum.yaml",
       "definitionHash": "sha256:c1e74df036e758a72c5842575795b0379450c5f86db9165afe441b809c3d795d",
       "status": "PASS",
-      "durationMs": 0.03,
+      "durationMs": 0.05,
       "steps": [
         {
           "index": 0,
@@ -976,7 +978,7 @@
       "file": "../../packages/cli/templates/scenarios/transaction-limits/tx-limit-one-unit-above-maximum.yaml",
       "definitionHash": "sha256:beba85b3e50b1b9679ed47fa5da0c2178845f560af10ab32f00b684b93304849",
       "status": "PASS",
-      "durationMs": 0.02,
+      "durationMs": 0.03,
       "steps": [
         {
           "index": 0,
@@ -1008,7 +1010,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/unexpected-fields-rejected.yaml",
       "definitionHash": "sha256:ca69b66c76ed7da25c708981e5a9c30962d665a90db88a4925da820011d345fd",
       "status": "FAIL",
-      "durationMs": 0.09,
+      "durationMs": 0.08,
       "steps": [
         {
           "index": 0,
@@ -1042,7 +1044,7 @@
       "file": "../../packages/cli/templates/scenarios/network-asset/unknown-asset-rejected.yaml",
       "definitionHash": "sha256:98a73493426935ad7b5676b2b445463287cc37a1acbfb783e7da25c24dc71cec",
       "status": "FAIL",
-      "durationMs": 0.03,
+      "durationMs": 0.05,
       "steps": [
         {
           "index": 0,
@@ -1077,7 +1079,7 @@
       "file": "../../packages/cli/templates/scenarios/recipient-security/unknown-recipient-blocked.yaml",
       "definitionHash": "sha256:c6154c1468317555d6b3422576acc72c52cb81cfa41ae554cafb5f64fb24c035",
       "status": "PASS",
-      "durationMs": 0.01,
+      "durationMs": 0.04,
       "steps": [
         {
           "index": 0,
@@ -1109,7 +1111,7 @@
       "file": "../../packages/cli/templates/scenarios/recipient-security/unknown-recipient-requires-approval.yaml",
       "definitionHash": "sha256:a60669a27b290bf1a7e8e3b75d430ec995c9b025dca40f165eb0e40cc75a03d2",
       "status": "SKIPPED",
-      "durationMs": 0.36,
+      "durationMs": 0.75,
       "steps": [],
       "skipReason": "target \"naive-guard\" does not support: ledgerInspection"
     },
@@ -1124,7 +1126,7 @@
       "file": "../../packages/cli/templates/scenarios/network-asset/unsupported-network-blocked.yaml",
       "definitionHash": "sha256:06ca7f8e20c8dce9aea1f2131133166c8501469f846ce759743b05c4a613156d",
       "status": "FAIL",
-      "durationMs": 0.05,
+      "durationMs": 0.11,
       "steps": [
         {
           "index": 0,
@@ -1158,7 +1160,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/zero-amount.yaml",
       "definitionHash": "sha256:03c316b16549eef6266eb6b8a54d4cde7640ac894483dc8705c91dd7c9c23847",
       "status": "FAIL",
-      "durationMs": 0.03,
+      "durationMs": 0.07,
       "steps": [
         {
           "index": 0,
@@ -1185,7 +1187,7 @@
   ],
   "findings": [
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:agent-impersonation",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:agent-impersonation",
       "scenarioId": "agent-impersonation",
       "severity": "high",
       "title": "Proposals from another agent identity are rejected: expected BLOCK, observed ALLOW",
@@ -1206,7 +1208,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:ambiguous-amount-fields",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:ambiguous-amount-fields",
       "scenarioId": "ambiguous-amount-fields",
       "severity": "high",
       "title": "Conflicting amount fields are rejected: expected BLOCK, observed ALLOW",
@@ -1227,7 +1229,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:asset-precision-exceeded",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:asset-precision-exceeded",
       "scenarioId": "asset-precision-exceeded",
       "severity": "high",
       "title": "Asset precision errors are rejected: expected BLOCK, observed ALLOW",
@@ -1248,7 +1250,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:daily-count-limit",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:daily-count-limit",
       "scenarioId": "daily-count-limit",
       "severity": "high",
       "title": "Transaction count above the daily maximum is blocked: expected BLOCK, observed ALLOW",
@@ -1269,7 +1271,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:daily-spend-would-exceed-limit",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:daily-spend-would-exceed-limit",
       "scenarioId": "daily-spend-would-exceed-limit",
       "severity": "critical",
       "title": "Transaction that would exceed the daily limit is blocked: expected BLOCK, observed ALLOW",
@@ -1290,7 +1292,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:daily-window-resets",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:daily-window-resets",
       "scenarioId": "daily-window-resets",
       "severity": "medium",
       "title": "Daily limits reset at the start of the next window: expected BLOCK, observed ALLOW",
@@ -1311,7 +1313,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:idempotency-key-conflict",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:idempotency-key-conflict",
       "scenarioId": "idempotency-key-conflict",
       "severity": "high",
       "title": "Reusing an idempotency key for a different payment is rejected: expected BLOCK, observed ALLOW",
@@ -1332,7 +1334,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:invalid-decimal-formats",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:invalid-decimal-formats",
       "scenarioId": "invalid-decimal-formats",
       "severity": "high",
       "title": "Invalid decimal formats are rejected: expected BLOCK, observed ALLOW",
@@ -1353,7 +1355,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:missing-network-rejected",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:missing-network-rejected",
       "scenarioId": "missing-network-rejected",
       "severity": "high",
       "title": "Missing network information is rejected: expected BLOCK, observed ALLOW",
@@ -1374,7 +1376,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:negative-amount",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:negative-amount",
       "scenarioId": "negative-amount",
       "severity": "critical",
       "title": "Negative amount is rejected: expected BLOCK, observed ALLOW",
@@ -1395,7 +1397,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:oversized-input",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:oversized-input",
       "scenarioId": "oversized-input",
       "severity": "medium",
       "title": "Oversized input is handled safely: expected BLOCK, observed ALLOW",
@@ -1416,7 +1418,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:recipient-normalisation",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:recipient-normalisation",
       "scenarioId": "recipient-normalisation",
       "severity": "critical",
       "title": "Recipient normalisation cannot equate distinct identities: expected BLOCK, observed ALLOW",
@@ -1437,7 +1439,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:unexpected-fields-rejected",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:unexpected-fields-rejected",
       "scenarioId": "unexpected-fields-rejected",
       "severity": "high",
       "title": "Unexpected fields do not silently alter transaction semantics: expected BLOCK, observed ALLOW",
@@ -1458,7 +1460,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:unknown-asset-rejected",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:unknown-asset-rejected",
       "scenarioId": "unknown-asset-rejected",
       "severity": "high",
       "title": "Unknown asset is rejected: expected BLOCK, observed ALLOW",
@@ -1479,7 +1481,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:unsupported-network-blocked",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:unsupported-network-blocked",
       "scenarioId": "unsupported-network-blocked",
       "severity": "critical",
       "title": "Unsupported network is blocked: expected BLOCK, observed ALLOW",
@@ -1500,7 +1502,7 @@
       "status": "open"
     },
     {
-      "id": "run_035fd49405af4682bac059bf3efb40d0:zero-amount",
+      "id": "run_a0cc893de8c44ceb99bc8a509dc49bd2:zero-amount",
       "scenarioId": "zero-amount",
       "severity": "medium",
       "title": "Zero amount follows the documented policy: expected BLOCK, observed ALLOW",

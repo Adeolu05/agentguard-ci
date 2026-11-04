@@ -186,18 +186,47 @@ describe("NearTestnetExecutor", () => {
     expect(r.message).toMatch(/timed out/);
   });
 
-  it("reconciles a submitted reservation from a known hash", async () => {
+  it("reconciles an ambiguous reservation only with a transaction that matches it", async () => {
     const { engine, id } = await authorised();
-    const ex = new NearTestnetExecutor({ engine, client: fakeClient({ transfer: vi.fn(async () => { throw new Error("timeout"); }) }) });
-    await ex.execute(id);
-    const r = await ex.reconcile(id, "KnownHash");
-    expect(r.status).toBe("confirmed");
+    const view = (receiver: string, deposit: string, hash: string) => ({
+      status: { SuccessValue: "" },
+      transaction_outcome: { id: hash },
+      transaction: { signer_id: "agentguard-demo.testnet", receiver_id: receiver, actions: [{ Transfer: { deposit } }] },
+    });
+    const amount = (500_000_000_000_000_000_000_000n).toString();
+    await new NearTestnetExecutor({ engine, client: fakeClient({ transfer: vi.fn(async () => { throw new Error("timeout"); }) }) }).execute(id);
+    // An unrelated transaction (different receiver) cannot settle it.
+    const wrong = await new NearTestnetExecutor({
+      engine,
+      client: fakeClient({ transactionStatus: async (h: string) => view("someone-else.testnet", amount, h) }),
+    }).reconcile(id, "UnrelatedHash");
+    expect(wrong).toMatchObject({ status: "refused", reasonCode: "TRANSACTION_MISMATCH" });
+    // The matching transaction does.
+    const ok = await new NearTestnetExecutor({
+      engine,
+      client: fakeClient({ transactionStatus: async (h: string) => view("merchant.testnet", amount, h) }),
+    }).reconcile(id, "KnownHash");
+    expect(ok.status).toBe("confirmed");
     expect((await engine.getReservation(id))?.transactionReference).toBe("KnownHash");
     const mismatch = await new NearTestnetExecutor({
       engine,
       client: fakeClient({ transactionStatus: async () => ({ status: { SuccessValue: "" }, transaction_outcome: { id: "Other" } }) }),
     }).reconcile(id, "KnownHash");
-    expect(mismatch.status).toBe("unknown");
+    expect(mismatch.status).toBe("refused"); // already confirmed: nothing left to reconcile
+  });
+
+  it("a pending transfer's hash is recorded, and an unrelated failed hash cannot release its budget", async () => {
+    const { engine, id } = await authorised();
+    const pending = fakeClient({ transfer: vi.fn(async () => ({ status: "Started", transaction_outcome: { id: "RealHash" } })) });
+    const r = await new NearTestnetExecutor({ engine, client: pending }).execute(id);
+    expect(r.status).toBe("pending");
+    expect((await engine.getReservation(id))?.transactionReference).toBe("RealHash");
+    const attacker = fakeClient({ transactionStatus: async (h: string) => ({ status: { Failure: {} }, transaction_outcome: { id: h } }) });
+    const res = await new NearTestnetExecutor({ engine, client: attacker }).reconcile(id, "SomeOtherFailedTx");
+    expect(res).toMatchObject({ status: "refused", reasonCode: "TRANSACTION_MISMATCH" });
+    const stored = await engine.getReservation(id);
+    expect(stored?.status).toBe("submitted");
+    expect(stored?.transactionReference).toBe("RealHash");
   });
 
   it("classifies FinalExecutionStatus values", () => {

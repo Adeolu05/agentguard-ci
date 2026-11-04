@@ -116,6 +116,9 @@ export class ApprovalVerifier {
     const issued = Date.parse(grant.issuedAt);
     const expires = Date.parse(grant.expiresAt);
     const now = ctx.now.getTime();
+    if (!Number.isFinite(issued) || !Number.isFinite(expires) || !Number.isFinite(now)) {
+      return { ok: false, code: "APPROVAL_MALFORMED", message: "approval timestamps are not valid instants" };
+    }
     if (expires - issued > ctx.maxAgeSeconds * 1000 || expires <= issued) {
       return {
         ok: false,
@@ -129,15 +132,43 @@ export class ApprovalVerifier {
   }
 }
 
+/** True only for a real calendar instant written in canonical form (no rollover such as 25:00 or Feb 30). */
+function isStrictIsoInstant(value: string): boolean {
+  if (!ISO_RE.test(value)) return false;
+  const t = Date.parse(value);
+  return Number.isFinite(t) && new Date(t).toISOString().slice(0, 19) === value.slice(0, 19);
+}
+
+/**
+ * Parse a grant into a fresh plain object. Every field is read exactly once (via a
+ * JSON snapshot), so getters or proxies cannot present one value to the signature
+ * check and another to the digest, policy or expiry checks (TOCTOU).
+ */
 function parseGrant(input: unknown): ApprovalGrant | undefined {
   if (typeof input !== "object" || input === null || Array.isArray(input)) return undefined;
-  const g = input as Record<string, unknown>;
+  let g: Record<string, unknown>;
+  try {
+    const snapshot: unknown = JSON.parse(JSON.stringify(input));
+    if (typeof snapshot !== "object" || snapshot === null || Array.isArray(snapshot)) return undefined;
+    g = snapshot as Record<string, unknown>;
+  } catch {
+    return undefined;
+  }
   const keys = ["version", "approvalId", "proposalDigest", "policyHash", "approverId", "issuedAt", "expiresAt", "signature"];
   if (Object.keys(g).length !== keys.length || !keys.every((k) => Object.hasOwn(g, k))) return undefined;
   if (g.version !== 1) return undefined;
   for (const k of keys.slice(1)) {
     if (typeof g[k] !== "string" || (g[k] as string).length === 0 || (g[k] as string).length > 256) return undefined;
   }
-  if (!ISO_RE.test(g.issuedAt as string) || !ISO_RE.test(g.expiresAt as string)) return undefined;
-  return g as unknown as ApprovalGrant;
+  if (!isStrictIsoInstant(g.issuedAt as string) || !isStrictIsoInstant(g.expiresAt as string)) return undefined;
+  return Object.freeze({
+    version: 1,
+    approvalId: g.approvalId as string,
+    proposalDigest: g.proposalDigest as string,
+    policyHash: g.policyHash as string,
+    approverId: g.approverId as string,
+    issuedAt: g.issuedAt as string,
+    expiresAt: g.expiresAt as string,
+    signature: g.signature as string,
+  });
 }

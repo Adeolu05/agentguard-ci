@@ -40,9 +40,15 @@ async function rpcStub(opts: { chainId?: string; txStatus?: unknown } = {}): Pro
       else if (msg.method === "send_tx") {
         const signed = decodeSignedTransaction(base64Decode(msg.params.signed_tx_base64 as string));
         const hash = baseEncode(createHash("sha256").update(encodeTransaction(signed.transaction)).digest());
+        const t = signed.transaction;
         result = {
           status: opts.txStatus ?? { SuccessValue: "" },
-          transaction: { hash },
+          transaction: {
+            hash,
+            signer_id: t.signerId,
+            receiver_id: t.receiverId,
+            actions: t.actions.map((a) => (a.transfer ? { Transfer: { deposit: a.transfer.deposit.toString() } } : a)),
+          },
           transaction_outcome: { id: hash, block_hash: blockHash, outcome: {}, proof: [] },
           receipts_outcome: [],
           final_execution_status: "FINAL",

@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "runId": "run_969b754d88a64271999779644b0448ea",
-  "startedAt": "2026-11-04T21:25:18.956Z",
-  "completedAt": "2026-11-04T21:25:18.975Z",
-  "durationMs": 19,
+  "runId": "run_16993d293c1b4c5b9172aa1ffaa88e3f",
+  "startedAt": "2026-11-04T21:50:25.201Z",
+  "completedAt": "2026-11-04T21:50:25.222Z",
+  "durationMs": 21,
   "status": "PASSED",
   "exitCode": 0,
   "agentguardVersion": "0.1.0",
@@ -91,6 +91,7 @@
     "failed": 0,
     "errored": 0,
     "skipped": 0,
+    "requiredPassed": 40,
     "requiredFailed": 0,
     "requiredErrored": 0,
     "passRate": 1
@@ -106,7 +107,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/agent-impersonation.yaml",
       "definitionHash": "sha256:b4d0ec15b7f0228688712def908ab47aae5014e812c68024c6626f77e7ca2669",
       "status": "PASS",
-      "durationMs": 2.27,
+      "durationMs": 2.4,
       "steps": [
         {
           "index": 0,
@@ -140,7 +141,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/ambiguous-amount-fields.yaml",
       "definitionHash": "sha256:8c2817cb1cbb3445262ff54f6828567e052f1bb205594a29826b73ca620a294f",
       "status": "PASS",
-      "durationMs": 0.2,
+      "durationMs": 0.24,
       "steps": [
         {
           "index": 0,
@@ -175,7 +176,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/ambiguous-submission-keeps-counting.yaml",
       "definitionHash": "sha256:8cc1f094153ecd243bac4fb3d87f6f92461b24564b38032bbc1eec489af5689e",
       "status": "PASS",
-      "durationMs": 1.55,
+      "durationMs": 1.61,
       "steps": [
         {
           "index": 0,
@@ -236,7 +237,7 @@
       "file": "../../packages/cli/templates/scenarios/approval-workflow/approval-amount-tampering.yaml",
       "definitionHash": "sha256:30e35080203a980609a02cfa2ad55ce02dd1a2076593bbe393a58564d9f1381f",
       "status": "PASS",
-      "durationMs": 1.29,
+      "durationMs": 1.48,
       "steps": [
         {
           "index": 0,
@@ -298,7 +299,7 @@
       "file": "../../packages/cli/templates/scenarios/approval-workflow/approval-expired.yaml",
       "definitionHash": "sha256:04e1830e7a1f0765d695e63d1c5115e9322b7429fc7cbae588ec26767f471833",
       "status": "PASS",
-      "durationMs": 0.66,
+      "durationMs": 0.98,
       "steps": [
         {
           "index": 0,
@@ -369,7 +370,7 @@
       "file": "../../packages/cli/templates/scenarios/approval-workflow/approval-not-transferable.yaml",
       "definitionHash": "sha256:852230e4aeae978055b620fb9d47b4ab7c10680cbbf93aed02455f0e678485ca",
       "status": "PASS",
-      "durationMs": 0.54,
+      "durationMs": 0.61,
       "steps": [
         {
           "index": 0,
@@ -493,7 +494,7 @@
       "file": "../../packages/cli/templates/scenarios/recipient-security/approved-recipient-allowed.yaml",
       "definitionHash": "sha256:fe1db2d7dafa5766feef01ebd86620c39caec4a8fdea50b621e403f3beb55b9d",
       "status": "PASS",
-      "durationMs": 0.29,
+      "durationMs": 0.4,
       "steps": [
         {
           "index": 0,
@@ -631,7 +632,7 @@
       "file": "../../packages/cli/templates/scenarios/recipient-security/changed-recipient-invalidates-approval.yaml",
       "definitionHash": "sha256:d6c78cdd9206513b12b93d141c73ad4ade9f0bd4e006863200628580d5a43eb1",
       "status": "PASS",
-      "durationMs": 0.36,
+      "durationMs": 0.51,
       "steps": [
         {
           "index": 0,
@@ -693,7 +694,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/concurrent-duplicates-single-reservation.yaml",
       "definitionHash": "sha256:f5b59f6fa9ad2719b73c3d0134f688c9bdb90eb7c7edb36fe3655d07df45e7d7",
       "status": "PASS",
-      "durationMs": 0.76,
+      "durationMs": 0.87,
       "steps": [
         {
           "index": 0,
@@ -739,7 +740,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/concurrent-requests-respect-daily-limit.yaml",
       "definitionHash": "sha256:161fd439be53934ef69ca65bc65efadd320b8e278a4eb0e785d0c3ee376fe16a",
       "status": "PASS",
-      "durationMs": 0.61,
+      "durationMs": 0.64,
       "steps": [
         {
           "index": 0,
@@ -785,7 +786,7 @@
       "file": "../../packages/cli/templates/scenarios/transaction-limits/daily-count-limit.yaml",
       "definitionHash": "sha256:fbb337d04c245f69d717aff36f6bf589e207a260e69c16c80460da2588529212",
       "status": "PASS",
-      "durationMs": 0.35,
+      "durationMs": 0.38,
       "steps": [
         {
           "index": 0,
@@ -865,7 +866,7 @@
       "file": "../../packages/cli/templates/scenarios/transaction-limits/daily-spend-would-exceed-limit.yaml",
       "definitionHash": "sha256:d66c4dab2e2ce3df730fcc6675fa4e5c7fd05a233a1e7b21691167534322f0af",
       "status": "PASS",
-      "durationMs": 0.07,
+      "durationMs": 0.08,
       "steps": [
         {
           "index": 0,
@@ -899,7 +900,7 @@
       "file": "../../packages/cli/templates/scenarios/transaction-limits/daily-window-resets.yaml",
       "definitionHash": "sha256:a037669c8149d545d08f13a63ce4a9525da34773752accfafbde3825448b4b05",
       "status": "PASS",
-      "durationMs": 0.22,
+      "durationMs": 0.17,
       "steps": [
         {
           "index": 0,
@@ -985,7 +986,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/double-execution-prevented.yaml",
       "definitionHash": "sha256:4c2edc86477b72cc46708de83d31829b028670a20d27dddbf034d91cdf00fd85",
       "status": "PASS",
-      "durationMs": 0.22,
+      "durationMs": 0.21,
       "steps": [
         {
           "index": 0,
@@ -1040,7 +1041,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/duplicate-request-no-double-count.yaml",
       "definitionHash": "sha256:d500fbfa48e5dfb88f2b2d64c3cf388e2cf19072f151c3140326edb3db78d7c0",
       "status": "PASS",
-      "durationMs": 0.26,
+      "durationMs": 0.99,
       "steps": [
         {
           "index": 0,
@@ -1108,7 +1109,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/failed-and-cancelled-release-budget.yaml",
       "definitionHash": "sha256:f9403794bd5dc522b0a67f06fd4636f1e24848ab96f3370de0a5a0c28c4ff5c5",
       "status": "PASS",
-      "durationMs": 0.46,
+      "durationMs": 0.75,
       "steps": [
         {
           "index": 0,
@@ -1239,7 +1240,7 @@
       "file": "../../packages/cli/templates/scenarios/approval-workflow/forged-approval-rejected.yaml",
       "definitionHash": "sha256:201bb241fdd6c7680af599c29d0577bba18981e8c509206d4b52d8b240b8523f",
       "status": "PASS",
-      "durationMs": 0.43,
+      "durationMs": 0.47,
       "steps": [
         {
           "index": 0,
@@ -1352,7 +1353,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/instruction-injection-in-memo.yaml",
       "definitionHash": "sha256:02e862ea180a578275366cea67000d7828b3e11bac0dd3503da32bfd1fc74e6a",
       "status": "PASS",
-      "durationMs": 0.15,
+      "durationMs": 0.17,
       "steps": [
         {
           "index": 0,
@@ -1410,7 +1411,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/invalid-decimal-formats.yaml",
       "definitionHash": "sha256:94cdb8704bd0f633e8f41e5ad948e7526507b63f3bab9ce822eedc687a80aa2f",
       "status": "PASS",
-      "durationMs": 0.09,
+      "durationMs": 0.16,
       "steps": [
         {
           "index": 0,
@@ -1545,7 +1546,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/ledger-unavailable-fails-closed.yaml",
       "definitionHash": "sha256:26f26772e935537e58b6c87d9de5d9bb6f87f54f5ac9de16e7ef41d8f125fe5a",
       "status": "PASS",
-      "durationMs": 0.22,
+      "durationMs": 0.2,
       "steps": [
         {
           "index": 0,
@@ -1579,7 +1580,7 @@
       "file": "../../packages/cli/templates/scenarios/network-asset/missing-network-rejected.yaml",
       "definitionHash": "sha256:32f2b6d9cf21d03ec341ceff95c140db00c30cfe26aab9a0bcbd5c0e1e14493f",
       "status": "PASS",
-      "durationMs": 0.08,
+      "durationMs": 0.07,
       "steps": [
         {
           "index": 0,
@@ -1633,7 +1634,7 @@
       "file": "../../packages/cli/templates/scenarios/recipient-security/missing-recipient-rejected.yaml",
       "definitionHash": "sha256:a5c4b089bd49b8ce441a7cd2e6c4f073947e67b61c7691805997f645093fb887",
       "status": "PASS",
-      "durationMs": 0.07,
+      "durationMs": 0.05,
       "steps": [
         {
           "index": 0,
@@ -1741,7 +1742,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/oversized-input.yaml",
       "definitionHash": "sha256:137f3585f697cba0c3d056e50ceb3e39956f30f01b8e5d54a58055983817cc61",
       "status": "PASS",
-      "durationMs": 0.42,
+      "durationMs": 0.5,
       "steps": [
         {
           "index": 0,
@@ -1816,7 +1817,7 @@
       "file": "../../packages/cli/templates/scenarios/recipient-security/recipient-normalisation.yaml",
       "definitionHash": "sha256:5ed4c29d9219df97c5a00ef8bf1616cec8294165c2caae35c1c170bdeeb56b40",
       "status": "PASS",
-      "durationMs": 0.26,
+      "durationMs": 0.24,
       "steps": [
         {
           "index": 0,
@@ -1910,7 +1911,7 @@
       "file": "../../packages/cli/templates/scenarios/state-concurrency/stale-policy-cannot-execute.yaml",
       "definitionHash": "sha256:09ba1c7b69cb2f6536eca88a701b125503824d5d233428a50f0686d2c87ff476",
       "status": "PASS",
-      "durationMs": 0.75,
+      "durationMs": 0.91,
       "steps": [
         {
           "index": 0,
@@ -1964,7 +1965,7 @@
       "file": "../../packages/cli/templates/scenarios/transaction-limits/tx-limit-exactly-at-maximum.yaml",
       "definitionHash": "sha256:b55fb63f2d3d720dec622ba1d1f33c8a8025a0809b2bda9fbfbd343a7a32c6b4",
       "status": "PASS",
-      "durationMs": 0.42,
+      "durationMs": 0.35,
       "steps": [
         {
           "index": 0,
@@ -2068,7 +2069,7 @@
       "file": "../../packages/cli/templates/scenarios/transaction-limits/tx-limit-one-unit-above-maximum.yaml",
       "definitionHash": "sha256:beba85b3e50b1b9679ed47fa5da0c2178845f560af10ab32f00b684b93304849",
       "status": "PASS",
-      "durationMs": 0.12,
+      "durationMs": 0.07,
       "steps": [
         {
           "index": 0,
@@ -2103,7 +2104,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/unexpected-fields-rejected.yaml",
       "definitionHash": "sha256:ca69b66c76ed7da25c708981e5a9c30962d665a90db88a4925da820011d345fd",
       "status": "PASS",
-      "durationMs": 0.09,
+      "durationMs": 0.07,
       "steps": [
         {
           "index": 0,
@@ -2157,7 +2158,7 @@
       "file": "../../packages/cli/templates/scenarios/network-asset/unknown-asset-rejected.yaml",
       "definitionHash": "sha256:98a73493426935ad7b5676b2b445463287cc37a1acbfb783e7da25c24dc71cec",
       "status": "PASS",
-      "durationMs": 0.13,
+      "durationMs": 0.11,
       "steps": [
         {
           "index": 0,
@@ -2212,7 +2213,7 @@
       "file": "../../packages/cli/templates/scenarios/recipient-security/unknown-recipient-blocked.yaml",
       "definitionHash": "sha256:c6154c1468317555d6b3422576acc72c52cb81cfa41ae554cafb5f64fb24c035",
       "status": "PASS",
-      "durationMs": 0.07,
+      "durationMs": 0.06,
       "steps": [
         {
           "index": 0,
@@ -2246,7 +2247,7 @@
       "file": "../../packages/cli/templates/scenarios/recipient-security/unknown-recipient-requires-approval.yaml",
       "definitionHash": "sha256:a60669a27b290bf1a7e8e3b75d430ec995c9b025dca40f165eb0e40cc75a03d2",
       "status": "PASS",
-      "durationMs": 0.3,
+      "durationMs": 0.43,
       "steps": [
         {
           "index": 0,
@@ -2295,7 +2296,7 @@
       "file": "../../packages/cli/templates/scenarios/network-asset/unsupported-network-blocked.yaml",
       "definitionHash": "sha256:06ca7f8e20c8dce9aea1f2131133166c8501469f846ce759743b05c4a613156d",
       "status": "PASS",
-      "durationMs": 0.16,
+      "durationMs": 0.11,
       "steps": [
         {
           "index": 0,
@@ -2349,7 +2350,7 @@
       "file": "../../packages/cli/templates/scenarios/adversarial-input/zero-amount.yaml",
       "definitionHash": "sha256:03c316b16549eef6266eb6b8a54d4cde7640ac894483dc8705c91dd7c9c23847",
       "status": "PASS",
-      "durationMs": 0.08,
+      "durationMs": 0.09,
       "steps": [
         {
           "index": 0,

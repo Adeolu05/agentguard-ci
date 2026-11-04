@@ -98,7 +98,7 @@ Agent, asset, recipient, network, request and idempotency identifiers must be 1 
 }
 ```
 
-Any other field is rejected (`PROPOSAL_UNKNOWN_FIELD`). This means an agent cannot slip in `approved: true` or a limit override. `null` counts as missing. A proposal larger than 4 KiB when serialised is rejected (`PROPOSAL_TOO_LARGE`). The engine computes a **proposal digest**, a SHA-256 hash over the canonical form of every material field (including the request ID, the effective idempotency key and the memo). Approvals and idempotency are bound to this digest.
+Any other field is rejected (`PROPOSAL_UNKNOWN_FIELD`). The engine validates a JSON snapshot of the proposal, so every field is read exactly once; getters, proxies or `toJSON` cannot show one value to validation and another later. This means an agent cannot slip in `approved: true` or a limit override. `null` counts as missing. A proposal larger than 4 KiB when serialised is rejected (`PROPOSAL_TOO_LARGE`). The engine computes a **proposal digest**, a SHA-256 hash over the canonical form of every material field (including the request ID, the effective idempotency key and the memo). Approvals and idempotency are bound to this digest.
 
 ## Decisions
 
@@ -138,7 +138,7 @@ reserved ──► submitted ──► confirmed
 - Proposals that are blocked, or that require approval, are never recorded and never count.
 - A reservation belongs to the daily window in which it was **created**. The window is the calendar day at `daily_window_utc_offset`, half-open `[00:00, 24:00)`. IANA time zones are not supported, because daylight-saving changes would create 23- and 25-hour days.
 - **Idempotency.** The key is `idempotencyKey`, or `request:<requestId>` if none is given, scoped per agent.
-  - The same key with the same digest returns the existing reservation (`IDEMPOTENT_REPLAY`, `replay: true`) and records nothing new.
+  - The same key with the same digest returns the existing reservation (`IDEMPOTENT_REPLAY`, `replay: true`) and records nothing new. If the replay itself carries a blocking reason (for example a forged approval, or a rule the current policy now fails), the decision is `BLOCK`.
   - The same key with a different digest is `IDEMPOTENCY_KEY_CONFLICT`.
   - A key whose reservation failed or was cancelled is `IDEMPOTENCY_KEY_FINALISED`; use a new key.
   - Replaying a reservation that is still `reserved` after a policy change is `STALE_POLICY_VERSION`.
@@ -162,7 +162,11 @@ The engine accepts a grant only if all of the following hold:
 - It has not expired, and its lifetime does not exceed `approval.max_age_seconds`.
 - It has not already been consumed by another reservation.
 
-The signing key must be at least 32 bytes.
+The signing key must be at least 32 bytes. Grants are also read from a JSON snapshot, and timestamps must be real calendar instants (`25:00` or `Feb 30` are rejected rather than rolled over).
+
+## Immutability
+
+Reservations returned by the engine or the ledger are deeply frozen copies, and a policy's document and asset limits are frozen. A caller holding a result cannot change the amount, recipient or status the ledger accounts for. A ledger that returns malformed usage figures makes the evaluation fail closed (`LEDGER_UNAVAILABLE`).
 
 ## Policy hash
 

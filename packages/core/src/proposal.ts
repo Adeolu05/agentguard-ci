@@ -84,7 +84,12 @@ export function validateProposal(input: unknown, policy: Policy): ProposalValida
   try {
     const json = JSON.stringify(raw);
     size = Buffer.byteLength(json, "utf8");
-    if (size <= MAX_PROPOSAL_BYTES) raw = JSON.parse(json) as Record<string, unknown>;
+    if (size <= MAX_PROPOSAL_BYTES) {
+      const snapshot: unknown = JSON.parse(json);
+      // A custom toJSON() could turn the object into something else entirely.
+      if (!isPlainObject(snapshot)) return { ok: false, reasons: [reason("PROPOSAL_MALFORMED")] };
+      raw = snapshot;
+    }
   } catch {
     return { ok: false, reasons: [reason("PROPOSAL_MALFORMED", "proposal is not JSON-serialisable")] };
   }
