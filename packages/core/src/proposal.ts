@@ -73,13 +73,18 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
  * reported as validation reasons. Amount conversion needs the asset's decimals, so
  * an amount in an unconfigured asset is reported via ASSET_NOT_ALLOWED by the engine.
  */
-export function validateProposal(raw: unknown, policy: Policy): ProposalValidation {
-  if (!isPlainObject(raw)) {
+export function validateProposal(input: unknown, policy: Policy): ProposalValidation {
+  if (!isPlainObject(input)) {
     return { ok: false, reasons: [reason("PROPOSAL_MALFORMED")] };
   }
+  let raw: Record<string, unknown> = input;
+  // Work on a JSON snapshot: every field is read exactly once, so getters or proxies
+  // cannot present one value to validation and another one later (TOCTOU).
   let size: number;
   try {
-    size = Buffer.byteLength(JSON.stringify(raw), "utf8");
+    const json = JSON.stringify(raw);
+    size = Buffer.byteLength(json, "utf8");
+    if (size <= MAX_PROPOSAL_BYTES) raw = JSON.parse(json) as Record<string, unknown>;
   } catch {
     return { ok: false, reasons: [reason("PROPOSAL_MALFORMED", "proposal is not JSON-serialisable")] };
   }
