@@ -50,8 +50,23 @@ export function nearTestnetConfigFromEnv(env: NodeJS.ProcessEnv = process.env): 
  */
 export async function createNearTestnetClient(config: NearTestnetConfig, privateKey: string): Promise<NearClient> {
   const { Account, JsonRpcProvider, actions } = await import("near-api-js");
+  // Reads (network id, access key, block, status) keep near-api-js's default retries.
   const provider = new JsonRpcProvider({ url: config.rpcUrl });
-  const account = new Account(config.accountId, provider, privateKey as `ed25519:${string}`);
+  // Broadcasts get exactly one HTTP attempt. By default near-api-js 7.4.0 re-sends a signed
+  // transaction on HTTP 500/503/408 or fetch errors, and signAndSendTransaction re-signs with
+  // a NEW nonce on InvalidNonceError. If a first broadcast landed but its response was lost,
+  // that combination could produce a second, different transfer. AgentGuard allows at most
+  // one broadcast per authorised reservation; ambiguity is resolved with reconcile().
+  const broadcastProvider = new JsonRpcProvider({ url: config.rpcUrl }, { retries: 1 });
+  const BROADCAST = new Set(["sendTransactionUntil", "sendTransaction", "sendTransactionAsync"]);
+  const routed = new Proxy(provider, {
+    get(target, prop, receiver) {
+      const source = typeof prop === "string" && BROADCAST.has(prop) ? broadcastProvider : target;
+      const value: unknown = Reflect.get(source, prop, source === target ? receiver : source);
+      return typeof value === "function" ? (value as (...a: unknown[]) => unknown).bind(source) : value;
+    },
+  });
+  const account = new Account(config.accountId, routed, privateKey as `ed25519:${string}`);
   return {
     signerAccountId: config.accountId,
     getNetworkId: () => provider.getNetworkId(),
@@ -61,6 +76,7 @@ export async function createNearTestnetClient(config: NearTestnetConfig, private
         actions: [actions.transfer(amountYocto)],
         waitUntil: "FINAL",
         throwOnFailure: false,
+        retries: 0, // never re-sign and re-broadcast automatically (see above)
       });
       return tx as unknown as NearTxView;
     },

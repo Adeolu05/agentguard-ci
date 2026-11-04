@@ -24,7 +24,10 @@ interface Stub {
 const servers: Stub[] = [];
 afterEach(() => servers.splice(0).forEach((s) => s.close()));
 
-async function rpcStub(opts: { chainId?: string; txStatus?: unknown } = {}): Promise<Stub> {
+async function rpcStub(
+  opts: { chainId?: string; txStatus?: unknown; firstSendFails?: "http500" | "invalidNonce" } = {},
+): Promise<Stub> {
+  let sends = 0;
   const blockHash = baseEncode(new Uint8Array(32).fill(7));
   const calls: Stub["calls"] = [];
   const server = http.createServer((req, res) => {
@@ -37,7 +40,27 @@ async function rpcStub(opts: { chainId?: string; txStatus?: unknown } = {}): Pro
       if (msg.method === "status") result = { chain_id: opts.chainId ?? "testnet" };
       else if (msg.method === "block") result = { header: { hash: blockHash, height: 100 } };
       else if (msg.method === "query") result = { nonce: 5, permission: "FullAccess", block_hash: blockHash, block_height: 100 };
-      else if (msg.method === "send_tx") {
+      else if (msg.method === "send_tx" && sends++ === 0 && opts.firstSendFails === "http500") {
+        res.statusCode = 500;
+        res.end("internal error");
+        return;
+      } else if (msg.method === "send_tx" && sends === 1 && opts.firstSendFails === "invalidNonce") {
+        res.setHeader("content-type", "application/json");
+        res.end(
+          JSON.stringify({
+            jsonrpc: "2.0",
+            id: msg.id,
+            error: {
+              name: "HANDLER_ERROR",
+              cause: { name: "INVALID_TRANSACTION", info: {} },
+              data: { TxExecutionError: { InvalidTxError: { InvalidNonce: { ak_nonce: 6, tx_nonce: 6 } } } },
+              code: -32000,
+              message: "Server error",
+            },
+          }),
+        );
+        return;
+      } else if (msg.method === "send_tx") {
         const signed = decodeSignedTransaction(base64Decode(msg.params.signed_tx_base64 as string));
         const hash = baseEncode(createHash("sha256").update(encodeTransaction(signed.transaction)).digest());
         const t = signed.transaction;
@@ -140,6 +163,53 @@ networks: { allowed: [near-testnet] }
     const client = await createNearTestnetClient({ accountId: "agent.testnet", rpcUrl: stub.url }, KeyPair.fromRandom("ed25519").toString());
     const r = await new NearTestnetExecutor({ engine, client }).execute(id);
     expect(r.status).toBe("failed");
+  });
+
+  for (const failure of ["http500", "invalidNonce"] as const) {
+    it(`broadcasts at most once when the first send fails (${failure}) and leaves the outcome to reconcile`, async () => {
+      const stub = await rpcStub({ firstSendFails: failure });
+      const { engine, id } = await authorised();
+      const client = await createNearTestnetClient({ accountId: "agent.testnet", rpcUrl: stub.url }, KeyPair.fromRandom("ed25519").toString());
+      const r = await new NearTestnetExecutor({ engine, client, timeoutMs: 10_000 }).execute(id);
+      expect(stub.calls.filter((c) => c.method === "send_tx")).toHaveLength(1);
+      expect(r.status).toBe("unknown");
+      expect(r.transactionHash).toBeUndefined();
+      expect((await engine.getReservation(id))?.status).toBe("submitted"); // still counts toward limits
+    });
+  }
+
+  it("blocked and unapproved proposals never reach signing or broadcasting", async () => {
+    const stub = await rpcStub();
+    const loaded = policyFromYaml(POLICY.replace('max_daily_spend: "2" }', 'max_daily_spend: "2", approval_required_above: "0.5" }'));
+    if (!loaded.ok) throw new Error("policy");
+    const engine = new PolicyEngine({ policy: loaded.policy, ledger: new InMemoryLedger(), validators: [nearAccountIdValidator()] });
+    const client = await createNearTestnetClient({ accountId: "agent.testnet", rpcUrl: stub.url }, KeyPair.fromRandom("ed25519").toString());
+    const executor = new NearTestnetExecutor({ engine, client });
+    const base = { agentId: "near-agent", assetId: "NEAR", networkId: "near-testnet" };
+
+    const attempts = [
+      { requestId: "over-limit", ...base, amount: "5", recipientId: "merchant-example.testnet" },
+      { requestId: "mainnet-account", ...base, amount: "0.1", recipientId: "merchant-example.near" },
+      { requestId: "not-allowlisted", ...base, amount: "0.1", recipientId: "attacker.testnet" },
+      { requestId: "needs-approval", ...base, amount: "0.75", recipientId: "merchant-example.testnet" },
+    ];
+    for (const p of attempts) {
+      const e = await engine.authorize(p);
+      expect(e.decision, p.requestId).not.toBe("ALLOW");
+      expect(e.reservation, p.requestId).toBeUndefined(); // nothing an executor could act on
+    }
+    // Even an executor invoked with a made-up reservation id refuses before any RPC call.
+    expect((await executor.execute("res_does_not_exist")).status).toBe("refused");
+    expect(stub.calls).toEqual([]); // no status, access-key, block or send_tx request: nothing was signed or sent
+
+    const ok = await engine.authorize({ requestId: "ok", ...base, amount: "0.1", recipientId: "merchant-example.testnet" });
+    expect(ok.decision).toBe("ALLOW");
+    expect((await executor.execute(ok.reservation!.reservationId)).status).toBe("confirmed");
+    const sends = stub.calls.filter((c) => c.method === "send_tx");
+    expect(sends).toHaveLength(1);
+    const signed = decodeSignedTransaction(base64Decode(sends[0]!.params.signed_tx_base64 as string));
+    expect(signed.transaction.receiverId).toBe("merchant-example.testnet");
+    expect(signed.transaction.actions[0]!.transfer?.deposit).toBe(100_000_000_000_000_000_000_000n);
   });
 
   it("refuses to sign anything when the RPC reports mainnet", async () => {
