@@ -22,7 +22,17 @@
   },
   "dependencies": {
     "@agentguard/core": "workspace:*",
-    "@agentguard/near": "workspace:*",
     "@agentguard/runner": "workspace:*"
+  },
+  "peerDependencies": {
+    "@agentguard/near": "0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@agentguard/near": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@agentguard/near": "workspace:*"
   }
 }

@@ -24,7 +24,7 @@ target:
   type: engine                        # or: type: module, module: ./guard.mjs
 integrations:                         # optional
   near:
-    validate_account_ids: true        # add NEAR account-ID validation to the engine
+    validate_account_ids: true        # add NEAR account-ID validation (needs the optional @agentguard/near package)
 reports:
   dir: .agentguard/runs               # default
 ```

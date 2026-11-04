@@ -93,12 +93,13 @@ importers:
       '@agentguard/core':
         specifier: workspace:*
         version: link:../core
-      '@agentguard/near':
-        specifier: workspace:*
-        version: link:../near
       '@agentguard/runner':
         specifier: workspace:*
         version: link:../runner
+    devDependencies:
+      '@agentguard/near':
+        specifier: workspace:*
+        version: link:../near
 
   packages/core:
     dependencies:
