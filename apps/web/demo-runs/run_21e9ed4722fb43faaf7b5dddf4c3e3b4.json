@@ -1,0 +1,401 @@
+{
+  "schemaVersion": 1,
+  "runId": "run_21e9ed4722fb43faaf7b5dddf4c3e3b4",
+  "startedAt": "2026-11-04T21:25:21.616Z",
+  "completedAt": "2026-11-04T21:25:21.628Z",
+  "durationMs": 13,
+  "status": "PASSED",
+  "exitCode": 0,
+  "agentguardVersion": "0.1.0",
+  "executionMode": "simulation",
+  "project": {
+    "name": "NEAR testnet agent"
+  },
+  "policy": {
+    "file": "policy.yaml",
+    "hash": "sha256:9c37df924ae88f102c8d5a898f5d3444f26c3ddf598d023b6331916a385310e4",
+    "agentId": "near-research-agent",
+    "declaredExecutionMode": "testnet",
+    "warnings": [],
+    "document": {
+      "version": 1,
+      "agent": {
+        "id": "near-research-agent",
+        "name": "NEAR research agent"
+      },
+      "execution": {
+        "mode": "testnet",
+        "fail_closed": true
+      },
+      "assets": [
+        {
+          "id": "NEAR",
+          "decimals": 24,
+          "max_transaction_amount": "0.5",
+          "max_daily_spend": "2",
+          "approval_required_above": "0.25"
+        }
+      ],
+      "limits": {
+        "max_transaction_count_per_day": 10,
+        "daily_window_utc_offset": "+00:00",
+        "allow_zero_amount": false
+      },
+      "recipients": {
+        "mode": "allowlist",
+        "allowed": [
+          "merchant-example.testnet",
+          "data-provider-example.testnet"
+        ]
+      },
+      "networks": {
+        "allowed": [
+          "near-testnet"
+        ]
+      },
+      "approval": {
+        "max_age_seconds": 900
+      }
+    }
+  },
+  "suite": {
+    "hash": "sha256:0c59c2f7914ed377e8f0bc6b10cf4f1c645d58e8be826c7db34689b8f5a95fa8",
+    "scenarioCount": 6
+  },
+  "filters": {
+    "scenarioIds": [],
+    "categories": []
+  },
+  "target": {
+    "type": "engine",
+    "name": "agentguard-engine",
+    "capabilities": {
+      "reasonCodes": true,
+      "approvals": true,
+      "lifecycle": true,
+      "ledgerInspection": true,
+      "policyReload": true,
+      "failureInjection": true
+    }
+  },
+  "integrations": [
+    "near:account-id-validation"
+  ],
+  "environment": {
+    "node": "v22.23.4",
+    "platform": "linux",
+    "arch": "x64",
+    "ci": false
+  },
+  "summary": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "errored": 0,
+    "skipped": 0,
+    "requiredFailed": 0,
+    "requiredErrored": 0,
+    "passRate": 1
+  },
+  "scenarios": [
+    {
+      "id": "near-concurrent-daily-limit",
+      "name": "Concurrent NEAR payments respect the daily limit",
+      "category": "integration",
+      "severity": "critical",
+      "description": "Twenty simultaneous 0.2 NEAR payments against a 2 NEAR daily limit; exactly ten fit.",
+      "required": true,
+      "file": "scenarios/near-concurrent-daily-limit.yaml",
+      "definitionHash": "sha256:fe904bddb8bb918c5743ffcedbcd712baaee6bd7c16811b58755640e6ac0c6ed",
+      "status": "PASS",
+      "durationMs": 7.89,
+      "steps": [
+        {
+          "index": 0,
+          "kind": "concurrent",
+          "status": "passed",
+          "expected": {
+            "ALLOW": 10,
+            "BLOCK": 10,
+            "REQUIRE_APPROVAL": 0
+          },
+          "observed": {
+            "ALLOW": 10,
+            "BLOCK": 10,
+            "REQUIRE_APPROVAL": 0
+          }
+        },
+        {
+          "index": 1,
+          "kind": "expect_ledger",
+          "status": "passed",
+          "expected": {
+            "asset": "NEAR",
+            "active_amount": "2"
+          },
+          "observed": {
+            "asset": "NEAR",
+            "active_amount": "2",
+            "active_count": 10,
+            "reservations_created": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "near-invalid-account-id-blocked",
+      "name": "Invalid NEAR account IDs are blocked",
+      "category": "integration",
+      "severity": "high",
+      "description": "Uppercase characters, adjacent separators and out-of-range lengths are not valid NEAR account IDs.",
+      "required": true,
+      "file": "scenarios/near-invalid-account-id-blocked.yaml",
+      "definitionHash": "sha256:2a523fdfe68d1a740e4bb52152e39cb7a3765ef63eea9512f203849385af8cad",
+      "status": "PASS",
+      "durationMs": 0.81,
+      "steps": [
+        {
+          "index": 0,
+          "kind": "propose",
+          "status": "passed",
+          "expected": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "ADAPTER_VALIDATION_FAILED"
+            ],
+            "reason_codes_exact": false,
+            "absent_reason_codes": []
+          },
+          "observed": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "ADAPTER_VALIDATION_FAILED",
+              "RECIPIENT_NOT_ALLOWED"
+            ],
+            "replay": false
+          }
+        },
+        {
+          "index": 1,
+          "kind": "propose",
+          "status": "passed",
+          "expected": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "ADAPTER_VALIDATION_FAILED"
+            ],
+            "reason_codes_exact": false,
+            "absent_reason_codes": []
+          },
+          "observed": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "ADAPTER_VALIDATION_FAILED",
+              "RECIPIENT_NOT_ALLOWED"
+            ],
+            "replay": false
+          }
+        },
+        {
+          "index": 2,
+          "kind": "propose",
+          "status": "passed",
+          "expected": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "ADAPTER_VALIDATION_FAILED"
+            ],
+            "reason_codes_exact": false,
+            "absent_reason_codes": []
+          },
+          "observed": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "ADAPTER_VALIDATION_FAILED",
+              "RECIPIENT_NOT_ALLOWED"
+            ],
+            "replay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "near-mainnet-account-on-testnet",
+      "name": "A mainnet (.near) account on testnet is blocked",
+      "category": "integration",
+      "severity": "high",
+      "description": "Paying merchant-example.near on testnet is a cross-network mistake and must be blocked.",
+      "required": true,
+      "file": "scenarios/near-mainnet-account-on-testnet.yaml",
+      "definitionHash": "sha256:ca135744a761b6584c6ac327b9c3a5af6b6f668689e5eb4870e4fde863b837f3",
+      "status": "PASS",
+      "durationMs": 0.53,
+      "steps": [
+        {
+          "index": 0,
+          "kind": "propose",
+          "status": "passed",
+          "expected": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "ADAPTER_VALIDATION_FAILED",
+              "RECIPIENT_NOT_ALLOWED"
+            ],
+            "reason_codes_exact": false,
+            "absent_reason_codes": []
+          },
+          "observed": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "ADAPTER_VALIDATION_FAILED",
+              "RECIPIENT_NOT_ALLOWED"
+            ],
+            "replay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "near-mainnet-blocked",
+      "name": "NEAR mainnet is not an allowed network",
+      "category": "integration",
+      "severity": "critical",
+      "description": "The agent is limited to testnet; a near-mainnet proposal must be blocked.",
+      "required": true,
+      "file": "scenarios/near-mainnet-blocked.yaml",
+      "definitionHash": "sha256:acd4a554b8fc4ad7fa3fa21376c6b247945ad2026716fcec0e1cf5aaad23704c",
+      "status": "PASS",
+      "durationMs": 0.42,
+      "steps": [
+        {
+          "index": 0,
+          "kind": "propose",
+          "status": "passed",
+          "expected": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "NETWORK_NOT_ALLOWED"
+            ],
+            "reason_codes_exact": false,
+            "absent_reason_codes": []
+          },
+          "observed": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "ADAPTER_VALIDATION_FAILED",
+              "NETWORK_NOT_ALLOWED"
+            ],
+            "replay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "near-valid-transfer-allowed",
+      "name": "A valid testnet payment to an allowlisted account is allowed",
+      "category": "integration",
+      "severity": "medium",
+      "description": "0.1 NEAR to an allowlisted, syntactically valid testnet account passes every rule.",
+      "required": true,
+      "file": "scenarios/near-valid-transfer-allowed.yaml",
+      "definitionHash": "sha256:5787859b03f56655c31c00edf9cb1b3b6442df87fb5b817826aff2c154129dcf",
+      "status": "PASS",
+      "durationMs": 0.25,
+      "steps": [
+        {
+          "index": 0,
+          "kind": "propose",
+          "status": "passed",
+          "expected": {
+            "decision": "ALLOW",
+            "reason_codes": [],
+            "reason_codes_exact": true,
+            "absent_reason_codes": []
+          },
+          "observed": {
+            "decision": "ALLOW",
+            "reason_codes": [],
+            "replay": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "near-yocto-precision",
+      "name": "yoctoNEAR amounts are handled exactly",
+      "category": "integration",
+      "severity": "critical",
+      "description": "NEAR has 24 decimals, beyond the exact range of floating-point numbers. One yoctoNEAR above the limit must be blocked, and a 25th decimal place must be rejected.\n",
+      "required": true,
+      "file": "scenarios/near-yocto-precision.yaml",
+      "definitionHash": "sha256:8204e9830aa3d950826ab856e3c2d0ec62e175bc38892d9f1f54b10d963e2794",
+      "status": "PASS",
+      "durationMs": 1.05,
+      "steps": [
+        {
+          "index": 0,
+          "kind": "propose",
+          "status": "passed",
+          "expected": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "AMOUNT_EXCEEDS_TRANSACTION_LIMIT"
+            ],
+            "reason_codes_exact": false,
+            "absent_reason_codes": []
+          },
+          "observed": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "AMOUNT_EXCEEDS_TRANSACTION_LIMIT",
+              "APPROVAL_REQUIRED_AMOUNT"
+            ],
+            "replay": false
+          }
+        },
+        {
+          "index": 1,
+          "kind": "propose",
+          "status": "passed",
+          "expected": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "AMOUNT_EXCEEDS_TRANSACTION_LIMIT"
+            ],
+            "reason_codes_exact": false,
+            "absent_reason_codes": []
+          },
+          "observed": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "AMOUNT_EXCEEDS_TRANSACTION_LIMIT",
+              "APPROVAL_REQUIRED_AMOUNT"
+            ],
+            "replay": false
+          }
+        },
+        {
+          "index": 2,
+          "kind": "propose",
+          "status": "passed",
+          "expected": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "AMOUNT_PRECISION_EXCEEDED"
+            ],
+            "reason_codes_exact": false,
+            "absent_reason_codes": []
+          },
+          "observed": {
+            "decision": "BLOCK",
+            "reason_codes": [
+              "AMOUNT_PRECISION_EXCEEDED"
+            ],
+            "replay": false
+          }
+        }
+      ]
+    }
+  ],
+  "findings": []
+}

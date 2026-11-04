@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f7f7f8;
+  --surface: #ffffff;
+  --surface-2: #f1f1f3;
+  --fg: #16161a;
+  --muted: #5f5f6b;
+  --border: #e2e2e6;
+  --accent: #2f5bd3;
+  --pass: #17803d;
+  --pass-bg: #e8f5ec;
+  --fail: #b42318;
+  --fail-bg: #fdecea;
+  --error: #8a3ffc;
+  --error-bg: #f3ecff;
+  --skip: #8a6100;
+  --skip-bg: #fdf4dd;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f0f12;
+    --surface: #17171c;
+    --surface-2: #1f1f26;
+    --fg: #ececf1;
+    --muted: #a1a1ad;
+    --border: #2c2c35;
+    --accent: #7d9bff;
+    --pass: #5fd08a;
+    --pass-bg: #12301f;
+    --fail: #ff8a80;
+    --fail-bg: #3a1714;
+    --error: #c3a2ff;
+    --error-bg: #2a1d45;
+    --skip: #f0c25e;
+    --skip-bg: #352a10;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-pass: var(--pass);
+  --color-pass-bg: var(--pass-bg);
+  --color-fail: var(--fail);
+  --color-fail-bg: var(--fail-bg);
+  --color-error: var(--error);
+  --color-error-bg: var(--error-bg);
+  --color-skip: var(--skip);
+  --color-skip-bg: var(--skip-bg);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
