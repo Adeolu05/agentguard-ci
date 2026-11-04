@@ -296,7 +296,8 @@ async function cmdTest(io: CliIO, args: string[]): Promise<number> {
 
   io.stdout(`AgentGuard CI ${VERSION}\n`);
   io.stdout(`Policy:   ${project.policyFile} (${project.policy.hash.slice(0, 19)}…)\n`);
-  io.stdout(`Target:   ${target.type === "engine" ? "AgentGuard engine" : target.module}  ·  mode: ${project.policy.executionMode}\n`);
+  io.stdout(`Target:   ${target.type === "engine" ? "AgentGuard engine" : target.module}\n`);
+  io.stdout(`Mode:     simulation (scenario runs never sign or send transactions)\n`);
   if (names.length > 0) io.stdout(`Integrations: ${names.join(", ")}\n`);
   for (const w of project.policyWarnings) io.stdout(`⚠ ${formatIssue(w)}\n`);
   io.stdout(`Running ${selected.length} scenario${selected.length === 1 ? "" : "s"}\n\n`);

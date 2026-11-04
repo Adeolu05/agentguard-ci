@@ -1,0 +1,9 @@
+# Tests the naive guard. Expected result: FAILED (this is the point of the example).
+version: 1
+name: Basic agent (naive guard)
+policy: ../payment-policy/policy.yaml
+scenarios:
+  - ../../packages/cli/templates/scenarios
+target:
+  type: module
+  module: ./naive-guard.mjs

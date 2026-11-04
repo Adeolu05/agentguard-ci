@@ -505,12 +505,14 @@ export async function runSuite(opts: RunOptions): Promise<RunReport> {
     status,
     exitCode,
     agentguardVersion: opts.agentguardVersion,
-    executionMode: opts.policy.executionMode,
+    // Scenario runs evaluate proposals only; they never sign or send transactions.
+    executionMode: "simulation",
     project: opts.projectName ? { name: opts.projectName } : {},
     policy: {
       file: opts.policyFile,
       hash: opts.policy.hash,
       agentId: opts.policy.agentId,
+      declaredExecutionMode: opts.policy.executionMode,
       warnings: [...(opts.policyWarnings ?? [])],
       document: opts.policy.document,
     },

@@ -1,0 +1,9 @@
+# Tests the guard built on @agentguard/core. Expected result: PASSED.
+version: 1
+name: Basic agent (guard built on AgentGuard)
+policy: ../payment-policy/policy.yaml
+scenarios:
+  - ../../packages/cli/templates/scenarios
+target:
+  type: module
+  module: ./agentguard-guard.mjs

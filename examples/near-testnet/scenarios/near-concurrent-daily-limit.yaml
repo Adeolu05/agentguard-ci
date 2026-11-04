@@ -1,0 +1,12 @@
+id: near-concurrent-daily-limit
+name: Concurrent NEAR payments respect the daily limit
+category: integration
+severity: critical
+description: Twenty simultaneous 0.2 NEAR payments against a 2 NEAR daily limit; exactly ten fit.
+steps:
+  - concurrent:
+      count: 20
+      proposal: { requestId: burst, agentId: near-research-agent, assetId: NEAR, networkId: near-testnet, amount: "0.2", recipientId: data-provider-example.testnet }
+    expect:
+      decisions: { ALLOW: 10, BLOCK: 10 }
+  - expect_ledger: { asset: NEAR, active_amount: "2" }

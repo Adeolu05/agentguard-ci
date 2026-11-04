@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, build, typecheck, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.22.2
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm build
+      - run: pnpm -r typecheck
+      - run: pnpm test
+
+  agentguard:
+    name: AgentGuard security suites
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.22.2
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Validate example policy and scenarios
+        run: |
+          pnpm agentguard policy validate --config examples/payment-policy/agentguard.yaml
+          pnpm agentguard scenarios validate --config examples/payment-policy/agentguard.yaml
+      - name: Payment policy suite
+        run: pnpm agentguard test --config examples/payment-policy/agentguard.yaml --no-color --json reports/payment-policy.json --markdown reports/payment-policy.md --github-summary
+      - name: NEAR testnet policy suite (offline, no transactions)
+        run: pnpm agentguard test --config examples/near-testnet/agentguard.yaml --no-color --json reports/near-testnet.json --markdown reports/near-testnet.md --github-summary
+      - name: Guard built on @agentguard/core
+        run: pnpm agentguard test --config examples/basic-agent/agentguard.fixed.yaml --no-color --no-save
+      - name: Upload reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: agentguard-reports
+          path: reports/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  regression-gate:
+    name: An unsafe policy change must fail the suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.22.2
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Allowlist an attacker and expect exit code 1
+        run: |
+          sed -i 's/    - data-provider-example/    - data-provider-example\n    - attacker-wallet/' examples/payment-policy/policy.yaml
+          set +e
+          pnpm agentguard test --config examples/payment-policy/agentguard.yaml --no-color --no-save
+          code=$?
+          set -e
+          if [ "$code" -ne 1 ]; then echo "expected exit code 1, got $code"; exit 1; fi
+          echo "Unsafe policy change was detected (exit code 1), as required."
+      - name: The naive guard example must fail
+        run: |
+          set +e
+          pnpm agentguard test --config examples/basic-agent/agentguard.yaml --no-color --no-save --quiet
+          code=$?
+          set -e
+          if [ "$code" -ne 1 ]; then echo "expected exit code 1, got $code"; exit 1; fi

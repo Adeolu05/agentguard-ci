@@ -1,0 +1,12 @@
+id: near-invalid-account-id-blocked
+name: Invalid NEAR account IDs are blocked
+category: integration
+severity: high
+description: Uppercase characters, adjacent separators and out-of-range lengths are not valid NEAR account IDs.
+steps:
+  - propose: { requestId: upper, agentId: near-research-agent, assetId: NEAR, networkId: near-testnet, amount: "0.1", recipientId: Merchant-Example.testnet }
+    expect: { decision: BLOCK, reason_codes: [ADAPTER_VALIDATION_FAILED] }
+  - propose: { requestId: dots, agentId: near-research-agent, assetId: NEAR, networkId: near-testnet, amount: "0.1", recipientId: merchant..testnet }
+    expect: { decision: BLOCK, reason_codes: [ADAPTER_VALIDATION_FAILED] }
+  - propose: { requestId: short, agentId: near-research-agent, assetId: NEAR, networkId: near-testnet, amount: "0.1", recipientId: m }
+    expect: { decision: BLOCK, reason_codes: [ADAPTER_VALIDATION_FAILED] }
