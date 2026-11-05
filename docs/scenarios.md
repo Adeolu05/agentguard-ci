@@ -102,6 +102,7 @@ export function createTarget(context) {
     // execute(handle) / recordOutcome(handle, outcome, ref) / cancel(handle)  -> { ok, reasonCode? }
     // reloadPolicy(set)
     // ledgerUsage(assetId)  -> { activeAtomic: bigint, activeCount, created }
+    // unsupported(scenario)  -> a reason string to skip this scenario, or undefined to run it
     // dispose()
   };
 }
@@ -112,6 +113,7 @@ Rules:
 - Only `propose` is required. Results are shape-checked: a missing or unknown decision, or non-string reason codes, make the scenario `ERROR`.
 - If `reasonCodes` is false, scenarios are checked on **decisions only**. The step records "reason codes not checked", and nothing is skipped because of it. A `replay` expectation is checked whenever the target reports `replay`; if it does not, the step records "replay not checked".
 - Scenarios needing approvals, lifecycle, ledger inspection, policy reload or failure injection are `SKIPPED` for targets that lack them, and the skip reason names the missing capability.
+- A target can also skip individual scenarios it has no equivalent for by implementing `unsupported(scenario)`. It is called after the capability check and before any step; a string return value becomes the skip reason, `undefined` runs the scenario, and anything else is an `ERROR`. Skips never count as passes, and a run in which every scenario is skipped is not a pass. See [`examples/near-vault`](../examples/near-vault) for a target that uses it.
 - `context.seed` contains the historical reservations the scenario starts with. A guard that keeps no spending history cannot honour it, so daily-limit scenarios will (correctly) fail.
 
 See [`examples/basic-agent`](../examples/basic-agent) for a naive guard (16 failures) and a guard built on `@agentguard/core` (40 passes).

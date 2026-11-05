@@ -15,6 +15,7 @@ import {
   type ProposalValidator,
   type Reservation,
 } from "@agentguard/core";
+import type { Scenario } from "./scenario.js";
 
 export interface TargetProposeResult {
   decision: Decision;
@@ -72,6 +73,12 @@ export interface GuardTarget {
   cancel?(handle: string | undefined): Promise<LifecycleOutcome>;
   reloadPolicy?(set: Record<string, unknown>): Promise<void>;
   ledgerUsage?(assetId: string): Promise<LedgerUsage>;
+  /**
+   * Optional. Called once per scenario, after the capability check and before any step.
+   * Return a reason to report the scenario as SKIPPED (for example because the guard has
+   * no equivalent of what the scenario tests), or `undefined` to run it.
+   */
+  unsupported?(scenario: Scenario): string | undefined | Promise<string | undefined>;
   dispose?(): Promise<void>;
 }
 
@@ -227,7 +234,7 @@ export function guardTargetShape(t: unknown, origin: string): GuardTarget {
     failureInjection: caps.failureInjection === true,
   };
   const propose = target.propose.bind(target);
-  const optional = <K extends "issueApproval" | "execute" | "recordOutcome" | "cancel" | "reloadPolicy" | "ledgerUsage" | "dispose">(
+  const optional = <K extends "issueApproval" | "execute" | "recordOutcome" | "cancel" | "reloadPolicy" | "ledgerUsage" | "unsupported" | "dispose">(
     key: K,
   ): Partial<Pick<GuardTarget, K>> => {
     const fn = target[key];
@@ -240,6 +247,7 @@ export function guardTargetShape(t: unknown, origin: string): GuardTarget {
     ...optional("cancel"),
     ...optional("reloadPolicy"),
     ...optional("ledgerUsage"),
+    ...optional("unsupported"),
     ...optional("dispose"),
     name: target.name,
     capabilities,

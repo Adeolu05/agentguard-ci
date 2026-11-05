@@ -201,6 +201,32 @@ describe("custom targets", () => {
     expect(report.scenarios[0]?.status).toBe("ERROR");
   });
 
+  it("lets a target skip scenarios it has no equivalent for, with its reason", async () => {
+    const report = await runModule(
+      `export const createTarget = () => ({
+        name: "partial",
+        capabilities: { reasonCodes: true },
+        unsupported: (s) => (s.id === "zero-amount" ? "amounts are typed integers here" : undefined),
+        async propose() { return { decision: "BLOCK", reasonCodes: ["RECIPIENT_NOT_ALLOWED"] }; },
+      });`,
+      ["zero-amount", "unknown-recipient-blocked"],
+    );
+    const zero = report.scenarios.find((s) => s.id === "zero-amount");
+    expect(zero?.status).toBe("SKIPPED");
+    expect(zero?.skipReason).toBe('target "partial" does not support this scenario: amounts are typed integers here');
+    expect(zero?.steps).toEqual([]);
+    expect(report.scenarios.find((s) => s.id === "unknown-recipient-blocked")?.status).toBe("PASS");
+  });
+
+  it("treats a malformed unsupported() answer as ERROR, never as a skip or a pass", async () => {
+    const report = await runModule(
+      `export const createTarget = () => ({ name: "odd", capabilities: {}, unsupported: () => 42, async propose() { return { decision: "BLOCK" }; } });`,
+      ["unknown-recipient-blocked"],
+    );
+    expect(report.scenarios[0]?.status).toBe("ERROR");
+    expect(report.scenarios[0]?.error?.message).toMatch(/unsupported\(\) must return/);
+  });
+
   it("times out hanging targets", async () => {
     const dir = await tempProject({ "guard.mjs": `export const createTarget = () => ({ name: "hang", capabilities: {}, propose: () => new Promise(() => {}) });` });
     const factory = await loadModuleTarget(path.join(dir, "guard.mjs"));

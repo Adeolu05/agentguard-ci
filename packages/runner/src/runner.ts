@@ -396,6 +396,17 @@ export async function runScenario(
         },
       };
     }
+    if (target.unsupported) {
+      const reason: unknown = await withTimeout(Promise.resolve(target.unsupported(s)), timeoutMs);
+      if (reason !== undefined && (typeof reason !== "string" || reason.trim() === "")) {
+        throw new Error(`target "${target.name}": unsupported() must return a non-empty string or undefined`);
+      }
+      if (typeof reason === "string") {
+        return {
+          result: { ...base, status: "SKIPPED", durationMs: elapsed(), steps: [], skipReason: `target "${target.name}" does not support this scenario: ${reason}` },
+        };
+      }
+    }
 
     const state: ScenarioState = { results: new Map(), approvals: new Map() };
     let currentPolicy = policy;
