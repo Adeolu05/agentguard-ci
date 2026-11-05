@@ -18,7 +18,7 @@ export function StepList({ scenario }: { scenario: ScenarioResult }) {
             <span className="font-mono text-muted">#{st.index + 1}</span>
             <span className="font-mono">{st.kind}</span>
             <span
-              className={`rounded px-1.5 text-xs font-semibold ${
+              className={`shrink-0 rounded px-1.5 text-xs font-semibold whitespace-nowrap [overflow-wrap:normal] ${
                 st.status === "passed" ? "bg-pass-bg text-pass" : st.status === "failed" ? "bg-fail-bg text-fail" : "bg-error-bg text-error"
               }`}
             >
@@ -31,13 +31,13 @@ export function StepList({ scenario }: { scenario: ScenarioResult }) {
               {st.expected !== undefined ? (
                 <div>
                   <div className="text-xs uppercase tracking-wide text-muted">Expected</div>
-                  <pre className="mt-1 overflow-x-auto rounded bg-surface-2 p-2 font-mono text-xs">{json(st.expected)}</pre>
+                  <pre className="mt-1 rounded bg-surface-2 p-2 font-mono text-xs whitespace-pre-wrap">{json(st.expected)}</pre>
                 </div>
               ) : null}
               {st.observed !== undefined ? (
                 <div>
                   <div className="text-xs uppercase tracking-wide text-muted">Observed</div>
-                  <pre className="mt-1 overflow-x-auto rounded bg-surface-2 p-2 font-mono text-xs">{json(st.observed)}</pre>
+                  <pre className="mt-1 rounded bg-surface-2 p-2 font-mono text-xs whitespace-pre-wrap">{json(st.observed)}</pre>
                 </div>
               ) : null}
             </div>

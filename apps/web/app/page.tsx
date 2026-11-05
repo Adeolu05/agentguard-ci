@@ -39,7 +39,7 @@ export default async function OverviewPage() {
         }
       />
       <InvalidReports invalid={invalid} />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <Metric label="Test runs" value={runs.length} hint={`${completed.length} completed, ${runs.length - completed.length} incomplete`} />
         <Metric
           label="Latest run"
@@ -72,7 +72,7 @@ export default async function OverviewPage() {
                 <li key={f.id} className="flex items-start gap-3 py-2">
                   <SeverityBadge severity={f.severity} />
                   <div className="min-w-0">
-                    <Link href={`/runs/${f.runId}/findings/${f.scenarioId}`} className="text-sm text-accent hover:underline">
+                    <Link href={`/runs/${f.runId}/findings/${f.scenarioId}`} className="inline-flex min-h-6 items-center text-sm text-accent hover:underline">
                       {f.title}
                     </Link>
                     <div className="text-xs text-muted">
@@ -88,7 +88,7 @@ export default async function OverviewPage() {
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
             <dt className="text-muted">Run</dt>
             <dd>
-              <Link href={`/runs/${latest.runId}`} className="font-mono text-accent hover:underline">
+              <Link href={`/runs/${latest.runId}`} className="inline-flex min-h-6 items-center font-mono text-accent hover:underline">
                 {shortId(latest.runId)}
               </Link>
             </dd>
@@ -112,7 +112,7 @@ export default async function OverviewPage() {
       <RunsTable runs={runs.slice(0, 5)} caption="Five most recent test runs" />
       {runs.length > 5 ? (
         <p className="mt-2 text-sm">
-          <Link href="/runs" className="text-accent hover:underline">
+          <Link href="/runs" className="inline-flex min-h-11 items-center text-accent hover:underline sm:min-h-6">
             All {runs.length} runs →
           </Link>
         </p>

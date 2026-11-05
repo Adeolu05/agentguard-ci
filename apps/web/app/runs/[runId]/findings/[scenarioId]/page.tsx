@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StepList } from "@/components/steps";
 import { Card, Code, PageHeader, SeverityBadge } from "@/components/ui";
 import { formatTime, loadRun } from "@/lib/data";
 
+export async function generateMetadata({ params }: { params: Promise<{ scenarioId: string }> }): Promise<Metadata> {
+  const { scenarioId } = await params;
+  return { title: `Finding: ${scenarioId}` };
+}
 export const dynamic = "force-dynamic";
 
 export default async function FindingPage({ params }: { params: Promise<{ runId: string; scenarioId: string }> }) {
@@ -16,7 +21,7 @@ export default async function FindingPage({ params }: { params: Promise<{ runId:
   return (
     <>
       <p className="mb-2 text-sm">
-        <Link href={`/runs/${run.runId}`} className="text-accent hover:underline">
+        <Link href={`/runs/${run.runId}`} className="inline-flex min-h-11 items-center text-accent hover:underline sm:min-h-6">
           ← Run {run.runId.slice(0, 12)}
         </Link>
       </p>

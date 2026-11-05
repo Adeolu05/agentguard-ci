@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { observedReasonCodes, StepList } from "@/components/steps";
 import { Card, Code, Metric, Notice, PageHeader, SeverityBadge, StatusBadge } from "@/components/ui";
 import { formatDuration, formatTime, loadRun } from "@/lib/data";
 
+export async function generateMetadata({ params }: { params: Promise<{ runId: string }> }): Promise<Metadata> {
+  const { runId } = await params;
+  return { title: `Run ${runId.slice(0, 12)}` };
+}
 export const dynamic = "force-dynamic";
 
 export default async function RunPage({ params }: { params: Promise<{ runId: string }> }) {
@@ -30,7 +35,7 @@ export default async function RunPage({ params }: { params: Promise<{ runId: str
           pass.
         </Notice>
       ) : null}
-      <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6">
         <Metric label="Scenarios" value={s.total} />
         <Metric label="Passed" value={<span className="text-pass">{s.passed}</span>} />
         <Metric label="Failed" value={<span className={s.failed ? "text-fail" : ""}>{s.failed}</span>} />
@@ -45,7 +50,7 @@ export default async function RunPage({ params }: { params: Promise<{ runId: str
             {run.findings.map((f) => (
               <li key={f.id} className="flex items-start gap-3 py-2">
                 <SeverityBadge severity={f.severity} />
-                <Link href={`/runs/${run.runId}/findings/${f.scenarioId}`} className="text-sm text-accent hover:underline">
+                <Link href={`/runs/${run.runId}/findings/${f.scenarioId}`} className="inline-flex min-h-6 items-center text-sm text-accent hover:underline">
                   {f.title}
                 </Link>
               </li>
@@ -93,11 +98,11 @@ export default async function RunPage({ params }: { params: Promise<{ runId: str
                     File <span className="font-mono">{sc.file}</span>
                   </span>
                   <span>{formatDuration(sc.durationMs)}</span>
-                  <Link href={`/scenarios/${sc.id}`} className="text-accent hover:underline">
+                  <Link href={`/scenarios/${sc.id}`} className="inline-flex min-h-11 sm:min-h-6 items-center text-accent hover:underline">
                     Scenario history →
                   </Link>
                   {sc.status === "FAIL" ? (
-                    <Link href={`/runs/${run.runId}/findings/${sc.id}`} className="text-accent hover:underline">
+                    <Link href={`/runs/${run.runId}/findings/${sc.id}`} className="inline-flex min-h-11 sm:min-h-6 items-center text-accent hover:underline">
                       Finding →
                     </Link>
                   ) : null}
@@ -112,7 +117,7 @@ export default async function RunPage({ params }: { params: Promise<{ runId: str
       </div>
 
       <Card title="Execution details" className="mt-8">
-        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-sm">
+        <dl className="grid grid-cols-1 gap-x-6 gap-y-1 text-sm sm:grid-cols-[auto_1fr] sm:gap-y-1.5">
           <dt className="text-muted">Policy</dt>
           <dd>
             <Code>{run.policy.file}</Code> <span className="font-mono text-xs">{run.policy.hash}</span>
