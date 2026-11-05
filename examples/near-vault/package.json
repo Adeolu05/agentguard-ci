@@ -5,7 +5,8 @@
   "scripts": {
     "build:contract": "cd ../../contracts/vault && cargo near build non-reproducible-wasm",
     "test:sandbox": "vitest run --config vitest.config.mjs",
-    "scenarios": "node ../../packages/cli/dist/bin.js test --config agentguard.yaml --no-save"
+    "scenarios": "node ../../packages/cli/dist/bin.js test --config agentguard.yaml --no-save",
+    "demo": "node demo.mjs"
   },
   "dependencies": {
     "@agentguard/core": "workspace:*",

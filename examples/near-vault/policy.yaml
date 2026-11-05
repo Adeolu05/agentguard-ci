@@ -1,0 +1,28 @@
+# Policy for the AgentGuard Vault on NEAR testnet. The vault holds native NEAR only, so
+# this policy has exactly one asset (NEAR, 24 decimals) and one network (near-testnet).
+# push-policy.mjs converts it exactly or refuses; deploy.mjs installs it at deployment.
+version: 1
+agent:
+  id: vault-agent
+  name: Agent paying through the vault
+assets:
+  - id: NEAR
+    decimals: 24
+    max_transaction_amount: "0.5"
+    max_daily_spend: "2"
+    approval_required_above: "0.25"
+limits:
+  max_transaction_count_per_day: 10
+  daily_window_utc_offset: "+00:00"
+  allow_zero_amount: false
+recipients:
+  mode: allowlist
+  allowed:
+    # Placeholders: add the testnet account you will pay (it must exist).
+    - merchant-example.testnet
+    - data-provider-example.testnet
+networks:
+  allowed:
+    - near-testnet
+approval:
+  max_age_seconds: 900

@@ -3,25 +3,17 @@
 // Everything here runs against a NEAR node on 127.0.0.1 started by the official
 // `near-sandbox` package (nearcore sandbox 2.14.0). Nothing touches testnet or mainnet.
 // Every key is generated at runtime with KeyPair.fromRandom and lives only in memory.
-import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
 import { GenesisAccount, Sandbox } from "near-sandbox";
 import { Account, JsonRpcProvider, KeyPair, actions } from "near-api-js";
+import { decodeReturn, eventsOf, failureMessage, gasBurnt } from "./outcome.mjs";
+import { loadWasm } from "./wasm.mjs";
 
 export { Account, KeyPair, actions };
+export { eventsOf, failureMessage, gasBurnt, logsOf } from "./outcome.mjs";
+export { WASM_PATH, loadWasm } from "./wasm.mjs";
 
 export const NEAR = 10n ** 24n;
 export const TGAS = 10n ** 12n;
-export const WASM_PATH = fileURLToPath(new URL("../../../contracts/vault/target/near/agentguard_vault.wasm", import.meta.url));
-
-export async function loadWasm() {
-  try {
-    return await readFile(WASM_PATH);
-  } catch {
-    throw new Error(`Vault wasm not found at ${WASM_PATH}. Build it first: pnpm build:vault (needs Rust and cargo-near).`);
-  }
-}
-
 /** The default test policy, as the contract's JSON `VaultPolicy`. Amounts are yoctoNEAR strings. */
 export function testPolicy(recipients, overrides = {}) {
   return {
@@ -37,39 +29,6 @@ export function testPolicy(recipients, overrides = {}) {
     policy_hash: "sha256:sandbox-test",
     ...overrides,
   };
-}
-
-/** Collects the logs of a transaction and of every receipt it produced. */
-export function logsOf(tx) {
-  const outcomes = [tx.transaction_outcome, ...(tx.receipts_outcome ?? [])];
-  return outcomes.flatMap((o) => o?.outcome?.logs ?? []);
-}
-
-/** NEP-297 events (`EVENT_JSON:` log lines), parsed. */
-export function eventsOf(tx) {
-  return logsOf(tx)
-    .filter((l) => l.startsWith("EVENT_JSON:"))
-    .map((l) => JSON.parse(l.slice("EVENT_JSON:".length)));
-}
-
-function decodeReturn(status) {
-  const b64 = status?.SuccessValue;
-  if (b64 === undefined || b64 === "") return undefined;
-  return JSON.parse(Buffer.from(b64, "base64").toString("utf8"));
-}
-
-/** The panic message of a failed function call, if any. */
-export function failureMessage(tx) {
-  const failure = tx.status?.Failure ?? tx.receipts_outcome?.find((r) => r.outcome?.status?.Failure)?.outcome.status.Failure;
-  if (!failure) return undefined;
-  const exec = failure?.ActionError?.kind?.FunctionCallError?.ExecutionError;
-  return typeof exec === "string" ? exec : JSON.stringify(failure);
-}
-
-/** Total gas burnt by a transaction and all its receipts. */
-export function gasBurnt(tx) {
-  const outcomes = [tx.transaction_outcome, ...(tx.receipts_outcome ?? [])];
-  return outcomes.reduce((s, o) => s + BigInt(o?.outcome?.gas_burnt ?? 0), 0n);
 }
 
 /**
