@@ -108,7 +108,7 @@ Simulation only: testnet execution is disabled (set AGENTGUARD_NEAR_EXECUTION=te
 
 **Say exactly what is true:** "The NEAR suite covers exact yoctoNEAR limits, cross-network accounts and concurrent spending. The executor is tested against the real near-api-js library and a local RPC stub. Blocked proposals make no RPC call at all, and a transfer is broadcast at most once. We have not yet sent a live testnet transaction."
 
-If you have run the [testnet procedure](integrations.md#performing-and-verifying-a-real-testnet-transfer) before recording, show that run and its hash in a block explorer instead. **Never show a hash that did not come from the network.**
+If you have run the [testnet procedure](testnet-run.md) before recording, show that run and its hash in a block explorer instead. **Never show a hash that did not come from the network.**
 
 ## 7. CI (5 s)
 

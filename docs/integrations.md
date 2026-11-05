@@ -28,6 +28,10 @@ Checked on 2026-11-05 against the official documentation source repository, `git
 | Default testnet RPC `https://test.rpc.fastnear.com` | Official docs examples (`tools/near-api.mdx`) | Documented endpoint, used as the default. Override with `NEAR_TESTNET_RPC_URL`. It has not yet been exercised by a recorded live run (see below). |
 | Account-ID rules: 2 to 64 characters, lowercase `a-z`, `0-9` and `.` `-` `_` separators; implicit (64 hex), ETH-like (`0x`), deterministic (`0s`) and universal (`0u`) forms | Official docs `protocol/accounts-contracts/account-id.mdx` | Verified. The validator also rejects leading, trailing or adjacent separators (protocol rule). It accepts `0s` and `0u` recipients; the executor accepts only `*.testnet` and implicit signers, which is stricter than necessary for universal accounts. |
 | Testnet funding: the faucet on the docs site (native NEAR) and `near-faucet.io` | Official docs `getting-started/faucet.mdx` | Verified as documented; not used |
+| Explorer link format `https://testnet.nearblocks.io/txns/<hash>` (`testnetExplorerTxUrl`) | Official docs `integrations/accounts.mdx`, `integrations/deposits.mdx` and `integrations/balance-changes.mdx` link testnet transactions this way; `integrations/testing.mdx` names "Testnet NearBlocks" as the testnet explorer | Verified as documented. A link is only built from a well-formed base58 hash. |
+| `viewTransactionStatus` sends the RPC method `tx` with `tx_hash`, `sender_account_id` and `wait_until` | Compiled JS of `near-api-js@7.4.0` | Verified (stub) |
+| A native NEAR transfer must be signed with a full-access key; function-call keys cannot attach NEAR | Official docs `protocol/accounts-contracts/access-keys.mdx` | Verified as documented. The demo key is therefore full access (see "What is not done"). |
+| NEAR CLI commands used in [testnet-run.md](testnet-run.md) | Official docs `tools/cli.mdx` and `getting-started/create-account.mdx`, checked against the `near-cli-rs` v0.30.1 source (latest on npm) | Verified against the source. `near generate-keypair`, documented in `tools/cli.mdx`, is not in v0.30.1, so the guide uses `account add-key ... autogenerate-new-keypair`. |
 
 ### Broadcast retries (fixed)
 
@@ -48,6 +52,8 @@ If a first broadcast landed but its response was lost, these could combine into 
   4. Signs and broadcasts exactly one native transfer with `waitUntil: "FINAL"` and `throwOnFailure: false`. There is no automatic re-send or re-sign (see "Broadcast retries" above).
   5. Records `confirmed` or `failed` with the hash returned by the network. On a thrown error, a timeout or a missing hash it returns `unknown` and leaves the reservation `submitted`.
 
+  `checkStatus(hash)` is a read-only lookup by hash: it reports the network's status and never changes the ledger. The demo uses it to re-read every executed transfer, and `describeExecution()` prints the hash exactly as the network returned it, the explorer link and the final status, calling an ambiguous outcome `UNKNOWN`.
+
   When a transfer is still pending, the network's hash is stored on the reservation. `reconcile(reservationId, hash)` re-reads the status by hash. It accepts only the stored hash or, when none was stored because the broadcast outcome was ambiguous, a transaction whose signer, receiver and exact amount match the reservation. An unrelated hash cannot settle or release a reservation. The stub test decodes the signed transaction and checks the signer, receiver, a single transfer action with the exact deposit, `wait_until: FINAL`, and that the ed25519 signature verifies over `sha256(borsh(tx))`.
 - **Configuration** is off by default:
 
@@ -60,29 +66,11 @@ If a first broadcast landed but its response was lost, these could combine into 
 
 ### What is not done
 
-- **Live testnet run: pending.** No live testnet transaction has been executed or verified, and none is claimed. Treat the on-chain path as unverified until the procedure below has been run and its result recorded in the README's [Live testnet run](../README.md#live-testnet-run) section.
+- **Live testnet run: pending.** No live testnet transaction has been executed or verified, and none is claimed. Treat the on-chain path as unverified until the procedure in [testnet-run.md](testnet-run.md) has been run and its result recorded in the README's [Live testnet run](../README.md#live-testnet-run) section.
+- The executor signs with a **full-access key**, because native transfers need one. Whoever holds that key can do anything with the account, so use a dedicated testnet account and delete the key after the run (the guide shows how).
 - Only native NEAR transfers. Fungible tokens (NEP-141), function calls and meta-transactions are not supported.
 - No mainnet support, by design.
 
 ### Performing and verifying a real testnet transfer
 
-You need a machine with network access to NEAR testnet, and a testnet account you control. **Never use a mainnet key.**
-
-1. **Create a sender account.** Use any NEAR wallet listed in the official docs (for example a web wallet) and switch it to testnet. Export its private key (`ed25519:…`). Keep it out of the repository and out of shell history; your CI secret store or a local `.env` excluded by `.gitignore` are suitable.
-2. **Fund it** with the faucet on `docs.near.org` (Getting Started → Get Testnet Tokens) or with `near-faucet.io`.
-3. **Choose a recipient** that already exists on testnet. A second account you control is best. Add it to `recipients.allowed` in `examples/near-testnet/policy.yaml`. The demo refuses to run otherwise, and never edits the policy itself.
-4. **Run the demo** from the repository root after `pnpm install && pnpm build`:
-
-   ```bash
-   AGENTGUARD_NEAR_EXECUTION=testnet \
-   NEAR_TESTNET_ACCOUNT_ID=<sender>.testnet \
-   NEAR_TESTNET_PRIVATE_KEY=ed25519:<testnet key> \
-   RECIPIENT=<recipient>.testnet \
-   node examples/near-testnet/demo.mjs
-   ```
-
-   Expected output:
-   - The two policy-violating proposals print `BLOCK` and "Stopped before the execution boundary". No RPC request is made for them; this is verified by the stub test "blocked and unapproved proposals never reach signing or broadcasting".
-   - The 0.01 NEAR proposal passes the execution gate and is broadcast once. The demo prints the transaction hash taken from the network response, then re-reads the status from the RPC.
-5. **Verify independently.** Look up the hash on a NEAR testnet block explorer and check the sender, receiver and amount (0.01 NEAR = 10^22 yoctoNEAR), and that the status is successful. Check the recipient's balance changed by the same amount.
-6. **Record the evidence here:** date, hash, explorer link, sender, receiver and amount. Only after that should the on-chain integration be described as verified.
+Follow [testnet-run.md](testnet-run.md). It lists the exact steps (create and fund a testnet account, create a testnet-only key, set the variables, run the demo, check the hash in the explorer, delete the key) and the official source for each tool and URL. Only after the hash has been checked against the network does it go into the README's [Live testnet run](../README.md#live-testnet-run) section.

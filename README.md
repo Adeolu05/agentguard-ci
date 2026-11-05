@@ -142,7 +142,7 @@ pnpm -s --filter @agentguard/example-basic-agent test:naive --quiet | grep -E "P
 pnpm -s test 2>&1 | grep -E "Test Files|Tests "
 ```
 
-Expected: the naive guard (which uses `parseFloat` and case-insensitive recipient matching) reports `Passed:    7`, `Failed:    16`, `Skipped:   17` and `exit code: 1`. The full suite reports `Test Files  13 passed (13)` and `Tests  228 passed (228)`.
+Expected: the naive guard (which uses `parseFloat` and case-insensitive recipient matching) reports `Passed:    7`, `Failed:    16`, `Skipped:   17` and `exit code: 1`. The full suite reports `Test Files  14 passed (14)` and `Tests  250 passed (250)`.
 
 ## Overview
 
@@ -260,7 +260,7 @@ The web app has two parts: a project landing page at `/` and the dashboard at `/
 
 ### Live testnet run
 
-No live testnet transaction is recorded yet, and none is claimed. When one is run with the procedure in [docs/integrations.md](docs/integrations.md#performing-and-verifying-a-real-testnet-transfer) and checked against the network, its evidence goes here:
+No live testnet transaction is recorded yet, and none is claimed. When one is run with the step-by-step procedure in [docs/testnet-run.md](docs/testnet-run.md) and checked against the network, its evidence goes here:
 
 | Field | Value |
 | --- | --- |
@@ -276,7 +276,7 @@ No live testnet transaction is recorded yet, and none is claimed. When one is ru
 
 Verified on 2026-11-05 (Node 22.23.4, pnpm 10.28.0, Linux):
 
-- `pnpm check` runs lint, build, the dashboard build, typecheck and 228 automated tests, and all of it passes.
+- `pnpm check` runs lint, build, the dashboard build, typecheck and 250 automated tests, and all of it passes.
 - From a fresh clone with an empty package cache (cold install from npm, frozen lockfile), the quick-start, the unsafe-policy demo (exit code 1) and an independent cross-check of the reports all pass. Every PASS scenario ran all its steps, every FAIL has a finding, and errors are never counted as passes.
 - AgentGuard was installed from local tarballs into an unrelated npm project, and its generated GitHub workflow steps were executed there ([docs/adoption.md](docs/adoption.md)).
 - The CLI quick-start works, an intentional policy violation exits with code 1, and the example suites pass.
