@@ -50,7 +50,7 @@ export default async function ScenarioPage({ params }: { params: Promise<{ id: s
       </div>
       <h2 className="mb-3 mt-8 text-sm font-semibold text-muted">Execution history</h2>
       {/* Phones: one row per run; the whole row is the link. */}
-      <ul aria-label={`Execution history for ${latest.id}`} className="divide-y divide-border rounded-lg border border-border bg-surface sm:hidden">
+      <ul aria-label={`Execution history for ${latest.id}`} className="divide-y divide-border rounded-2xl border border-border bg-surface sm:hidden">
         {history.map((h) => (
           <li key={h.runId}>
             <Link href={`/runs/${h.runId}`} className="flex min-h-11 items-center justify-between gap-3 px-4 py-2 hover:bg-surface-2">
@@ -63,7 +63,7 @@ export default async function ScenarioPage({ params }: { params: Promise<{ id: s
           </li>
         ))}
       </ul>
-      <div className="hidden overflow-x-auto rounded-lg border border-border bg-surface sm:block">
+      <div className="hidden overflow-x-auto rounded-2xl border border-border bg-surface sm:block">
         <table className="w-full text-left text-sm">
           <caption className="sr-only">Execution history for {latest.id}</caption>
           <thead className="border-b border-border text-xs uppercase tracking-wide text-muted">

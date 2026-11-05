@@ -22,7 +22,7 @@ export function RunsTable({ runs, caption }: { runs: readonly RunReport[]; capti
           <li key={r.runId}>
             <Link
               href={`/runs/${r.runId}`}
-              className="block h-full rounded-lg border border-border bg-surface p-4 hover:bg-surface-2"
+              className="block h-full rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-border-strong hover:bg-surface-2"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -48,7 +48,7 @@ export function RunsTable({ runs, caption }: { runs: readonly RunReport[]; capti
         ))}
       </ul>
       {/* Laptops and up: table. */}
-      <div className="hidden overflow-x-auto rounded-lg border border-border bg-surface lg:block">
+      <div className="hidden overflow-x-auto rounded-2xl border border-border bg-surface lg:block">
         <table className="w-full text-left text-sm">
           <caption className="sr-only">{caption}</caption>
           <thead className="border-b border-border text-xs uppercase tracking-wide text-muted">

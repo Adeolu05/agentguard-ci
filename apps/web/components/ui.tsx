@@ -42,7 +42,7 @@ export function SeverityBadge({ severity }: { severity: string }) {
 
 export function Card({ title, children, className = "" }: { title?: string; children: ReactNode; className?: string }) {
   return (
-    <section className={`rounded-lg border border-border bg-surface p-4 ${className}`}>
+    <section className={`rounded-2xl border border-border bg-surface p-4 sm:p-5 ${className}`}>
       {title ? <h2 className="mb-3 text-sm font-semibold text-muted">{title}</h2> : null}
       {children}
     </section>
@@ -51,9 +51,9 @@ export function Card({ title, children, className = "" }: { title?: string; chil
 
 export function Metric({ label, value, hint }: { label: string; value: ReactNode; hint?: string }) {
   return (
-    <div className="min-w-0 rounded-lg border border-border bg-surface p-3 sm:p-4">
+    <div className="min-w-0 rounded-2xl border border-border bg-surface p-3 transition-colors hover:border-border-strong sm:p-4">
       <div className="text-xs font-medium uppercase tracking-wide text-muted">{label}</div>
-      <div className="mt-1 text-xl font-semibold tabular-nums sm:text-2xl">{value}</div>
+      <div className="mt-1.5 font-display text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl">{value}</div>
       {hint ? <div className="mt-1 text-xs text-muted">{hint}</div> : null}
     </div>
   );
@@ -63,7 +63,7 @@ export function PageHeader({ title, subtitle, children }: { title: string; subti
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div className="min-w-0">
-        <h1 className="text-lg font-semibold sm:text-xl">{title}</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
         {subtitle ? <p className="mt-1 text-sm text-muted">{subtitle}</p> : null}
       </div>
       {children}
@@ -86,8 +86,8 @@ export function TextLink({ href, children }: { href: string; children: ReactNode
 export function EmptyState({ title, children, level = 2 }: { title: string; children: ReactNode; level?: 1 | 2 }) {
   const Heading = level === 1 ? "h1" : "h2";
   return (
-    <div className="rounded-lg border border-dashed border-border bg-surface p-5 text-center sm:p-8">
-      <Heading className="text-base font-semibold">{title}</Heading>
+    <div className="rounded-2xl border border-dashed border-border-strong bg-surface p-5 text-center sm:p-10">
+      <Heading className="font-display text-lg font-semibold">{title}</Heading>
       <div className="mx-auto mt-2 max-w-xl text-sm text-muted">{children}</div>
     </div>
   );
@@ -96,7 +96,7 @@ export function EmptyState({ title, children, level = 2 }: { title: string; chil
 export function Notice({ tone, children }: { tone: "warn" | "error" | "info"; children: ReactNode }) {
   const cls = tone === "error" ? "border-fail bg-fail-bg text-fail" : tone === "warn" ? "border-skip bg-skip-bg text-skip" : "border-border bg-surface-2 text-fg";
   return (
-    <div role={tone === "error" ? "alert" : "status"} className={`mb-4 rounded-md border px-4 py-3 text-sm ${cls}`}>
+    <div role={tone === "error" ? "alert" : "status"} className={`mb-4 rounded-xl border px-4 py-3 text-sm ${cls}`}>
       {children}
     </div>
   );

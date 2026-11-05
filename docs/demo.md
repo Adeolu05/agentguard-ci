@@ -73,7 +73,7 @@ AGENTGUARD_RUNS_DIR=/tmp/ag-demo/.agentguard/runs AGENTGUARD_PROJECT=/tmp/ag-dem
   pnpm --dir "$REPO" --filter @agentguard/web dev
 ```
 
-Open http://localhost:3000. The overview shows the passing and the failing run. Open the CRITICAL finding: it shows expected versus observed behaviour, the reproduction command, the remediation and the policy hash. Everything on screen comes from the JSON reports the CLI just wrote; the dashboard is read-only.
+Open http://localhost:3000/dashboard (the project landing page is at http://localhost:3000). The overview shows the passing and the failing run. Open the CRITICAL finding: it shows expected versus observed behaviour, the reproduction command, the remediation and the policy hash. Everything on screen comes from the JSON reports the CLI just wrote; the dashboard is read-only.
 
 ## 5. Fix and rerun (15 s)
 

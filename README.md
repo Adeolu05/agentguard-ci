@@ -2,6 +2,8 @@
 
 **Test what your AI agent is allowed to do before trusting it with the ability to move money.**
 
+![AgentGuard CI: project landing page](docs/images/landing.png)
+
 AgentGuard CI is an open-source security testing toolkit for AI agents that can initiate financial transactions. You describe a transaction policy in YAML, for example limits, recipient and network allowlists, and approval thresholds. AgentGuard then runs a suite of adversarial scenarios against it: boundary amounts, injected instructions, malformed input, replayed approvals, concurrent spending and retries. It reports exactly which security properties hold and which do not. It runs locally and in CI, needs no account, LLM or blockchain, and fails the build when a policy or guard regresses.
 
 AgentGuard is **not** a wallet, a custody service or a trading bot. It never signs or sends a transaction during a test run. It is a deterministic policy engine plus a testing layer.
@@ -108,10 +110,10 @@ Run `agentguard init --github-actions` to add `.github/workflows/agentguard.yml`
 pnpm dashboard:demo                       # bundled demo reports (labelled as demo data)
 AGENTGUARD_RUNS_DIR=/tmp/my-agent/.agentguard/runs \
 AGENTGUARD_PROJECT=/tmp/my-agent/agentguard.yaml \
-  pnpm --filter @agentguard/web dev       # your own runs, at http://localhost:3000
+  pnpm --filter @agentguard/web dev       # your own runs, at http://localhost:3000/dashboard
 ```
 
-The dashboard is read-only. Every report is validated against the same schema the CLI writes; unreadable files are listed as such, never shown as results. The demo fixtures are produced by [a script](apps/web/scripts/generate-demo-runs.sh) that runs the real CLI.
+The web app has two parts: a project landing page at `/` and the dashboard at `/dashboard`. The dashboard is read-only. Every report is validated against the same schema the CLI writes; unreadable files are listed as such, never shown as results. The demo fixtures are produced by [a script](apps/web/scripts/generate-demo-runs.sh) that runs the real CLI.
 
 ## NEAR integration
 

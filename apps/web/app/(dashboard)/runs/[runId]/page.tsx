@@ -64,7 +64,7 @@ export default async function RunPage({ params }: { params: Promise<{ runId: str
         {run.scenarios.map((sc) => {
           const codes = observedReasonCodes(sc);
           return (
-            <details key={sc.id} className="group rounded-lg border border-border bg-surface" open={sc.status === "FAIL" || sc.status === "ERROR"}>
+            <details key={sc.id} className="group rounded-2xl border border-border bg-surface" open={sc.status === "FAIL" || sc.status === "ERROR"}>
               <summary className="flex cursor-pointer list-none flex-wrap items-center gap-3 px-4 py-3">
                 <StatusBadge status={sc.status} />
                 <span className="font-medium">{sc.name}</span>
