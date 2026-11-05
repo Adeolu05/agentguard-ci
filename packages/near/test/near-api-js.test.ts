@@ -13,7 +13,7 @@ import { createHash } from "node:crypto";
 import { afterEach, describe, expect, it } from "vitest";
 import { KeyPair, base64Decode, baseEncode, decodeSignedTransaction, encodeTransaction } from "near-api-js";
 import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@agentguard/core";
-import { NearTestnetExecutor, createNearTestnetClient, nearAccountIdValidator } from "../src/index.js";
+import { NearTestnetExecutor, createNearTestnetClient, describeExecution, nearAccountIdValidator } from "../src/index.js";
 
 interface Stub {
   url: string;
@@ -28,6 +28,7 @@ async function rpcStub(
   opts: { chainId?: string; txStatus?: unknown; firstSendFails?: "http500" | "invalidNonce" } = {},
 ): Promise<Stub> {
   let sends = 0;
+  const sent = new Map<string, unknown>();
   const blockHash = baseEncode(new Uint8Array(32).fill(7));
   const calls: Stub["calls"] = [];
   const server = http.createServer((req, res) => {
@@ -40,6 +41,8 @@ async function rpcStub(
       if (msg.method === "status") result = { chain_id: opts.chainId ?? "testnet" };
       else if (msg.method === "block") result = { header: { hash: blockHash, height: 100 } };
       else if (msg.method === "query") result = { nonce: 5, permission: "FullAccess", block_hash: blockHash, block_height: 100 };
+      // Status by hash (near-api-js 7.4.0 viewTransactionStatus sends method "tx"): only known hashes.
+      else if (msg.method === "tx") result = sent.get(msg.params.tx_hash as string);
       else if (msg.method === "send_tx" && sends++ === 0 && opts.firstSendFails === "http500") {
         res.statusCode = 500;
         res.end("internal error");
@@ -76,6 +79,7 @@ async function rpcStub(
           receipts_outcome: [],
           final_execution_status: "FINAL",
         };
+        sent.set(hash, result);
       }
       res.setHeader("content-type", "application/json");
       res.end(
@@ -155,6 +159,30 @@ networks: { allowed: [near-testnet] }
     const signed = decodeSignedTransaction(base64Decode(stub.calls.find((c) => c.method === "send_tx")!.params.signed_tx_base64 as string));
     expect(signed.transaction.actions[0]!.transfer?.deposit).toBe(250_000_000_000_000_000_000_000n);
     expect((await engine.getReservation(id))?.transactionReference).toBe(r.transactionHash);
+  });
+
+  it("the demo output for a confirmed transfer: the computed hash, its explorer link and a read-only re-check", async () => {
+    const stub = await rpcStub();
+    const { engine, id } = await authorised();
+    const client = await createNearTestnetClient({ accountId: "agent.testnet", rpcUrl: stub.url }, KeyPair.fromRandom("ed25519").toString());
+    const executor = new NearTestnetExecutor({ engine, client });
+    const r = await executor.execute(id);
+    const signed = decodeSignedTransaction(base64Decode(stub.calls.find((c) => c.method === "send_tx")!.params.signed_tx_base64 as string));
+    const expectedHash = baseEncode(createHash("sha256").update(encodeTransaction(signed.transaction)).digest());
+    expect(r.transactionHash).toBe(expectedHash);
+
+    const settled = await engine.getReservation(id);
+    const check = await executor.checkStatus(r.transactionHash!);
+    const statusCall = stub.calls.find((c) => c.method === "tx")!;
+    expect(statusCall.params).toEqual({ tx_hash: expectedHash, sender_account_id: "agent.testnet", wait_until: "FINAL" });
+    expect(await engine.getReservation(id)).toEqual(settled); // the re-check changed nothing
+
+    expect(describeExecution(r, check)).toEqual([
+      `Transaction hash (exactly as returned by the network): ${expectedHash}`,
+      `Explorer: https://testnet.nearblocks.io/txns/${expectedHash}`,
+      "Final status: CONFIRMED. The transfer executed on testnet.",
+      "Re-read from the RPC by hash: CONFIRMED (matches)",
+    ]);
   });
 
   it("records an on-chain failure as failed when throwOnFailure is disabled", async () => {

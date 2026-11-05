@@ -45,6 +45,13 @@ export interface NearExecutionResult {
   message: string;
 }
 
+/** Result of a read-only status lookup; it never changes the ledger. */
+export interface StatusCheck {
+  status: "confirmed" | "failed" | "pending" | "unknown";
+  transactionHash: string;
+  message: string;
+}
+
 export const NEAR_NATIVE_ASSET = "NEAR";
 export const NEAR_TESTNET = "near-testnet";
 
@@ -177,6 +184,24 @@ export class NearTestnetExecutor {
       };
     }
     return this.record(reservationId, transactionHash, classifyStatus(tx.status));
+  }
+
+  /**
+   * Read-only status lookup by hash. It never changes the ledger: use it to show or
+   * double-check a transaction's final status. To settle a reservation, use reconcile().
+   */
+  async checkStatus(transactionHash: string): Promise<StatusCheck> {
+    let tx: NearTxView;
+    try {
+      tx = await this.withTimeout(this.client.transactionStatus(transactionHash), "status query");
+    } catch (err) {
+      return { status: "unknown", transactionHash, message: `status query failed: ${(err as Error).message}` };
+    }
+    if (tx?.transaction_outcome?.id !== transactionHash) {
+      return { status: "unknown", transactionHash, message: "status response did not match the requested transaction" };
+    }
+    const status = classifyStatus(tx.status);
+    return { status, transactionHash, message: `network reports the transaction as ${status}` };
   }
 
   private async record(reservationId: string, hash: string, outcome: "confirmed" | "failed" | "pending"): Promise<NearExecutionResult> {
