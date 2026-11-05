@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@agentguard/core";
 import {
   checkAccountNetwork,
+  checkDirectSubAccount,
   checkNearAccountId,
+  checkTestnetAccountId,
   classifyStatus,
   nearAccountIdValidator,
   nearTestnetConfigFromEnv,
@@ -59,6 +61,22 @@ describe("NEAR account IDs", () => {
     expect(checkAccountNetwork("bob.near", "near-testnet").ok).toBe(false);
     expect(checkAccountNetwork("bob.testnet", "near-mainnet").ok).toBe(false);
     expect(checkAccountNetwork("f".repeat(64), "near-testnet").ok).toBe(true);
+  });
+});
+
+describe("testnet-only account checks for the vault scripts", () => {
+  it.each(["alice.testnet", "vault.alice.testnet", "f".repeat(64), `0x${"ab".repeat(20)}`])("accepts %s", (id) =>
+    expect(checkTestnetAccountId(id).ok).toBe(true),
+  );
+  it.each(["alice.near", "alice", "near", "Alice.testnet", "testnet.near"])("rejects %s", (id) =>
+    expect(checkTestnetAccountId(id).ok).toBe(false),
+  );
+  it("only accepts a direct sub-account", () => {
+    expect(checkDirectSubAccount("vault.alice.testnet", "alice.testnet").ok).toBe(true);
+    expect(checkDirectSubAccount("a.vault.alice.testnet", "alice.testnet").ok).toBe(false);
+    expect(checkDirectSubAccount("vaultalice.testnet", "alice.testnet").ok).toBe(false);
+    expect(checkDirectSubAccount(".alice.testnet", "alice.testnet").ok).toBe(false);
+    expect(checkDirectSubAccount("alice.testnet", "alice.testnet").ok).toBe(false);
   });
 });
 

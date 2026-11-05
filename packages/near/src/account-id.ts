@@ -48,6 +48,32 @@ export function checkAccountNetwork(id: string, networkId: NearNetworkId): Accou
 }
 
 /**
+ * Stricter than checkAccountNetwork, for scripts that sign on testnet: a named account
+ * must be a `.testnet` account; implicit accounts (64 hex characters, or `0x` plus 40)
+ * exist on every network and are accepted.
+ */
+export function checkTestnetAccountId(id: string): AccountIdCheck {
+  const syntax = checkNearAccountId(id);
+  if (!syntax.ok) return syntax;
+  if (isImplicitAccountId(id) || id.endsWith(".testnet")) return { ok: true };
+  return { ok: false, message: `"${id}" is not a testnet account (expected a name ending in .testnet)` };
+}
+
+/**
+ * True if `child` is a direct sub-account of `parent` (for example `vault.alice.testnet`
+ * under `alice.testnet`), which is the only kind of account `parent` can create itself.
+ */
+export function checkDirectSubAccount(child: string, parent: string): AccountIdCheck {
+  const syntax = checkNearAccountId(child);
+  if (!syntax.ok) return syntax;
+  const suffix = `.${parent}`;
+  if (!child.endsWith(suffix) || child.length === suffix.length || child.slice(0, -suffix.length).includes(".")) {
+    return { ok: false, message: `"${child}" is not a direct sub-account of "${parent}" (expected <name>.${parent})` };
+  }
+  return { ok: true };
+}
+
+/**
  * Engine validator: for proposals on a NEAR network, the recipient must be a
  * syntactically valid NEAR account ID for that network. It only adds reasons; the
  * engine's own allowlist and limit rules still apply.
