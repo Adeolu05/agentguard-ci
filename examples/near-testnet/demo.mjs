@@ -9,13 +9,17 @@
 //   NEAR_TESTNET_PRIVATE_KEY=ed25519:<testnet key> \
 //   RECIPIENT=<an existing testnet account you added to policy.yaml> \
 //   node demo.mjs
-// The allowed proposal then goes through the AgentGuard execution gate, is broadcast with
-// near-api-js, and its status is re-read from the RPC by transaction hash.
+// The allowed proposal then goes through the AgentGuard execution gate and is broadcast with
+// near-api-js. For each executed transfer the demo prints the transaction hash exactly as the
+// network returned it, a NearBlocks testnet explorer link and the final status, then re-reads
+// the status from the RPC by hash (read-only). An ambiguous outcome is reported as UNKNOWN.
+// Step-by-step guide: docs/testnet-run.md
 import { readFile } from "node:fs/promises";
 import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@agentguard/core";
 import {
   NearTestnetExecutor,
   createNearTestnetClient,
+  describeExecution,
   nearAccountIdValidator,
   nearTestnetConfigFromEnv,
 } from "@agentguard/near";
@@ -26,6 +30,12 @@ if (!loaded.ok) {
   process.exit(2);
 }
 const engine = new PolicyEngine({ policy: loaded.policy, ledger: new InMemoryLedger(), validators: [nearAccountIdValidator()] });
+const env = nearTestnetConfigFromEnv();
+// A real transfer needs a recipient you chose: never fall back to the placeholder account.
+if (env.ok && !process.env.RECIPIENT) {
+  console.error("Testnet execution is enabled, so RECIPIENT must be set to an existing testnet account that is in recipients.allowed in policy.yaml.");
+  process.exit(2);
+}
 const recipient = process.env.RECIPIENT ?? "merchant-example.testnet";
 if (!loaded.policy.allowedRecipients.has(recipient)) {
   console.error(`RECIPIENT "${recipient}" is not in recipients.allowed in policy.yaml. Add it there first: the demo will not change the policy for you.`);
@@ -39,7 +49,6 @@ const proposals = [
   { label: "within policy", p: { ...base, requestId: `demo-ok-${Date.now()}`, amount: "0.01", recipientId: recipient } },
 ];
 
-const env = nearTestnetConfigFromEnv();
 const executor = env.ok
   ? new NearTestnetExecutor({ engine, client: await createNearTestnetClient(env.config, env.privateKey) })
   : undefined;
@@ -58,10 +67,7 @@ for (const { label, p } of proposals) {
     continue;
   }
   const result = await executor.execute(e.reservation.reservationId);
-  console.log(`  Execution: ${result.status}: ${result.message}`);
-  if (result.transactionHash) {
-    console.log(`  Transaction hash (from the network): ${result.transactionHash}`);
-    const check = await executor.reconcile(e.reservation.reservationId, result.transactionHash);
-    console.log(`  Status re-read from RPC: ${check.status}`);
-  }
+  // Read-only re-check by hash (never changes the ledger), only for a hash the network returned.
+  const check = result.transactionHash ? await executor.checkStatus(result.transactionHash) : undefined;
+  for (const line of describeExecution(result, check)) console.log(`  ${line}`);
 }
