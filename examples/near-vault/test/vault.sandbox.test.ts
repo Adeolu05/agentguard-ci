@@ -70,6 +70,19 @@ describe("payments and blocks", () => {
     expect(await v.balance("data.sandbox")).toBe(before + NEAR / 2n);
   });
 
+  it("blocks recipient strings that are not NEAR account IDs, and oversized memos", async () => {
+    // The inputs of the built-in recipient-normalisation scenario. The vault reports
+    // RECIPIENT_INVALID for all four (NEAR account IDs are lowercase ASCII only).
+    for (const [i, recipient] of ["Shop.sandbox", "shop.sandbox ", "shop.sandbox\u200b", "sh\u043ep.sandbox"].entries()) {
+      const r = await pay(v, `norm-${i}`, recipient, 1n);
+      expect(r.value).toMatchObject({ decision: "BLOCK", reason_codes: ["RECIPIENT_INVALID"] });
+    }
+    // The 100,000-character memo of the built-in oversized-input scenario.
+    const memo = await pay(v, "huge-memo", "shop.sandbox", 1n, { memo: "A".repeat(100_000) });
+    expect(memo.value).toMatchObject({ decision: "BLOCK", reason_codes: ["MEMO_INVALID"] });
+    expect(memo.events[0].data[0].memo).toBeNull(); // the oversized memo is not written to the log
+  });
+
   it("a duplicate request ID never pays twice, and a changed amount is a conflict", async () => {
     const before = await v.balance("shop.sandbox");
     const first = await pay(v, "dup", "shop.sandbox", 7n);
