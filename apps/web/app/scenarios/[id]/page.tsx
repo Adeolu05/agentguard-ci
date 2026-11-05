@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StepList } from "@/components/steps";
 import { Card, PageHeader, SeverityBadge, StatusBadge } from "@/components/ui";
 import { formatTime, loadRuns, scenarioLibrary } from "@/lib/data";
 
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  return { title: `Scenario: ${id}` };
+}
 export const dynamic = "force-dynamic";
 
 export default async function ScenarioPage({ params }: { params: Promise<{ id: string }> }) {
@@ -18,7 +23,7 @@ export default async function ScenarioPage({ params }: { params: Promise<{ id: s
   return (
     <>
       <p className="mb-2 text-sm">
-        <Link href="/scenarios" className="text-accent hover:underline">
+        <Link href="/scenarios" className="inline-flex min-h-11 items-center text-accent hover:underline sm:min-h-6">
           ← Scenario library
         </Link>
       </p>
@@ -44,26 +49,40 @@ export default async function ScenarioPage({ params }: { params: Promise<{ id: s
         </Card>
       </div>
       <h2 className="mb-3 mt-8 text-sm font-semibold text-muted">Execution history</h2>
-      <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+      {/* Phones: one row per run; the whole row is the link. */}
+      <ul aria-label={`Execution history for ${latest.id}`} className="divide-y divide-border rounded-lg border border-border bg-surface sm:hidden">
+        {history.map((h) => (
+          <li key={h.runId}>
+            <Link href={`/runs/${h.runId}`} className="flex min-h-11 items-center justify-between gap-3 px-4 py-2 hover:bg-surface-2">
+              <span className="min-w-0">
+                <span className="block font-mono text-sm text-accent">{h.runId.slice(0, 12)}</span>
+                <span className="block text-xs text-muted">{formatTime(h.startedAt)}</span>
+              </span>
+              <StatusBadge status={h.status} />
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <div className="hidden overflow-x-auto rounded-lg border border-border bg-surface sm:block">
         <table className="w-full text-left text-sm">
           <caption className="sr-only">Execution history for {latest.id}</caption>
           <thead className="border-b border-border text-xs uppercase tracking-wide text-muted">
             <tr>
-              <th scope="col" className="px-4 py-2 font-medium">Run</th>
-              <th scope="col" className="px-4 py-2 font-medium">Started</th>
-              <th scope="col" className="px-4 py-2 font-medium">Outcome</th>
+              <th scope="col" className="px-3 py-2 font-medium sm:px-4">Run</th>
+              <th scope="col" className="px-3 py-2 font-medium sm:px-4">Started</th>
+              <th scope="col" className="px-3 py-2 font-medium sm:px-4">Outcome</th>
             </tr>
           </thead>
           <tbody>
             {history.map((h) => (
               <tr key={h.runId} className="border-b border-border last:border-0">
-                <td className="px-4 py-2">
-                  <Link href={`/runs/${h.runId}`} className="font-mono text-accent hover:underline">
+                <td className="px-3 py-2 sm:px-4">
+                  <Link href={`/runs/${h.runId}`} className="inline-flex min-h-6 items-center font-mono text-accent hover:underline">
                     {h.runId.slice(0, 12)}
                   </Link>
                 </td>
-                <td className="px-4 py-2">{formatTime(h.startedAt)}</td>
-                <td className="px-4 py-2">
+                <td className="px-3 py-2 sm:px-4">{formatTime(h.startedAt)}</td>
+                <td className="px-3 py-2 sm:px-4">
                   <StatusBadge status={h.status} />
                 </td>
               </tr>

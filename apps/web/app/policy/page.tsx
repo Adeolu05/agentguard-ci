@@ -1,11 +1,23 @@
+import type { Metadata } from "next";
 import { stringify } from "yaml";
 import { Card, Code, EmptyState, Notice, PageHeader, TextLink } from "@/components/ui";
 import { formatTime, loadPolicyStatus, loadRuns } from "@/lib/data";
 
+export const metadata: Metadata = { title: "Policy" };
 export const dynamic = "force-dynamic";
 
 function PolicyDocument({ document }: { document: unknown }) {
-  return <pre className="overflow-x-auto rounded bg-surface-2 p-4 font-mono text-xs leading-relaxed">{stringify(document)}</pre>;
+  // Wide YAML keeps its indentation and scrolls; the region is keyboard-focusable and labelled.
+  return (
+    <pre
+      tabIndex={0}
+      role="region"
+      aria-label="Policy document (YAML)"
+      className="overflow-x-auto rounded bg-surface-2 p-3 font-mono text-xs leading-relaxed sm:p-4"
+    >
+      {stringify(document)}
+    </pre>
+  );
 }
 
 export default async function PolicyPage() {

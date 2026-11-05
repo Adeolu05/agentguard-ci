@@ -1,8 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { InvalidReports, NoRuns, RunsTable } from "@/components/runs";
 import { EmptyState, PageHeader } from "@/components/ui";
 import { loadRuns } from "@/lib/data";
 
+export const metadata: Metadata = { title: "Test runs" };
 export const dynamic = "force-dynamic";
 
 const RESULTS = ["PASSED", "FAILED", "ERROR"] as const;
@@ -13,7 +15,7 @@ function FilterLink({ href, active, children }: { href: string; active: boolean;
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`rounded px-2.5 py-1 text-sm ${active ? "bg-fg text-bg" : "text-muted hover:bg-surface-2 hover:text-fg"}`}
+      className={`inline-flex min-h-11 items-center rounded px-3 text-sm sm:min-h-8 sm:px-2.5 ${active ? "bg-fg text-bg" : "text-muted hover:bg-surface-2 hover:text-fg"}`}
     >
       {children}
     </Link>
@@ -42,9 +44,9 @@ export default async function RunsPage({ searchParams }: { searchParams: Promise
         <NoRuns source={source} />
       ) : (
         <>
-          <div className="mb-4 flex flex-wrap items-center gap-6">
-            <div role="group" aria-label="Filter by result" className="flex items-center gap-1">
-              <span className="mr-1 text-xs uppercase tracking-wide text-muted">Result</span>
+          <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-2">
+            <div role="group" aria-label="Filter by result" className="flex flex-wrap items-center gap-1">
+              <span className="mr-1 w-full text-xs uppercase tracking-wide text-muted sm:w-auto">Result</span>
               <FilterLink href={href({ mode })} active={!result}>All</FilterLink>
               {RESULTS.map((r) => (
                 <FilterLink key={r} href={href({ result: r, mode })} active={result === r}>
@@ -52,8 +54,8 @@ export default async function RunsPage({ searchParams }: { searchParams: Promise
                 </FilterLink>
               ))}
             </div>
-            <div role="group" aria-label="Filter by execution mode" className="flex items-center gap-1">
-              <span className="mr-1 text-xs uppercase tracking-wide text-muted">Mode</span>
+            <div role="group" aria-label="Filter by execution mode" className="flex flex-wrap items-center gap-1">
+              <span className="mr-1 w-full text-xs uppercase tracking-wide text-muted sm:w-auto">Mode</span>
               <FilterLink href={href({ result })} active={!mode}>All</FilterLink>
               {MODES.map((m) => (
                 <FilterLink key={m} href={href({ result, mode: m })} active={mode === m}>

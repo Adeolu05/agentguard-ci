@@ -5,16 +5,16 @@
   --surface: #ffffff;
   --surface-2: #f1f1f3;
   --fg: #16161a;
-  --muted: #5f5f6b;
+  --muted: #5b5b66;
   --border: #e2e2e6;
-  --accent: #2f5bd3;
-  --pass: #17803d;
+  --accent: #2a52c4;
+  --pass: #126b33;
   --pass-bg: #e8f5ec;
   --fail: #b42318;
   --fail-bg: #fdecea;
-  --error: #8a3ffc;
+  --error: #6d28d9;
   --error-bg: #f3ecff;
-  --skip: #8a6100;
+  --skip: #7a5600;
   --skip-bg: #fdf4dd;
 }
 
@@ -65,6 +65,19 @@ html {
 body {
   background: var(--bg);
   color: var(--fg);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Long unbreakable values (hashes, file paths, JSON, reason codes) must wrap instead of
+   pushing the page wider than the screen. "anywhere" also shrinks grid/flex min-content. */
+main,
+footer {
+  overflow-wrap: anywhere;
+}
+
+/* Tables only appear where there is room for them; their cells must not break words. */
+table {
+  overflow-wrap: normal;
 }
 
 :focus-visible {

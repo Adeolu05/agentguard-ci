@@ -1,47 +1,46 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { MainNav } from "@/components/nav";
 import { dataSource } from "@/lib/data";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AgentGuard CI",
+  title: { default: "AgentGuard CI", template: "%s · AgentGuard CI" },
   description: "Security test results for AI agent transaction policies",
+  robots: { index: false, follow: false },
 };
 
-const NAV = [
-  { href: "/", label: "Overview" },
-  { href: "/runs", label: "Test runs" },
-  { href: "/scenarios", label: "Scenarios" },
-  { href: "/policy", label: "Policy" },
-];
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#17171c" },
+  ],
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const source = dataSource();
   return (
     <html lang="en">
-      <body className="min-h-screen font-sans antialiased">
-        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-10 focus:rounded focus:bg-surface focus:px-3 focus:py-2">
+      <body className="flex min-h-screen flex-col font-sans antialiased">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-10 focus:rounded focus:bg-surface focus:px-3 focus:py-2"
+        >
           Skip to content
         </a>
         <header className="border-b border-border bg-surface">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-2 px-4 py-3">
-            <Link href="/" className="flex items-center gap-2 font-semibold">
-              <span aria-hidden="true" className="inline-block h-5 w-5 rounded bg-fg" />
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-2 px-4 py-2 sm:py-3 2xl:max-w-7xl">
+            <Link href="/" className="flex min-h-11 items-center gap-2 font-semibold sm:min-h-9">
+              <svg aria-hidden="true" viewBox="0 0 32 32" className="h-6 w-6">
+                <rect width="32" height="32" rx="7" className="fill-fg" />
+                <path d="M16 6l8 3v6c0 5-3.4 9.3-8 11-4.6-1.7-8-6-8-11V9z" fill="none" className="stroke-pass" strokeWidth="2.4" strokeLinejoin="round" />
+              </svg>
               AgentGuard CI
             </Link>
-            <nav aria-label="Main">
-              <ul className="flex flex-wrap gap-1 text-sm">
-                {NAV.map((n) => (
-                  <li key={n.href}>
-                    <Link href={n.href} className="rounded px-3 py-1.5 text-muted hover:bg-surface-2 hover:text-fg">
-                      {n.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-            <span className="ml-auto text-xs text-muted">Read-only · reports from the AgentGuard CLI</span>
+            <MainNav />
           </div>
         </header>
         {source.mode === "demo" ? (
@@ -50,9 +49,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             policies. They are not results from your project.
           </div>
         ) : null}
-        <main id="main" className="mx-auto max-w-6xl px-4 py-8">
+        <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-8 2xl:max-w-7xl">
           {children}
         </main>
+        <footer className="border-t border-border px-4 py-4 text-center text-xs text-muted">
+          Read-only view of reports written by the AgentGuard CLI. It never runs tests, changes files or sends transactions.
+        </footer>
       </body>
     </html>
   );
