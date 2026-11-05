@@ -2,16 +2,58 @@
 
 **Test what your AI agent is allowed to do before trusting it with the ability to move money.**
 
-![AgentGuard CI: project landing page](docs/images/landing.png)
+## For judges: verify in 5 minutes
 
-AgentGuard CI is an open-source security testing toolkit for AI agents that can initiate financial transactions. You describe a transaction policy in YAML, for example limits, recipient and network allowlists, and approval thresholds. AgentGuard then runs a suite of adversarial scenarios against it: boundary amounts, injected instructions, malformed input, replayed approvals, concurrent spending and retries. It reports exactly which security properties hold and which do not. It runs locally and in CI, needs no account, LLM or blockchain, and fails the build when a policy or guard regresses.
+Requirements: Node.js 22.22 or newer and pnpm 10 (`corepack enable` provides pnpm). No account, key, LLM or blockchain access is needed. Run each block from the repository root; every block is self-contained, so it also works in a fresh, non-interactive shell. The expected results below are the real output of these exact commands, run on 2026-11-05 from a fresh clone (Node 22.23.4, pnpm 10.28.0, Linux).
 
-AgentGuard is **not** a wallet, a custody service or a trading bot. It never signs or sends a transaction during a test run. It is a deterministic policy engine plus a testing layer.
+**1. Install and build.**
+
+```bash
+git clone https://github.com/Adeolu05/agentguard-ci.git && cd agentguard-ci
+pnpm install --frozen-lockfile && pnpm build
+```
+
+Expected: both commands exit with code 0, and the build ends with `packages/cli build: Done`.
+
+**2. Baseline: the 40 built-in security scenarios pass.**
+
+```bash
+pnpm -s agentguard test --config examples/payment-policy/agentguard.yaml --no-save --quiet; echo "exit code: $?"
+```
+
+Expected:
 
 ```text
-$ agentguard test --quiet      # after someone added "attacker-wallet" to the recipient allowlist
 AgentGuard CI 0.1.0
-Policy:   policies/default.yaml (sha256:9736d3b8b31f…)
+Policy:   policy.yaml (sha256:8a1b22fbb25b…)
+Target:   AgentGuard engine
+Mode:     simulation (scenario runs never sign or send transactions)
+Running 40 scenarios
+
+
+Summary
+  Scenarios: 40
+  Passed:    40
+  Failed:    0
+  Errors:    0
+  Skipped:   0
+
+Result: PASSED  (exit code 0)
+exit code: 0
+```
+
+**3. Make the policy unsafe: someone allowlists `attacker-wallet`.**
+
+```bash
+perl -pi -e 's/^    - data-provider-example$/    - data-provider-example\n    - attacker-wallet/' examples/payment-policy/policy.yaml
+pnpm -s agentguard test --config examples/payment-policy/agentguard.yaml --no-save --quiet; echo "exit code: $?"
+```
+
+Expected:
+
+```text
+AgentGuard CI 0.1.0
+Policy:   policy.yaml (sha256:9736d3b8b31f…)
 Target:   AgentGuard engine
 Mode:     simulation (scenario runs never sign or send transactions)
 Running 40 scenarios
@@ -30,7 +72,85 @@ Findings
   [CRITICAL] Instruction injection cannot override deterministic policy rules: expected BLOCK, observed ALLOW
 
 Result: FAILED  (exit code 1)
+exit code: 1
 ```
+
+The scenario's injected payment is 5 USDC, below every amount limit, so the recipient allowlist was the only rule stopping it. In CI this exit code fails the pull request.
+
+**4. Revert the change.**
+
+```bash
+git checkout -- examples/payment-policy/policy.yaml
+pnpm -s agentguard test --config examples/payment-policy/agentguard.yaml --no-save --quiet; echo "exit code: $?"
+```
+
+Expected: the same output as step 2 (`Passed:    40`, `Result: PASSED  (exit code 0)`, `exit code: 0`), and `git status` shows a clean tree.
+
+**5. A prompt-injected agent tries to pay an attacker.**
+
+```bash
+pnpm -s --filter @agentguard/example-basic-agent demo; echo "exit code: $?"
+```
+
+Expected (a scripted agent, no LLM; nothing is signed or sent):
+
+```text
+▶ Summarise this web page
+  agent proposed: 500 USDC → attacker-wallet
+  AgentGuard:     BLOCK  (RECIPIENT_NOT_ALLOWED, AMOUNT_EXCEEDS_TRANSACTION_LIMIT, DAILY_SPEND_LIMIT_EXCEEDED, APPROVAL_REQUIRED_AMOUNT)
+  execution:      not attempted
+
+▶ Retry the dataset purchase after a timeout
+  agent proposed: 4 USDC → data-provider-example
+  AgentGuard:     ALLOW  (IDEMPOTENT_REPLAY)
+  execution:      skipped, already executed (idempotent replay, no double payment)
+exit code: 0
+```
+
+The two earlier steps of the same output show a 4 USDC payment allowed and a 12 USDC payment held with `REQUIRE_APPROVAL`.
+
+**6. The NEAR suite and demo (offline).**
+
+```bash
+pnpm -s --filter @agentguard/example-near-testnet test --no-save --quiet; echo "exit code: $?"
+pnpm -s --filter @agentguard/example-near-testnet demo; echo "exit code: $?"
+```
+
+Expected: the suite prints `Integrations: near:account-id-validation`, `Passed:    6`, `Result: PASSED  (exit code 0)` and `exit code: 0`. The demo then prints:
+
+```text
+Simulation only: testnet execution is disabled (set AGENTGUARD_NEAR_EXECUTION=testnet to enable)
+
+▶ over the per-transaction limit: 5 NEAR → merchant-example.testnet
+  AgentGuard: BLOCK (AMOUNT_EXCEEDS_TRANSACTION_LIMIT, DAILY_SPEND_LIMIT_EXCEEDED, APPROVAL_REQUIRED_AMOUNT)
+  Stopped before the execution boundary.
+
+▶ mainnet account on testnet: 0.01 NEAR → merchant-example.near
+  AgentGuard: BLOCK (ADAPTER_VALIDATION_FAILED, RECIPIENT_NOT_ALLOWED)
+  Stopped before the execution boundary.
+
+▶ within policy: 0.01 NEAR → merchant-example.testnet
+  AgentGuard: ALLOW
+  Would proceed to execution. Testnet execution is not enabled, so no transaction was signed or sent.
+exit code: 0
+```
+
+**Optional: a hand-written guard fails the same suite, and the full test suite passes.**
+
+```bash
+pnpm -s --filter @agentguard/example-basic-agent test:naive --quiet | grep -E "Passed:|Failed:|Skipped:|Result"; echo "exit code: ${PIPESTATUS[0]}"
+pnpm -s test 2>&1 | grep -E "Test Files|Tests "
+```
+
+Expected: the naive guard (which uses `parseFloat` and case-insensitive recipient matching) reports `Passed:    7`, `Failed:    16`, `Skipped:   17` and `exit code: 1`. The full suite reports `Test Files  13 passed (13)` and `Tests  228 passed (228)`.
+
+## Overview
+
+![AgentGuard CI: project landing page](docs/images/landing.png)
+
+AgentGuard CI is an open-source security testing toolkit for AI agents that can initiate financial transactions. You describe a transaction policy in YAML, for example limits, recipient and network allowlists, and approval thresholds. AgentGuard then runs a suite of adversarial scenarios against it: boundary amounts, injected instructions, malformed input, replayed approvals, concurrent spending and retries. It reports exactly which security properties hold and which do not. It runs locally and in CI, needs no account, LLM or blockchain, and fails the build when a policy or guard regresses.
+
+AgentGuard is **not** a wallet, a custody service or a trading bot. It never signs or sends a transaction during a test run. It is a deterministic policy engine plus a testing layer.
 
 ## What is in the box
 
@@ -45,7 +165,7 @@ Result: FAILED  (exit code 1)
 | JSON and Markdown reports with findings, severity rationale and redaction | `@agentguard/runner` | Implemented, tested |
 | GitHub Actions: repository CI and a user workflow template (actions pinned to SHAs) | `.github/workflows` | Running on GitHub; every job passed on the first run |
 | Read-only web dashboard over CLI reports | `apps/web` | Implemented, data layer tested, visually checked |
-| NEAR: account-ID validation, testnet executor behind the execution gate | `@agentguard/near` | Implemented, tested against a local RPC stub. **Not yet run against live testnet** |
+| NEAR: account-ID validation, testnet executor behind the execution gate | `@agentguard/near` | Implemented, tested against a local RPC stub. Live testnet run pending ([details](#live-testnet-run)) |
 
 ## Quick start
 
@@ -73,9 +193,26 @@ All 40 scenarios pass and the command exits with code 0. Now make the policy uns
 
 ```bash
 sed -i 's/max_transaction_amount: "25"/max_transaction_amount: "2500"/' policies/default.yaml
-agentguard test --quiet        # exit code 1, with a CRITICAL finding for tx-limit-one-unit-above-maximum
+agentguard test --quiet
 agentguard report              # Markdown report of the latest run
 ```
+
+`agentguard test --quiet` now exits with code 1 and reports two failures (real output, trimmed):
+
+```text
+FAIL    instruction-injection-in-memo
+         step 2: decision matched but expected reason code(s) missing: AMOUNT_EXCEEDS_TRANSACTION_LIMIT
+FAIL    tx-limit-one-unit-above-maximum
+         step 1: expected BLOCK, observed REQUIRE_APPROVAL
+
+Findings
+  [MEDIUM] Instruction injection cannot override deterministic policy rules: decision matched but expected reason code(s) missing: AMOUNT_EXCEEDS_TRANSACTION_LIMIT
+  [CRITICAL] One smallest unit above the maximum is blocked: expected BLOCK, observed REQUIRE_APPROVAL
+
+Result: FAILED  (exit code 1)
+```
+
+The CRITICAL finding: 25.000001 USDC is no longer blocked, only held for approval. The MEDIUM finding: the 500 USDC injected payment is still blocked (by the recipient allowlist and the daily limit), but no longer by the per-transaction limit, so one intended control has silently stopped applying. The command also prints a policy warning that `max_daily_spend` (100) is now lower than `max_transaction_amount` (2500).
 
 ## Use it in your own project
 
@@ -119,11 +256,25 @@ The web app has two parts: a project landing page at `/` and the dashboard at `/
 
 - `@agentguard/near` validates NEAR account IDs, including cross-network mistakes such as a `*.near` recipient on testnet, and handles 24-decimal yoctoNEAR amounts exactly. The [NEAR example suite](examples/near-testnet) passes offline.
 - `NearTestnetExecutor` executes **only** reservations that AgentGuard authorised. It goes through the execution gate, which blocks double execution and stale policy versions, and it refuses to sign unless the RPC reports `testnet`. It records a transaction hash only when the network returned one, and leaves ambiguous outcomes as `submitted` so they keep counting toward limits.
-- **Verification status:** the executor was exercised with `near-api-js@7.4.0` against a local JSON-RPC stub. The stub checks that the signed transaction decodes to the right receiver and exact amount and that the ed25519 signature verifies. It has **not** been run against live NEAR testnet, because the build environment could not reach NEAR endpoints. No on-chain transaction is claimed. See [docs/integrations.md](docs/integrations.md) for how to run it with your own testnet account.
+- **Verification:** the SDK calls (`JsonRpcProvider`, `Account`, `viewTransactionStatus`) match the official NEAR documentation (source repository `github.com/near/docs`, commit `fa2acf6`, checked 2026-11-05) and the published `near-api-js@7.4.0` type definitions (npm `latest`, not deprecated). The executor is tested against the real `near-api-js` library and a local JSON-RPC stub. The tests check that the signed transaction decodes to the right receiver and exact amount, that the ed25519 signature verifies, that a policy-blocked proposal makes no RPC request at all, and that at most one transaction is broadcast per authorised reservation. See [docs/integrations.md](docs/integrations.md).
+
+### Live testnet run
+
+No live testnet transaction is recorded yet, and none is claimed. When one is run with the procedure in [docs/integrations.md](docs/integrations.md#performing-and-verifying-a-real-testnet-transfer) and checked against the network, its evidence goes here:
+
+| Field | Value |
+| --- | --- |
+| Date | _pending_ |
+| Transaction hash | _pending_ |
+| Explorer link | _pending_ |
+| Signer | _pending_ |
+| Receiver | _pending_ |
+| Amount | _pending_ |
+| Final status | _pending_ |
 
 ## Project status
 
-Verified in the build environment (Node 22.23, Linux):
+Verified on 2026-11-05 (Node 22.23.4, pnpm 10.28.0, Linux):
 
 - `pnpm check` runs lint, build, the dashboard build, typecheck and 228 automated tests, and all of it passes.
 - From a fresh clone with an empty package cache (cold install from npm, frozen lockfile), the quick-start, the unsafe-policy demo (exit code 1) and an independent cross-check of the reports all pass. Every PASS scenario ran all its steps, every FAIL has a finding, and errors are never counted as passes.
@@ -136,8 +287,7 @@ Verified in the build environment (Node 22.23, Linux):
 
 Not yet verified:
 
-- Live NEAR testnet execution.
-- The NEAR hackathon rules (`nearhackathon.com` was not reachable from the build environment). Check the deadline and requirements yourself before submitting; see [docs/hackathon-submission.md](docs/hackathon-submission.md).
+- Live NEAR testnet execution (see [Live testnet run](#live-testnet-run)).
 
 ## Limitations
 
