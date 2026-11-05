@@ -16,7 +16,7 @@ A custom **scenario target** (see [scenarios.md](scenarios.md#custom-targets)) i
 
 ### Sources and verification
 
-Checked on 2026-11-04. `docs.near.org` itself was unreachable from the build environment, so official documentation was read from its source repository, `github.com/near/docs` at commit `e2d2ea1` (2026-11-01).
+Checked on 2026-11-05 against the official documentation source repository, `github.com/near/docs` at commit `fa2acf6` (2026-11-05), and the published `near-api-js` package. The three documentation pages cited below are unchanged since commit `e2d2ea1` (2026-11-01), where they were first checked.
 
 | Item | Source | Status |
 | --- | --- | --- |
@@ -25,10 +25,9 @@ Checked on 2026-11-04. `docs.near.org` itself was unreachable from the build env
 | `Account.signAndSendTransaction({ receiverId, actions, waitUntil, throwOnFailure, retries })`, `actions.transfer(deposit: bigint)` | Published `.d.ts` and compiled JS of `near-api-js@7.4.0`. The docs show the higher-level `account.transfer()`, which throws on an on-chain failure; AgentGuard uses the lower-level call so that a failed transfer still returns its hash. | Verified at type level and at runtime against the stub |
 | `provider.viewTransactionStatus({ txHash, accountId, waitUntil })` | Official docs `tools/near-api.mdx` and the published types | Verified against docs and types |
 | `getNetworkId()` reads `chain_id` from the `status` RPC | Compiled JS of `near-api-js@7.4.0` | Verified (stub) |
-| Default testnet RPC `https://test.rpc.fastnear.com` | Official docs examples | Documented endpoint; **not contacted** (blocked by the network policy). Override with `NEAR_TESTNET_RPC_URL`. |
+| Default testnet RPC `https://test.rpc.fastnear.com` | Official docs examples (`tools/near-api.mdx`) | Documented endpoint, used as the default. Override with `NEAR_TESTNET_RPC_URL`. It has not yet been exercised by a recorded live run (see below). |
 | Account-ID rules: 2 to 64 characters, lowercase `a-z`, `0-9` and `.` `-` `_` separators; implicit (64 hex), ETH-like (`0x`), deterministic (`0s`) and universal (`0u`) forms | Official docs `protocol/accounts-contracts/account-id.mdx` | Verified. The validator also rejects leading, trailing or adjacent separators (protocol rule). It accepts `0s` and `0u` recipients; the executor accepts only `*.testnet` and implicit signers, which is stricter than necessary for universal accounts. |
 | Testnet funding: the faucet on the docs site (native NEAR) and `near-faucet.io` | Official docs `getting-started/faucet.mdx` | Verified as documented; not used |
-| Hackathon rules (`nearhackathon.com/HACKATHON.md`) | | **Not reachable.** The docs repo's "Hackathon Guide" page is a general resource list, not the rules. |
 
 ### Broadcast retries (fixed)
 
@@ -61,7 +60,7 @@ If a first broadcast landed but its response was lost, these could combine into 
 
 ### What is not done
 
-- **No live testnet transaction has been executed or verified.** The build environment's network policy blocks every NEAR RPC endpoint, and no testnet credentials were provided. There is therefore no transaction hash, and none is claimed. Treat the on-chain path as **unverified** until the procedure below has been run.
+- **Live testnet run: pending.** No live testnet transaction has been executed or verified, and none is claimed. Treat the on-chain path as unverified until the procedure below has been run and its result recorded in the README's [Live testnet run](../README.md#live-testnet-run) section.
 - Only native NEAR transfers. Fungible tokens (NEP-141), function calls and meta-transactions are not supported.
 - No mainnet support, by design.
 

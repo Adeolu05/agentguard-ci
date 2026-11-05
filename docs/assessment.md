@@ -1,21 +1,21 @@
 # Implementation assessment (Stage 0)
 
-Date: 2026-11-04
+Date: 2026-11-04 (external-requirements table updated 2026-11-05)
 
 ## Current repository state
 
 The working directory was empty (no Git history, no source files). AgentGuard CI is being built from scratch in this repository.
 
-Toolchain in the build environment: Node.js 22.23, pnpm 10.28.
+Toolchain: Node.js 22.23, pnpm 10.28.
 
 ## Verification of external requirements
 
 | Source | Status | Notes |
 | --- | --- | --- |
-| `https://nearhackathon.com/HACKATHON.md` | **Not verified.** The host was refused by the build environment's network policy. | The deadline, tracks and submission requirements are **unconfirmed**. They must be checked manually before submission. Nothing in this repo assumes specific hackathon rules. |
-| `https://docs.near.org` | **Not verified.** The host was refused by the network policy. | Integration decisions rely on the published package below instead. |
+| NEAR HACKATHON rules | **Confirmed** by the project owner from the official rules. | Submission window, judging dates, tracks and required deliverables are listed in [hackathon-submission.md](hackathon-submission.md). |
+| NEAR documentation | **Verified** against the official documentation source, `github.com/near/docs` (commit `fa2acf6`, 2026-11-05). | `tools/near-api.mdx` (provider, account and transfer examples, `viewTransactionStatus`), `protocol/accounts-contracts/account-id.mdx` (account-ID rules) and `getting-started/faucet.mdx` (testnet faucets). These pages are unchanged since commit `e2d2ea1`, where they were first checked. |
 | `near-api-js@7.4.0` (npm registry) | **Verified at the type level.** The published `.d.ts` files and README were inspected. | `Account(accountId, provider, signer)`, `Account.transfer({ receiverId, amount })` returns `RpcTransactionResponse`, and `JsonRpcProvider.viewTransactionStatus({ txHash, accountId, waitUntil })`. Requires Node >= 22.22.2. |
-| NEAR testnet RPC | **Not reachable** from the build environment. | No on-chain transaction was executed. None is claimed. |
+| Live NEAR testnet run | **Pending.** | No on-chain transaction has been executed or is claimed. The README's "Live testnet run" section records the evidence once a run has been checked against the network. |
 
 ## Proposed architecture
 
@@ -31,7 +31,7 @@ Run history is persisted as one JSON report file per run (`.agentguard/runs/<run
 
 ## Critical technical uncertainties
 
-1. Hackathon rules and deadline: unverified (network policy).
+1. Hackathon rules and deadline: since confirmed (see [hackathon-submission.md](hackathon-submission.md)).
 2. The NEAR execution path: written against the verified `near-api-js` types, but not exercised against testnet. It must be run end-to-end before any on-chain claim is made.
 3. Production ledger concurrency: the reference ledger serialises reservations per agent within a single process. A multi-process deployment needs a database-backed ledger with transactional row locking. The interface supports this, but it is not implemented.
 
