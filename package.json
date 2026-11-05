@@ -14,6 +14,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "build:vault": "pnpm --filter @agentguard/example-near-vault build:contract",
+    "test:vault": "pnpm --filter @agentguard/example-near-vault test:sandbox",
     "agentguard": "node packages/cli/dist/bin.js",
     "check": "pnpm lint && pnpm build && pnpm build:web && pnpm -r typecheck && pnpm test",
     "dashboard:demo": "pnpm build && pnpm build:web && AGENTGUARD_DEMO=1 pnpm --filter @agentguard/web start",

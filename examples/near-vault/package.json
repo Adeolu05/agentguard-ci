@@ -1,0 +1,18 @@
+{
+  "name": "@agentguard/example-near-vault",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:contract": "cd ../../contracts/vault && cargo near build non-reproducible-wasm",
+    "test:sandbox": "vitest run --config vitest.config.mjs"
+  },
+  "dependencies": {
+    "@agentguard/core": "workspace:*",
+    "@agentguard/near": "workspace:*",
+    "near-api-js": "7.4.0",
+    "near-sandbox": "0.3.5"
+  },
+  "devDependencies": {
+    "vitest": "^5.1.0"
+  }
+}
