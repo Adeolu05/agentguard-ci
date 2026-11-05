@@ -1,16 +1,47 @@
-# Hackathon submission checklist and demo script
+# NEAR HACKATHON submission
 
-> **The official rules are unverified.** `https://nearhackathon.com/HACKATHON.md` could not be retrieved (the build environment's network policy refused the host on 2026-11-04, on every attempt). The NEAR docs repository's "Hackathon Guide" page is a general resource list, not the rules. No deadline, track, judging criterion or deliverable below comes from the official rules. Before submitting, read the current rules yourself and adjust this checklist to match.
+## Rules
 
-### Requirement status
+These rules were confirmed by the project owner from the official NEAR HACKATHON rules.
+
+| Item | Rule |
+| --- | --- |
+| Submission window | 1 Nov 2026, 00:00 UTC to **14 Nov 2026, 23:59 UTC** |
+| Judging | 16 to 18 Nov 2026. The jury includes AI judges (Claude Code and Codex) that clone the repository and follow the README. |
+| Submissions | One per team. A submission cannot be edited after it is sent. |
+| Tracks for this entry | Primary: **06 AI Security & Defense**. Secondary: **07 Agent Economy**. |
+
+## Required deliverables
 
 | Requirement | Status |
 | --- | --- |
-| Deadline, tracks, eligibility, judging criteria, required deliverables (video, links, team) | **Unconfirmed**: the rules are unreadable from the build environment |
-| Public repository with source | Done (https://github.com/Adeolu05/agentguard-ci). *Required by the rules?* Unconfirmed |
-| Working, reproducible demo | Done ([demo.md](demo.md), verified from a fresh clone). *Format required?* Unconfirmed |
-| NEAR integration | Partially done: offline NEAR policy suite and a stub-verified executor. **A live testnet transaction is still missing.** *Whether the rules require on-chain activity is unconfirmed* |
-| Recording, demo post, submission form | **Incomplete**: these need you |
+| Public repository | Done: https://github.com/Adeolu05/agentguard-ci |
+| README with "do X, see Y" steps an AI judge can follow | Done: [For judges: verify in 5 minutes](../README.md#for-judges-verify-in-5-minutes). Every command was run from a fresh clone on 2026-11-05 and the expected output is the real output. |
+| Public X demo post that states the project was built at NEAR HACKATHON, with a video or screenshots | **To do (owner).** Screenshots are in `docs/images/` and the demo script is [demo.md](demo.md). |
+| A mainnet NEAR account for the prize payout | **To do (owner).** Only the account ID is submitted. No mainnet key belongs anywhere in this repository, and nothing in it signs on mainnet. |
+| "What did you build?" description, 20 to 2,000 characters, covering the problem, the implementation and NEAR's role | **Draft below** (1,386 characters, counted with `wc -m`). To be revised after the vault and LLM demo phases. |
+| No secrets anywhere in the git history | **Pending** a full-history secret scan in the final audit. By design, keys are only read from environment variables, which `.env.example` documents with empty values. |
+
+## "What did you build?" (draft)
+
+```text
+AgentGuard CI is an open-source security test suite for AI agents that can move money.
+
+Problem: an agent with a wallet can be talked into paying the wrong account, paying twice after a retry, or overspending through parallel requests. Ordinary unit tests rarely cover these failures, and a policy change can quietly loosen a guardrail.
+
+Implementation: a deterministic TypeScript policy engine (no LLM in the decision) evaluates every proposed payment against a YAML policy: per-transaction and daily limits, recipient and network allowlists, and human-approval thresholds. Amounts use exact integer arithmetic. Spending is reserved atomically, retries are idempotent, approvals are bound to the exact payment, and every error fails closed. A CLI runs 40 adversarial scenarios (prompt injection, boundary amounts, races, replayed approvals, malformed input) against that policy or against your own guard, writes reports, and exits non-zero so CI blocks unsafe changes. A read-only dashboard shows the results.
+
+NEAR's role: the NEAR package validates NEAR account IDs (including mainnet accounts on testnet), enforces limits in exact 24-decimal yoctoNEAR, and executes only payments the engine authorised on NEAR testnet, behind an execution gate that refuses stale policies, never broadcasts twice and refuses to sign unless the RPC reports testnet. Mainnet signing is not supported.
+```
+
+## Before sending (the submission cannot be edited)
+
+1. `pnpm check` passes on the commit you submit, and CI is green on GitHub for that commit.
+2. The README "For judges" steps still produce the documented output from a fresh clone.
+3. The full-history secret scan is clean.
+4. The README's [Live testnet run](../README.md#live-testnet-run) section holds a verified transaction, or clearly says that none was run.
+5. The X post is public, states that the project was built at NEAR HACKATHON, and links the repository.
+6. The payout account ID is a mainnet account you control.
 
 ## Checklist
 
@@ -24,55 +55,56 @@
 - [x] `REQUIRE_APPROVAL` is never treated as an authorisation (nothing reserved; the gate refuses)
 
 ### Scenario runner
-- [x] 40 executable built-in scenarios (at least 20 required), plus 6 NEAR scenarios
+- [x] 40 executable built-in scenarios, plus 6 NEAR scenarios
 - [x] Scenarios are schema-validated, including references between steps
 - [x] `PASS`, `FAIL`, `ERROR` and `SKIPPED` are distinct; an all-skipped run is not a pass
 - [x] Reports show expected and observed outcomes per step
 - [x] Correct exit codes (0, 1, 2, 3), tested against the built binary
 
 ### CLI and CI
-- [x] Quick-start works in a clean directory (`agentguard init` → `policy validate` → `test`)
+- [x] Quick-start works in a clean directory (`agentguard init`, `policy validate`, `test`)
 - [x] Help and error messages include file, line and field locations
 - [x] JSON and Markdown reports
-- [x] GitHub Actions workflows run on GitHub: all four jobs passed on the first run ([Actions](https://github.com/Adeolu05/agentguard-ci/actions))
-- [x] An intentional policy violation makes the suite exit with code 1. This is verified locally, and CI has a `regression-gate` job for it.
+- [x] GitHub Actions workflows run on GitHub ([Actions](https://github.com/Adeolu05/agentguard-ci/actions))
+- [x] An intentional policy violation makes the suite exit with code 1, locally and in the CI `regression-gate` job
 
 ### Dashboard
 - [x] Data comes only from CLI reports (schema-validated); demo fixtures are generated by the real CLI and labelled
 - [x] Run details and findings are inspectable
-- [x] Loading, error and empty states; invalid report files are surfaced
+- [x] Error and empty states; invalid report files are surfaced
 - [x] No fabricated metrics (pass rate is `n/a` when a run is incomplete)
-- [x] Responsive layout (no horizontal page overflow at 390 px), dark and light themes, skip link, focus states, text plus colour for status
+- [x] Responsive layout and accessibility audited (no page overflow from 320 px to 2560 px, 0 axe-core WCAG 2.2 AA violations)
 
 ### NEAR integration
-- [ ] Current official integration requirements documented. `docs.near.org` was unreachable; the SDK was verified from the published `near-api-js@7.4.0` package instead.
-- [x] Uses verified, supported interfaces (types checked; runtime exercised against a local RPC stub)
+- [x] SDK calls verified against the official NEAR docs source (`github.com/near/docs`, commit `fa2acf6`) and the published `near-api-js@7.4.0` types
+- [x] Runtime exercised against the real `near-api-js` library and a local RPC stub
 - [x] Simulation and testnet execution are clearly separated (execution is off unless `AGENTGUARD_NEAR_EXECUTION=testnet`)
 - [x] No private keys are committed or exposed
-- [ ] **Claimed on-chain operations verified against the network.** None is claimed yet. Run `examples/near-testnet/demo.mjs` with a testnet account and record the hash first.
+- [x] Blocked proposals make no RPC request; at most one broadcast per reservation (near-api-js retry layers neutralised)
 - [x] Integration limitations documented (`docs/integrations.md`)
-- [x] Blocked proposals verified to make no RPC request; at most one broadcast per reservation (near-api-js retry layers neutralised)
+- [ ] Live testnet run recorded and verified against the network (see the README's [Live testnet run](../README.md#live-testnet-run))
 
 ### Project delivery
-- [x] Repository is public: https://github.com/Adeolu05/agentguard-ci
-- [x] README with a working quick-start
+- [x] Repository is public
+- [x] README with a working quick-start and the "For judges" steps
 - [x] Architecture and threat model documented
 - [x] License (Apache-2.0)
 - [x] Environment variables documented without values (`.env.example`)
-- [x] No known unresolved critical defect
 - [x] Demo instructions are reproducible ([demo.md](demo.md))
 - [x] Dashboard screenshots of a real CLI run (`docs/images/`)
-- [ ] Recording and the public demo post
-- [ ] Submission links, as required by the rules
+- [ ] Full-history secret scan clean
+- [ ] Public X demo post
+- [ ] Mainnet payout account ID
+- [ ] Submission sent before 14 Nov 2026, 23:59 UTC
 
 ## Demo script
 
-See [demo.md](demo.md): a verified three-minute script with the real output of every command.
+See [demo.md](demo.md): a three-minute script with the real output of every command. It will be extended to cover the live testnet run, the guarded vault and the LLM attack demo once those exist and have been verified.
 
 ## Evidence to include
 
 - `pnpm check` output (all tests passing).
 - A CI run link from https://github.com/Adeolu05/agentguard-ci/actions.
-- JSON and Markdown reports from steps 2 and 3.
-- Dashboard screenshots, light and dark.
-- A NEAR testnet transaction hash and explorer link, **only** if actually executed.
+- JSON and Markdown reports from the demo.
+- Dashboard screenshots (`docs/images/`).
+- A NEAR testnet transaction hash and explorer link, **only** if a run was actually executed and verified against the network.
