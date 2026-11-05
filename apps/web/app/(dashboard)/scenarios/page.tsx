@@ -49,7 +49,7 @@ export default async function ScenariosPage() {
           {/* Phones and tablets: cards */}
           <ul aria-label="Scenario library" className="grid gap-2 md:grid-cols-2 md:gap-3 lg:hidden">
             {lib.map(({ latest, history }) => (
-              <li key={latest.id} className="rounded-lg border border-border bg-surface p-4">
+              <li key={latest.id} className="rounded-2xl border border-border bg-surface p-4">
                 <div className="flex items-start justify-between gap-3">
                   <Link href={`/scenarios/${latest.id}`} className="min-w-0 font-medium text-accent hover:underline">
                     {latest.name}
@@ -68,7 +68,7 @@ export default async function ScenariosPage() {
             ))}
           </ul>
           {/* Laptops and up: table */}
-          <div className="hidden overflow-x-auto rounded-lg border border-border bg-surface lg:block">
+          <div className="hidden overflow-x-auto rounded-2xl border border-border bg-surface lg:block">
             <table className="w-full text-left text-sm">
               <caption className="sr-only">Scenario library</caption>
               <thead className="border-b border-border text-xs uppercase tracking-wide text-muted">

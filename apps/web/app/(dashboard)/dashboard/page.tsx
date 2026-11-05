@@ -84,7 +84,7 @@ export default async function OverviewPage() {
             </ul>
           )}
         </Card>
-        <Card title="Latest run" className="lg:col-span-2">
+        <Card title="Latest run" className="lg:col-span-2 lg:self-start">
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
             <dt className="text-muted">Run</dt>
             <dd>
