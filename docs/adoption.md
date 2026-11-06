@@ -1,5 +1,7 @@
 # Using Drainproof in your own project
 
+**On GitHub, the simplest path is the GitHub Action:** one `uses: Adeolu05/drainproof@<commit-sha>` step and a policy file, with no installation in your repository. See the README section [Add it to your repository](../README.md#add-it-to-your-repository-github-action). The rest of this page is for running the CLI yourself, locally or in another CI system.
+
 The `@drainproof/*` packages are not published to npm yet. Until they are, install them from local tarballs. This path was verified on 2026-11-04 in a fresh npm project unrelated to this repository: install, `npm ci`, `init`, `test`, and every `run:` step of the generated GitHub workflow.
 
 ## 1. Build the tarballs (in a clone of this repository)

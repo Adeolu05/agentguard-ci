@@ -239,9 +239,42 @@ The packages are not on npm yet. `pnpm pack:local <dir>` builds installable tarb
 
 An infrastructure error or a skipped scenario is never counted as a pass.
 
-## CI
+## Add it to your repository (GitHub Action)
 
-Run `drainproof init --github-actions` to add `.github/workflows/drainproof.yml`. It uses read-only permissions and actions pinned to commit SHAs, installs with `npm ci` (pnpm variant in the comments), validates the policy and scenarios, runs the suite, writes a job summary and uploads the reports. It expects `@drainproof/cli` as a dev dependency; before npm publication, use the vendored tarballs described in [docs/adoption.md](docs/adoption.md). [This repository's CI](.github/workflows/ci.yml) runs the same steps from source. It includes a `regression-gate` job that deliberately allowlists an attacker and requires the suite to exit with code 1.
+Drainproof is a [composite GitHub Action](action.yml). Add your agent's policy file to your repository, then add this workflow as `.github/workflows/drainproof.yml`:
+
+```yaml
+name: Drainproof
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  drainproof:
+    name: Is the agent drainproof?
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: Adeolu05/drainproof@59eda3d92422f048263c4fbf456234040d2086c0
+        with:
+          policy: policies/agent.yaml   # your policy file
+```
+
+Every pull request then runs the 40 built-in attack scenarios against that policy. A pull request that would let one through fails the check, and the job summary shows the finding, the expected and observed decision, and how to fix it. There is no tag yet, so pin a commit SHA of this repository (GitHub recommends full SHAs for third-party actions anyway); the one above is the commit that added the action.
+
+- **Policy file:** start from [examples/payment-policy/policy.yaml](examples/payment-policy/policy.yaml); the schema is in [docs/policy-schema.md](docs/policy-schema.md).
+- **Inputs:** `policy` (your policy; the 40 built-in scenarios and the built-in engine), or `config` (a full `drainproof.yaml` for your own scenarios or your own guard as the target); `working-directory`; `report-dir` (default `drainproof-report`, holding `drainproof-report.json` and `.md`); `github-summary` (default `true`); `node-version` (default `22.22.2`, or `""` to use the runner's Node.js).
+- **Outputs:** `exit-code`, `status` (`PASSED`, `FAILED`, `INCOMPLETE` or `INVALID`), `report-json`, `report-markdown`. Add an `actions/upload-artifact` step with `if: always()` to keep the reports, as [this repository's own workflow](.github/workflows/drainproof.yml) does.
+- **What it does:** it sets up Node.js, installs and builds Drainproof inside the action's own folder with the pinned pnpm version and the frozen lockfile (nothing is installed into your repository), validates your policy and the scenarios, and runs the suite. It needs no secrets, keys or network access beyond the install, and the job only needs `contents: read`.
+- **Custom guard targets:** with `config` and `target.type: module`, your guard module runs from your repository, so any packages it imports must be installed there first.
+
+This repository uses the action on itself: [.github/workflows/drainproof.yml](.github/workflows/drainproof.yml) checks [examples/github-action/policy.yaml](examples/github-action) on every pull request, and the `action` job in [CI](.github/workflows/ci.yml) asserts that the action passes a safe policy, passes the NEAR suite through `config`, and fails an unsafe policy with exit code 1 and the CRITICAL finding.
+
+Without the action, `drainproof init --github-actions` generates an equivalent workflow that installs `@drainproof/cli` as a dev dependency (see [docs/adoption.md](docs/adoption.md)). [This repository's CI](.github/workflows/ci.yml) also runs every suite from source, including a `regression-gate` job that allowlists an attacker and requires exit code 1, and the vault job that runs the scenarios against the contract on a local NEAR node.
 
 ## Dashboard
 
