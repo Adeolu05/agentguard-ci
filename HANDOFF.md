@@ -1,6 +1,6 @@
 # Handoff: NEAR HACKATHON work on `near-hackathon`
 
-Branch `near-hackathon` on origin (`github.com/Adeolu05/drainproof`, renamed from `agentguard-ci` on 2026-11-06). Nothing was pushed to `main`. One demo branch, `demo/unsafe-policy`, exists for a single demo pull request into `near-hackathon` that must never be merged.
+Branch `near-hackathon` on origin (`github.com/Adeolu05/drainproof`, renamed from `agentguard-ci` on 2026-11-06). Nothing was pushed to `main`. Demo pull request [#2](https://github.com/Adeolu05/drainproof/pull/2) (`demo/unsafe-policy` into `near-hackathon`) must never be merged. On 2026-11-06 all six CI jobs passed on it and the Drainproof check failed with exit code 1, as intended.
 
 ## Done
 
@@ -12,8 +12,7 @@ Branch `near-hackathon` on origin (`github.com/Adeolu05/drainproof`, renamed fro
 
 ## Not verified yet
 
-- The repository returned 404 to anonymous requests on 2026-11-06 (private). It must be public for judging and for other repositories to use the action.
-- The `vault` and `action` CI jobs and the Drainproof workflow have never run on GitHub (CI runs only on pull requests and `main`); the demo pull request will be their first run.
+- The action used from another repository (only `uses: ./` has run on GitHub).
 - Nothing has run on the real testnet. The testnet scripts were rehearsed only against a local sandbox behind an HTTPS proxy that reported the chain id as `testnet`.
 
 ## Tests that last passed (2026-11-06, Node 24.10.0, pnpm 10.28.0, Rust 1.97.0, cargo-near 0.22.0, WSL Ubuntu 24.04)
@@ -35,8 +34,7 @@ Sandbox commands need an open-file limit of 65535: run them with `ulimit -n 6553
 ## Next steps
 
 1. Phase 4 (built, 2026-11-06): `examples/llm-agent`, 12 offline tests. The owner chose to keep it in recorded mode and out of the judge steps for now; a live NEAR AI Cloud run may be recorded later (`pnpm --filter @drainproof/example-llm-agent demo -- --record` with `NEAR_AI_API_KEY` set).
-2. After the demo pull request runs, report its checks exactly (which failed and why) and link it from the README.
-3. Phase 5: `apps/web` deployable to Vercel in demo mode; Node 20 and 22 checks.
-4. Phase 6: audits, fresh-clone rerun of every README command, and the plan to strip the AI trailers from the first 7 commits on `main` (before/after list, explicit approval before any `--force-with-lease` push).
-5. When the owner sends a testnet hash, verify status, signer, receiver and exact amount via a public RPC before filling the README's Live testnet run table.
-6. Decide whether to delete this file before submission.
+2. Phase 5: `apps/web` deployable to Vercel in demo mode; Node 20 and 22 checks.
+3. Phase 6: audits, fresh-clone rerun of every README command, and the plan to strip the AI trailers from the first 7 commits on `main` (before/after list, explicit approval before any `--force-with-lease` push).
+4. When the owner sends a testnet hash, verify status, signer, receiver and exact amount via a public RPC before filling the README's Live testnet run table.
+5. Decide whether to delete this file before submission.

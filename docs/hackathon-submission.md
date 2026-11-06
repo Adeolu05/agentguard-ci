@@ -15,7 +15,7 @@ These rules were confirmed by the project owner from the official NEAR HACKATHON
 
 | Requirement | Status |
 | --- | --- |
-| Public repository | **To do (owner).** https://github.com/Adeolu05/drainproof returned 404 to anonymous requests on 2026-11-06, so it is private. It must be public before judging. |
+| Public repository | Done: https://github.com/Adeolu05/drainproof (public API returned 200 on 2026-11-06) |
 | README with "do X, see Y" steps an AI judge can follow | Done: [For judges: verify in 5 minutes](../README.md#for-judges-verify-in-5-minutes). Every command was run from a fresh clone on 2026-11-05 and the expected output is the real output. |
 | Public X demo post that states the project was built at NEAR HACKATHON, with a video or screenshots | **To do (owner).** Screenshots are in `docs/images/` and the demo script is [demo.md](demo.md). |
 | A mainnet NEAR account for the prize payout | **To do (owner).** Only the account ID is submitted. No mainnet key belongs anywhere in this repository, and nothing in it signs on mainnet. |
@@ -68,7 +68,8 @@ NEAR's role: the Drainproof Vault, a NEAR smart contract in Rust, holds the fund
 - [x] GitHub Actions workflows run on GitHub ([Actions](https://github.com/Adeolu05/drainproof/actions))
 - [x] An intentional policy violation makes the suite exit with code 1, locally and in the CI `regression-gate` job
 - [x] Composite GitHub Action (`action.yml`): one `uses:` step and a policy file; rehearsed locally from an outside project (pass, then fail with the CRITICAL finding)
-- [ ] The action has run on GitHub (the `action` CI job and `.github/workflows/drainproof.yml`; first run expected on the demo pull request)
+- [x] The action has run on GitHub: on [demo PR #2](https://github.com/Adeolu05/drainproof/pull/2) the `action` CI job passed and the Drainproof workflow failed the pull request with exit code 1, as intended
+- [ ] The action used from another repository
 - [x] Recipient-check pack (`examples/recipient-checks`): engine 8/8, vault 7 pass and 1 skipped, catches 7 loose matchers
 
 ### Dashboard
@@ -93,7 +94,7 @@ NEAR's role: the Drainproof Vault, a NEAR smart contract in Rust, holds the fund
 - [x] 40 unit tests and 30 tests on a local NEAR node; 16 of the 40 built-in scenarios pass against the contract and 24 are skipped with reasons
 - [x] Expired approval requests cannot jam the 50-slot approval queue (review fix, with unit and sandbox tests)
 - [x] CI job defined (`vault` in `.github/workflows/ci.yml`)
-- [ ] CI job has run on GitHub (it runs on pull requests and `main` only)
+- [x] CI job has run on GitHub ([run](https://github.com/Adeolu05/drainproof/actions/runs/42305448098), 2026-11-06, success)
 - [ ] Deployed and exercised on testnet
 
 ### LLM prompt-injection demo
@@ -103,7 +104,7 @@ NEAR's role: the Drainproof Vault, a NEAR smart contract in Rust, holds the fund
 - [ ] A real NEAR AI Cloud run recorded (needs the owner's API key); the shipped recording is a labelled stand-in
 
 ### Project delivery
-- [ ] Repository is public (private as of 2026-11-06)
+- [x] Repository is public
 - [x] README with a working quick-start and the "For judges" steps
 - [x] Architecture and threat model documented
 - [x] License (Apache-2.0)
@@ -122,7 +123,7 @@ See [demo.md](demo.md): a three-minute script with the real output of every comm
 ## Evidence to include
 
 - `pnpm check` output (all tests passing).
-- A CI run link from https://github.com/Adeolu05/drainproof/actions.
+- A CI run link from https://github.com/Adeolu05/drainproof/actions (for example https://github.com/Adeolu05/drainproof/actions/runs/42305448098), and the demo pull request https://github.com/Adeolu05/drainproof/pull/2.
 - JSON and Markdown reports from the demo.
 - Dashboard screenshots (`docs/images/`).
 - A NEAR testnet transaction hash and explorer link, **only** if a run was actually executed and verified against the network.
