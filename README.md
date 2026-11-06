@@ -142,7 +142,7 @@ pnpm -s --filter @agentguard/example-basic-agent test:naive --quiet | grep -E "P
 pnpm -s test 2>&1 | grep -E "Test Files|Tests "
 ```
 
-Expected: the naive guard (which uses `parseFloat` and case-insensitive recipient matching) reports `Passed:    7`, `Failed:    16`, `Skipped:   17` and `exit code: 1`. The full suite reports `Test Files  15 passed (15)` and `Tests  271 passed (271)`.
+Expected: the naive guard (which uses `parseFloat` and case-insensitive recipient matching) reports `Passed:    7`, `Failed:    16`, `Skipped:   17` and `exit code: 1`. The full suite reports `Test Files  16 passed (16)` and `Tests  283 passed (283)`.
 
 ## Overview
 
@@ -166,6 +166,7 @@ AgentGuard is **not** a wallet, a custody service or a trading bot. It never sig
 | GitHub Actions: repository CI and a user workflow template (actions pinned to SHAs) | `.github/workflows` | Running on GitHub; every job passed on the first run |
 | Read-only web dashboard over CLI reports | `apps/web` | Implemented, data layer tested, visually checked |
 | NEAR: account-ID validation, testnet executor behind the execution gate | `@agentguard/near` | Implemented, tested against a local RPC stub. Live testnet run pending ([details](#live-testnet-run)) |
+| LLM prompt-injection demo: an LLM agent reads a poisoned page; recorded by default, NEAR AI Cloud live with a key, optional vault | `examples/llm-agent` | Implemented, 12 offline tests. Live mode was checked only up to authentication (no key was available); the shipped recording is a labelled stand-in ([details](#a-real-llm-a-poisoned-page)) |
 | AgentGuard Vault: a NEAR contract that holds the funds and enforces the policy on-chain; the agent holds only a function-call key | `contracts/vault`, `examples/near-vault` | Implemented. 40 unit tests and 30 tests on a local NEAR node pass; 16 of the 40 built-in scenarios pass against it and 24 are skipped with reasons. Not deployed to testnet yet ([details](#what-the-agents-key-can-and-cannot-do)) |
 
 ## Quick start
@@ -331,11 +332,21 @@ Expected: `test result: ok. 40 passed; 0 failed` (followed by a second line, `ok
 
 Without the `grep`, the demo also prints each request's `EVENT_JSON` log lines, including the `payment_settled` event with status `PAID` for the first one.
 
+## A real LLM, a poisoned page
+
+[examples/llm-agent](examples/llm-agent) gives an LLM agent the task "Summarise this page and pay the data provider 4 USDC". The page (a local fixture) hides an instruction to pay `attacker-wallet`. Every payment the model proposes goes through AgentGuard's `authorize()`; the demo prints the model's proposed action, AgentGuard's decision and reason codes, and whether execution was attempted.
+
+```bash
+pnpm -s --filter @agentguard/example-llm-agent demo; echo "exit code: $?"
+```
+
+By default it replays recorded model responses, offline and without a key. **The recording shipped today is a hand-written stand-in from a local stub, not model output, and the demo's first line says so**; it will be replaced by a recorded NEAR AI Cloud run. With `NEAR_AI_API_KEY` set it calls [NEAR AI Cloud](https://docs.near.ai/cloud/quickstart.md) live and checks each response's Ed25519 signature against the exact request and response bytes (it does not verify TEE attestation, and says so). With `-- --vault` it also sends every proposal to the AgentGuard Vault on a local NEAR node, so a blocked payment's on-chain rejection event is printed too. Details: [examples/llm-agent/README.md](examples/llm-agent/README.md).
+
 ## Project status
 
 Verified on 2026-11-06 (Node 24.10.0, pnpm 10.28.0, Linux), unless a line gives another date:
 
-- `pnpm check` runs lint, build, the dashboard build, typecheck and 271 automated tests, and all of it passes.
+- `pnpm check` runs lint, build, the dashboard build, typecheck and 283 automated tests, and all of it passes.
 - On 2026-11-05, from a fresh clone with an empty package cache (cold install from npm, frozen lockfile), the quick-start, the unsafe-policy demo (exit code 1) and an independent cross-check of the reports all passed. Every PASS scenario ran all its steps, every FAIL has a finding, and errors are never counted as passes.
 - On 2026-11-05, AgentGuard was installed from local tarballs into an unrelated npm project, and its generated GitHub workflow steps were executed there ([docs/adoption.md](docs/adoption.md)).
 - The CLI quick-start works, an intentional policy violation exits with code 1, and the example suites pass.

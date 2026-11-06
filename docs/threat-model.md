@@ -22,7 +22,8 @@ AgentGuard evaluates **proposed** financial actions against an explicit policy, 
 | Threat | Control | Tested by |
 | --- | --- | --- |
 | A malicious or compromised agent proposes an over-limit payment | Deterministic limits on BigInt atomic amounts; no LLM in the decision | `tx-limit-*`, `daily-*`, engine property tests |
-| Prompt injection or malicious tool output redirects a payment | Recipient, network and asset allowlists; `memo` is never interpreted; unknown fields are rejected | `instruction-injection-in-memo`, `unexpected-fields-rejected` |
+| Prompt injection or malicious tool output redirects a payment | Recipient, network and asset allowlists; `memo` is never interpreted; unknown fields are rejected | `instruction-injection-in-memo`, `unexpected-fields-rejected`; with an LLM agent and a poisoned page: `examples/llm-agent/test/llm-agent.test.ts` |
+| The LLM demo leaks the NEAR AI API key | Read only from `NEAR_AI_API_KEY`, sent only in the `Authorization` header and only over https (or http on 127.0.0.1); redacted from output and errors; a recording that contains it is refused | `examples/llm-agent/test/llm-agent.test.ts` |
 | Malformed or adversarial input (negative amounts, floats, exponents, huge strings, prototype keys) | Strict proposal validation, a 4 KiB size limit, plain-object checks, exact grammar | `adversarial-input/*`, amount property tests |
 | Identity confusion (case, whitespace, zero-width characters, homoglyphs) | Printable-ASCII identifiers compared byte for byte; no normalisation | `recipient-normalisation` |
 | Concurrent requests race past a shared budget | `Ledger.runExclusive`: check-and-reserve is atomic per agent | `concurrent-requests-respect-daily-limit`, plus an unlocked-ledger control experiment |

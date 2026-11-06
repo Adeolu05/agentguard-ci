@@ -18,7 +18,7 @@ Branch `near-hackathon` on origin. Nothing was pushed to `main` and no PR was op
 
 | Command | Result |
 | --- | --- |
-| `pnpm check` | 271 tests passed in 15 files |
+| `pnpm check` | 283 tests passed in 16 files |
 | payment-policy, near-testnet and fixed-guard suites | 40/40, 6/6, 40/40 |
 | `cargo test` in `contracts/vault` | 40 passed |
 | `cargo clippy --all-targets -- -D warnings`, `cargo fmt --check` | clean |
@@ -30,7 +30,7 @@ Sandbox commands need an open-file limit of 65535: run them with `ulimit -n 6553
 
 ## Next steps
 
-1. Phase 4: LLM prompt-injection demo (`examples/llm-agent`), recorded mode by default, NEAR AI Cloud when `NEAR_AI_API_KEY` is set.
+1. Phase 4 (built, 2026-11-06): `examples/llm-agent`, 12 offline tests. Still needed: a real NEAR AI Cloud run recorded by the owner (`NEAR_AI_API_KEY=... pnpm --filter @agentguard/example-llm-agent demo -- --record`), reviewed and committed in place of the labelled stand-in recording; then add the demo to the README judge steps with its real output.
 2. Phase 5: `apps/web` deployable to Vercel in demo mode; Node 20 and 22 checks.
 3. Phase 6: audits, fresh-clone rerun of every README command, and the plan to strip the AI trailers from the first 7 commits on `main` (before/after list, explicit approval before any `--force-with-lease` push).
 4. When the owner sends a testnet hash, verify status, signer, receiver and exact amount via a public RPC before filling the README's Live testnet run table.

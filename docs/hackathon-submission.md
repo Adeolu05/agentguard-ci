@@ -93,6 +93,12 @@ NEAR's role: the NEAR package validates NEAR account IDs (including mainnet acco
 - [ ] CI job has run on GitHub (it runs on pull requests and `main` only)
 - [ ] Deployed and exercised on testnet
 
+### LLM prompt-injection demo
+- [x] Agent loop with a poisoned page, every proposal through `authorize()` (`examples/llm-agent`), 12 offline tests
+- [x] NEAR AI Cloud API checked against the official docs (base URL, key, request format, models, response signatures, attestation)
+- [x] Optional vault mode on a local NEAR node prints the on-chain rejection event
+- [ ] A real NEAR AI Cloud run recorded (needs the owner's API key); the shipped recording is a labelled stand-in
+
 ### Project delivery
 - [x] Repository is public
 - [x] README with a working quick-start and the "For judges" steps
