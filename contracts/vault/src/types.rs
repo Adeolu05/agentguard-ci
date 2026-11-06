@@ -119,6 +119,8 @@ pub enum RequestStatus {
     /// The transfer failed (the receiver does not exist). Its budget was released.
     Failed,
     Rejected,
+    /// Reported by `approve` for a request whose approval period has passed. Expired
+    /// requests are deleted, never stored with this status.
     Expired,
 }
 

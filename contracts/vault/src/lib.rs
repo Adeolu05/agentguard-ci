@@ -45,8 +45,9 @@ pub struct Vault {
     paused: bool,
     policy: VaultPolicy,
     usage: Usage,
-    /// Every request that was not blocked, by idempotency key. Kept permanently so a key
-    /// can never be paid twice.
+    /// Every request that was not blocked, by idempotency key. Submitted, paid, failed and
+    /// rejected requests are kept permanently, so a key can never be paid twice. Pending
+    /// requests that expire are deleted: they were never paid.
     requests: LookupMap<String, Request>,
     /// Keys of requests waiting for approval.
     pending: IterableSet<String>,
@@ -203,6 +204,11 @@ impl Vault {
         }
         if !checks.approval.is_empty() {
             if self.pending.len() >= MAX_PENDING {
+                // Expired requests can never be approved, so they must not hold a slot.
+                // Free one, which is all this request needs (bounded gas and log size).
+                self.remove_expired_pending(now, 1);
+            }
+            if self.pending.len() >= MAX_PENDING {
                 let mut reasons = vec![PENDING_LIMIT_REACHED];
                 reasons.extend(checks.approval);
                 return log.decide(Decision::Block, reasons, false, None);
@@ -264,10 +270,10 @@ impl Vault {
         };
         let now = env::block_timestamp();
         if self.is_expired(&req, now) {
-            req.status = RequestStatus::Expired;
-            self.requests.insert(key.clone(), req);
-            self.pending.remove(&key);
-            return self.approval_outcome(key, "EXPIRED", false, vec![APPROVAL_EXPIRED]);
+            self.remove_pending(&key);
+            let mut outcome = self.approval_outcome(key, "EXPIRED", false, vec![APPROVAL_EXPIRED]);
+            outcome.status = Some(RequestStatus::Expired);
+            return outcome;
         }
         let window = window_at(now, self.policy.daily_window_utc_offset_minutes);
         let mut blocking = self.static_checks(&req.recipient_id, req.amount).blocking;
@@ -300,6 +306,15 @@ impl Vault {
         self.requests.insert(key.clone(), req);
         self.pending.remove(&key);
         self.approval_outcome(key, "REJECTED", true, vec![])
+    }
+
+    /// Removes every pending request whose approval period has passed, in one call, and
+    /// returns their keys. Expired requests can never be approved; this frees their slots
+    /// and their storage. Bounded by `MAX_PENDING`, so it always fits in one transaction.
+    #[payable]
+    pub fn clear_expired(&mut self) -> Vec<String> {
+        self.assert_owner();
+        self.remove_expired_pending(env::block_timestamp(), MAX_PENDING)
     }
 
     #[payable]
@@ -601,6 +616,40 @@ impl Vault {
             .get(key)
             .filter(|r| r.status == RequestStatus::Pending)
             .cloned()
+    }
+
+    /// Deletes a pending request and frees its slot. Only ever called for PENDING requests,
+    /// which were never paid, so deleting one cannot let a key be paid twice: a later request
+    /// with the same key is evaluated from scratch, as in the core engine.
+    fn remove_pending(&mut self, key: &str) {
+        self.requests.remove(key);
+        self.pending.remove(key);
+    }
+
+    /// Removes up to `max` expired pending requests and logs their keys in one
+    /// `pending_expired` event. Reads at most `MAX_PENDING` entries.
+    fn remove_expired_pending(&mut self, now: u64, max: u32) -> Vec<String> {
+        let expired: Vec<String> = self
+            .pending
+            .iter()
+            .filter(|k| {
+                self.requests
+                    .get(*k)
+                    .is_some_and(|r| r.status == RequestStatus::Pending && self.is_expired(r, now))
+            })
+            .take(max as usize)
+            .cloned()
+            .collect();
+        for key in &expired {
+            self.remove_pending(key);
+        }
+        if !expired.is_empty() {
+            VaultEvent::PendingExpired(vec![PendingExpiredLog {
+                keys: expired.clone(),
+            }])
+            .emit();
+        }
+        expired
     }
 
     fn is_expired(&self, req: &Request, now: u64) -> bool {

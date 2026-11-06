@@ -453,16 +453,21 @@ fn approval_expires_at_exactly_the_ttl() {
     assert_eq!(late.reason_codes, vec![APPROVAL_EXPIRED]);
     assert_eq!(late.status, Some(RequestStatus::Expired));
     assert_eq!(v.get_usage().count, 1);
-    // An expired request can never be paid: approving again or replaying is refused.
+    // The expired request is deleted (it was never paid) and can never be approved.
+    assert_eq!(v.get_request("request:late".into()), None);
+    assert_eq!(v.get_config().pending_count, 0);
     assert_eq!(
         v.approve("request:late".into()).reason_codes,
         vec![REQUEST_NOT_PENDING]
     );
+    // Sending it again is a new request, evaluated from scratch as in the core engine: it
+    // needs approval again, and nothing is paid or counted.
     as_agent(T0 + 901 * SEC);
-    assert_eq!(
-        codes(&pay(&mut v, "late", "shop.testnet", NEAR / 2)),
-        vec![IDEMPOTENCY_KEY_FINALISED]
-    );
+    let again = pay(&mut v, "late", "shop.testnet", NEAR / 2);
+    assert_eq!(again.decision, Decision::RequireApproval);
+    assert!(!again.replay);
+    assert_eq!(codes(&again), vec![APPROVAL_REQUIRED_AMOUNT]);
+    assert_eq!(v.get_usage().count, 1);
 }
 
 #[test]
@@ -542,6 +547,130 @@ fn pending_requests_are_capped() {
         codes(&d),
         vec![PENDING_LIMIT_REACHED, APPROVAL_REQUIRED_AMOUNT]
     );
+}
+
+fn fill_pending(v: &mut Vault, prefix: &str, n: u32) {
+    for i in 0..n {
+        assert_eq!(
+            pay(v, &format!("{prefix}-{i}"), "shop.testnet", NEAR / 2).decision,
+            Decision::RequireApproval
+        );
+    }
+}
+
+/// Every `EVENT_JSON:` log line with the given event name, parsed.
+fn events_named(name: &str) -> Vec<Value> {
+    get_logs()
+        .iter()
+        .filter_map(|l| l.strip_prefix("EVENT_JSON:"))
+        .map(|l| serde_json::from_str::<Value>(l).unwrap())
+        .filter(|e| e["event"] == name)
+        .collect()
+}
+
+#[test]
+fn a_full_queue_frees_one_expired_slot_for_a_new_request() {
+    let mut v = setup();
+    as_agent(T0);
+    fill_pending(&mut v, "jam", MAX_PENDING);
+    // One nanosecond before the first requests expire, the queue is still full.
+    as_agent(T0 + 900 * SEC - 1);
+    let refused = pay(&mut v, "real-1", "data.testnet", NEAR / 2);
+    assert_eq!(
+        codes(&refused),
+        vec![PENDING_LIMIT_REACHED, APPROVAL_REQUIRED_AMOUNT]
+    );
+    assert!(events_named("pending_expired").is_empty());
+    // Once they have expired, a new request takes the slot of exactly one of them.
+    as_agent(T0 + 900 * SEC);
+    let d = pay(&mut v, "real-1", "data.testnet", NEAR / 2);
+    assert_eq!(d.decision, Decision::RequireApproval);
+    assert_eq!(d.status, Some(RequestStatus::Pending));
+    assert_eq!(v.get_config().pending_count, MAX_PENDING);
+    let freed = events_named("pending_expired");
+    assert_eq!(freed.len(), 1);
+    let keys = freed[0]["data"][0]["keys"].as_array().unwrap();
+    assert_eq!(keys.len(), 1);
+    let key = keys[0].as_str().unwrap();
+    assert!(key.starts_with("request:jam-"));
+    assert_eq!(v.get_request(key.into()), None);
+    // The freed request was never paid, and the new one can be approved.
+    assert_eq!(v.get_usage().count, 0);
+    as_owner(T0 + 900 * SEC);
+    assert!(v.approve("request:real-1".into()).done);
+}
+
+#[test]
+fn clear_expired_removes_every_expired_request_in_one_call() {
+    let mut v = setup();
+    as_agent(T0);
+    fill_pending(&mut v, "old", 30);
+    as_agent(T0 + 100 * SEC);
+    fill_pending(&mut v, "new", 19);
+    pay(&mut v, "approved", "data.testnet", NEAR / 2);
+    as_owner(T0 + 100 * SEC);
+    assert!(v.approve("request:approved".into()).done);
+
+    as_owner(T0 + 900 * SEC);
+    let mut cleared = v.clear_expired();
+    cleared.sort();
+    let mut expected: Vec<String> = (0..30).map(|i| format!("request:old-{i}")).collect();
+    expected.sort();
+    assert_eq!(cleared, expected);
+    assert_eq!(v.get_config().pending_count, 19);
+    assert_eq!(events_named("pending_expired").len(), 1);
+    assert!(v.get_request("request:old-0".into()).is_none());
+    // Requests that are not expired, or not pending, are untouched.
+    assert_eq!(
+        v.get_request("request:new-0".into()).unwrap().status,
+        RequestStatus::Pending
+    );
+    assert_eq!(
+        v.get_request("request:approved".into()).unwrap().status,
+        RequestStatus::Submitted
+    );
+    // Nothing left to clear: no keys and no event.
+    as_owner(T0 + 900 * SEC);
+    assert!(v.clear_expired().is_empty());
+    assert!(events_named("pending_expired").is_empty());
+}
+
+#[test]
+#[should_panic(expected = "NOT_OWNER")]
+fn clear_expired_is_owner_only() {
+    let mut v = setup();
+    testing_env!(context("agent.testnet", T0, 1).build());
+    v.clear_expired();
+}
+
+#[test]
+#[should_panic(expected = "Requires attached deposit of exactly 1 yoctoNEAR")]
+fn clear_expired_requires_one_yocto() {
+    let mut v = setup();
+    testing_env!(context("owner.testnet", T0, 0).build());
+    v.clear_expired();
+}
+
+#[test]
+fn worst_case_pending_expired_event_fits_the_log_limit() {
+    // nearcore 2.14.0 allows at most 16384 bytes of logs per receipt
+    // (core/parameters/res/runtime_configs/parameters.yaml, max_total_log_length).
+    // Fill the queue with the longest keys whose every character needs JSON escaping.
+    let mut v = setup();
+    for i in 0..MAX_PENDING {
+        as_agent(T0); // a fresh receipt for each call, as on chain
+        let id = format!("{i:02}{}", "\"\\".repeat(63));
+        assert_eq!(id.len(), MAX_IDENTIFIER_LEN);
+        let d = v.request_payment(id, "shop.testnet".into(), U128(NEAR / 2), None, None);
+        assert_eq!(d.decision, Decision::RequireApproval);
+    }
+    as_owner(T0 + 900 * SEC);
+    assert_eq!(v.clear_expired().len(), MAX_PENDING as usize);
+    let logs = get_logs();
+    assert_eq!(logs.len(), 1);
+    let total: usize = logs.iter().map(String::len).sum();
+    println!("worst-case pending_expired log: {total} bytes");
+    assert!(total <= 16_384, "log is {total} bytes");
 }
 
 // ------------------------------------------------------------------ idempotency

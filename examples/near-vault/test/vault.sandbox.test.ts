@@ -4,7 +4,7 @@
  * is limited to the vault's `request_payment` method. Balances are read from the chain.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { KeyPair, NEAR, Account, actions, startVault, testPolicy } from "../lib/sandbox.mjs";
+import { KeyPair, NEAR, Account, actions, logsOf, startVault, testPolicy } from "../lib/sandbox.mjs";
 
 type Vault = Awaited<ReturnType<typeof startVault>>;
 
@@ -139,7 +139,7 @@ describe("what the agent's function-call key cannot do", () => {
   });
   afterAll(() => v?.stop());
 
-  it.each(["pause", "unpause", "approve", "reject", "set_policy", "set_agent", "withdraw", "on_transfer_settled"])(
+  it.each(["pause", "unpause", "approve", "reject", "clear_expired", "set_policy", "set_agent", "withdraw", "on_transfer_settled"])(
     "cannot call %s (rejected by the protocol before execution)",
     async (method) => {
       await expect(v.call(v.agent, method, {})).rejects.toThrow(/Access key does not allow method/);
@@ -244,6 +244,70 @@ describe("approvals", () => {
   });
 });
 
+describe("expired requests cannot jam the approval queue", () => {
+  let v: Vault;
+  afterAll(() => v?.stop());
+
+  it("a full queue frees an expired slot for a new request, and the owner clears the rest in one call", async () => {
+    v = await startVault();
+    // Ten extra function-call keys, so the 50 requests are not serialised on one nonce.
+    const keys = Array.from({ length: 10 }, () => KeyPair.fromRandom("ed25519"));
+    await v.agentFullAccess.signAndSendTransaction({
+      receiverId: v.ids.agent,
+      actions: keys.map((k) => actions.addFunctionCallAccessKey(k.getPublicKey(), v.ids.vault, ["request_payment"], NEAR / 4n)),
+      waitUntil: "FINAL",
+    });
+    // The longest request IDs whose every character needs JSON escaping, so the
+    // pending_expired event that lists their keys is as large as it can be.
+    const jamId = (i: number) => String(i).padStart(2, "0") + '"\\'.repeat(63);
+    await Promise.all(
+      keys.map(async (k, lane) => {
+        const account = new Account(v.ids.agent, v.provider, k.toString());
+        for (let j = 0; j < 5; j++) {
+          const r = await v.call(account, "request_payment", { request_id: jamId(lane * 5 + j), recipient_id: "shop.sandbox", amount: amount(NEAR / 2n) });
+          expect(r.value).toMatchObject({ decision: "REQUIRE_APPROVAL", status: "PENDING" });
+        }
+      }),
+    );
+    expect((await v.view("get_config")).pending_count).toBe(50);
+
+    // Nothing has expired yet: the queue is full and the request is refused.
+    const refused = await pay(v, "real-1", "data.sandbox", NEAR / 2n);
+    expect(refused.value).toMatchObject({ decision: "BLOCK", reason_codes: ["PENDING_LIMIT_REACHED", "APPROVAL_REQUIRED_AMOUNT"] });
+    console.log(`request_payment on a full queue with nothing expired: ${refused.gasBurnt} gas burnt`);
+
+    // Shorten the approval period so every jam request is now expired.
+    await v.ownerCall("set_policy", { policy: testPolicy(RECIPIENTS, { approval_ttl_seconds: 1 }) });
+    await waitUntilBlockTime(v, (await blockTimeNs(v)) + 2n * SEC_NS);
+    const before = await v.balance("data.sandbox");
+    const freed = await pay(v, "real-1", "data.sandbox", NEAR / 2n);
+    expect(freed.failure).toBeUndefined();
+    expect(freed.value).toMatchObject({ decision: "REQUIRE_APPROVAL", status: "PENDING" });
+    expect(freed.events.map((e: { event: string }) => e.event)).toEqual(["pending_expired", "payment_decision"]);
+    expect(freed.events[0].data[0].keys).toHaveLength(1);
+    expect(await v.view("get_request", { key: freed.events[0].data[0].keys[0] })).toBeNull();
+    expect((await v.view("get_config")).pending_count).toBe(50);
+    console.log(`request_payment that frees one expired slot: ${freed.gasBurnt} gas burnt`);
+
+    // The agent's key cannot clear the queue; the owner can, in one transaction.
+    const notOwner = await v.call(v.agentFullAccess, "clear_expired", {}, { deposit: 1n });
+    expect(notOwner.failure).toMatch(/NOT_OWNER/);
+    const cleared = await v.ownerCall("clear_expired", {});
+    expect(cleared.failure).toBeUndefined();
+    const clearedKeys: string[] = cleared.value;
+    const remainingJam = Array.from({ length: 50 }, (_, i) => `request:${jamId(i)}`).filter((k) => k !== freed.events[0].data[0].keys[0]);
+    expect(clearedKeys).toEqual(expect.arrayContaining(remainingJam));
+    expect(cleared.events).toHaveLength(1);
+    expect(cleared.events[0]).toMatchObject({ event: "pending_expired" });
+    expect(cleared.events[0].data[0].keys).toEqual(clearedKeys);
+    expect((await v.view("get_config")).pending_count).toBe(50 - clearedKeys.length);
+    const logBytes = logsOf(cleared.tx).reduce((n: number, l: string) => n + Buffer.byteLength(l), 0);
+    console.log(`clear_expired removed ${clearedKeys.length} requests: ${cleared.gasBurnt} gas burnt, ${logBytes} bytes of logs`);
+    // Nothing was paid by any of this.
+    expect(await v.balance("data.sandbox")).toBe(before);
+  });
+});
+
 describe("time-based rules on real block time", () => {
   let v: Vault;
   afterAll(() => v?.stop());
@@ -257,6 +321,7 @@ describe("time-based rules on real block time", () => {
     await waitUntilBlockTime(v, created + 2n * SEC_NS);
     const approval = await v.ownerCall("approve", { key: "request:slow" });
     expect(approval.value).toMatchObject({ done: false, reason_codes: ["APPROVAL_EXPIRED"], status: "EXPIRED" });
+    expect(await v.view("get_request", { key: "request:slow" })).toBeNull(); // never paid, so deleted
     expect(await v.balance("shop.sandbox")).toBe(before);
     await v.stop();
   });

@@ -35,6 +35,13 @@ pub struct ApprovalLog {
     pub reason_codes: Vec<String>,
 }
 
+/// Expired pending requests that were removed. Only the keys are logged: 50 keys of 136
+/// characters fit in NEAR's 16 KiB log limit even if every character needs escaping.
+#[near(serializers = [json])]
+pub struct PendingExpiredLog {
+    pub keys: Vec<String>,
+}
+
 #[near(serializers = [json])]
 pub struct PolicyUpdatedLog {
     pub policy_hash: String,
@@ -65,6 +72,8 @@ pub enum VaultEvent {
     PaymentSettled(Vec<PaymentSettledLog>),
     #[event_version("1.0.0")]
     ApprovalDecision(Vec<ApprovalLog>),
+    #[event_version("1.0.0")]
+    PendingExpired(Vec<PendingExpiredLog>),
     #[event_version("1.0.0")]
     PolicyUpdated(Vec<PolicyUpdatedLog>),
     #[event_version("1.0.0")]
