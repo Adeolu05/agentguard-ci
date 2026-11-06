@@ -6,7 +6,7 @@ This is the step-by-step procedure for running the NEAR testnet demo with real t
 
 ## Where each step was confirmed
 
-The steps below were checked on 2026-11-05 against these sources. `docs.near.org` was not reachable from the environment this guide was written in, so it was checked against the source repository the site is built from, `github.com/near/docs` at commit `fa2acf6`.
+The steps below were checked against these sources. Checked against the NEAR docs source repository (github.com/near/docs) at commit `fa2acf6` on 2026-11-05.
 
 | Step | Source |
 | --- | --- |
