@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "runId": "run_12905928ded0430db4b5fe7dbcbcba32",
-  "startedAt": "2026-11-04T21:50:27.859Z",
-  "completedAt": "2026-11-04T21:50:27.869Z",
-  "durationMs": 10,
+  "runId": "run_1dfd0cf946244774ac1985dd28fb4133",
+  "startedAt": "2026-11-06T20:03:37.258Z",
+  "completedAt": "2026-11-06T20:03:37.265Z",
+  "durationMs": 8,
   "status": "PASSED",
   "exitCode": 0,
-  "agentguardVersion": "0.1.0",
+  "drainproofVersion": "0.1.0",
   "executionMode": "simulation",
   "project": {
     "name": "NEAR testnet agent"
@@ -68,7 +68,7 @@
   },
   "target": {
     "type": "engine",
-    "name": "agentguard-engine",
+    "name": "drainproof-engine",
     "capabilities": {
       "reasonCodes": true,
       "approvals": true,
@@ -82,7 +82,7 @@
     "near:account-id-validation"
   ],
   "environment": {
-    "node": "v22.23.4",
+    "node": "v24.10.0",
     "platform": "linux",
     "arch": "x64",
     "ci": false
@@ -109,7 +109,7 @@
       "file": "scenarios/near-concurrent-daily-limit.yaml",
       "definitionHash": "sha256:fe904bddb8bb918c5743ffcedbcd712baaee6bd7c16811b58755640e6ac0c6ed",
       "status": "PASS",
-      "durationMs": 5.85,
+      "durationMs": 4.53,
       "steps": [
         {
           "index": 0,
@@ -153,7 +153,7 @@
       "file": "scenarios/near-invalid-account-id-blocked.yaml",
       "definitionHash": "sha256:2a523fdfe68d1a740e4bb52152e39cb7a3765ef63eea9512f203849385af8cad",
       "status": "PASS",
-      "durationMs": 1.02,
+      "durationMs": 0.73,
       "steps": [
         {
           "index": 0,
@@ -230,7 +230,7 @@
       "file": "scenarios/near-mainnet-account-on-testnet.yaml",
       "definitionHash": "sha256:ca135744a761b6584c6ac327b9c3a5af6b6f668689e5eb4870e4fde863b837f3",
       "status": "PASS",
-      "durationMs": 0.38,
+      "durationMs": 0.23,
       "steps": [
         {
           "index": 0,
@@ -266,7 +266,7 @@
       "file": "scenarios/near-mainnet-blocked.yaml",
       "definitionHash": "sha256:acd4a554b8fc4ad7fa3fa21376c6b247945ad2026716fcec0e1cf5aaad23704c",
       "status": "PASS",
-      "durationMs": 0.37,
+      "durationMs": 0.33,
       "steps": [
         {
           "index": 0,
@@ -301,7 +301,7 @@
       "file": "scenarios/near-valid-transfer-allowed.yaml",
       "definitionHash": "sha256:5787859b03f56655c31c00edf9cb1b3b6442df87fb5b817826aff2c154129dcf",
       "status": "PASS",
-      "durationMs": 0.46,
+      "durationMs": 0.33,
       "steps": [
         {
           "index": 0,
@@ -331,7 +331,7 @@
       "file": "scenarios/near-yocto-precision.yaml",
       "definitionHash": "sha256:8204e9830aa3d950826ab856e3c2d0ec62e175bc38892d9f1f54b10d963e2794",
       "status": "PASS",
-      "durationMs": 0.72,
+      "durationMs": 0.54,
       "steps": [
         {
           "index": 0,
