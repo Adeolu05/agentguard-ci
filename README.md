@@ -4,7 +4,7 @@
 
 ## For judges: verify in 5 minutes
 
-Requirements: Node.js 22.22 or newer and pnpm 10 (`corepack enable` provides pnpm). No account, key, LLM or blockchain access is needed. Run each block from the repository root; every block is self-contained, so it also works in a fresh, non-interactive shell. The expected results below are the real output of these exact commands, run on 2026-11-05 from a fresh clone (Node 22.23.4, pnpm 10.28.0, Linux).
+Requirements: Node.js 22.22 or newer and pnpm 10 (`corepack enable` provides pnpm). No account, key, LLM or blockchain access is needed. Run each block from the repository root; every block is self-contained, so it also works in a fresh, non-interactive shell. The expected results below are the real output of these exact commands, run on 2026-11-06 (Node 24.10.0, pnpm 10.28.0, Linux).
 
 **1. Install and build.**
 
@@ -142,7 +142,7 @@ pnpm -s --filter @agentguard/example-basic-agent test:naive --quiet | grep -E "P
 pnpm -s test 2>&1 | grep -E "Test Files|Tests "
 ```
 
-Expected: the naive guard (which uses `parseFloat` and case-insensitive recipient matching) reports `Passed:    7`, `Failed:    16`, `Skipped:   17` and `exit code: 1`. The full suite reports `Test Files  14 passed (14)` and `Tests  250 passed (250)`.
+Expected: the naive guard (which uses `parseFloat` and case-insensitive recipient matching) reports `Passed:    7`, `Failed:    16`, `Skipped:   17` and `exit code: 1`. The full suite reports `Test Files  15 passed (15)` and `Tests  271 passed (271)`.
 
 ## Overview
 
@@ -166,7 +166,7 @@ AgentGuard is **not** a wallet, a custody service or a trading bot. It never sig
 | GitHub Actions: repository CI and a user workflow template (actions pinned to SHAs) | `.github/workflows` | Running on GitHub; every job passed on the first run |
 | Read-only web dashboard over CLI reports | `apps/web` | Implemented, data layer tested, visually checked |
 | NEAR: account-ID validation, testnet executor behind the execution gate | `@agentguard/near` | Implemented, tested against a local RPC stub. Live testnet run pending ([details](#live-testnet-run)) |
-| AgentGuard Vault: a NEAR contract that holds the funds and enforces the policy on-chain; the agent holds only a function-call key | `contracts/vault`, `examples/near-vault` | Implemented. 35 unit tests and 28 tests on a local NEAR node pass; 16 of the 40 built-in scenarios pass against it and 24 are skipped with reasons. Not deployed to testnet yet ([details](#what-the-agents-key-can-and-cannot-do)) |
+| AgentGuard Vault: a NEAR contract that holds the funds and enforces the policy on-chain; the agent holds only a function-call key | `contracts/vault`, `examples/near-vault` | Implemented. 40 unit tests and 30 tests on a local NEAR node pass; 16 of the 40 built-in scenarios pass against it and 24 are skipped with reasons. Not deployed to testnet yet ([details](#what-the-agents-key-can-and-cannot-do)) |
 
 ## Quick start
 
@@ -280,31 +280,67 @@ With the [AgentGuard Vault](examples/near-vault), the money sits in a NEAR contr
 **The agent's key can:**
 
 - Ask the vault to pay a recipient on the allowlist. The vault pays only if the amount is within the per-payment and daily limits, the vault is not paused, and that request has not been paid before.
-- Ask for a larger payment. It then waits for the owner's approval, and expires if nobody approves it in time.
-- Spend NEAR on gas, up to the key's allowance. The default is 0.25 NEAR; in the local sandbox one allowed payment used about 0.00044 NEAR of allowance, so that covers roughly 560 payments.
+- Ask for a larger payment. It then waits for the owner's approval, and expires if nobody approves it in time. At most 50 requests wait at once, and an expired request never keeps its place in that queue, so the agent cannot jam it for longer than the approval period.
+- Spend NEAR on gas, up to the key's allowance. The default is 0.25 NEAR; on the local node one allowed payment used 0.000442 NEAR of allowance (measured), so that covers roughly 565 payments.
 
 **The agent's key cannot**, because the NEAR protocol rejects the transaction before anything runs:
 
 - Send NEAR to anyone directly ("Access key requires full access").
-- Call any other method of the vault, such as `withdraw`, `approve`, `set_policy` or `unpause` ("Access key does not allow method ...").
+- Call any other method of the vault, such as `withdraw`, `approve`, `clear_expired`, `set_policy` or `unpause` ("Access key does not allow method ...").
 - Call any other contract, or attach a deposit to its call.
 - Add keys to its own account, or take any other action on it.
 
 **And the vault itself refuses**, whatever key is used: payments to recipients that are not on the allowlist, over a limit, while paused or already paid; approvals by anyone but the owner; and owner actions without the owner's full-access key (they need exactly 1 yoctoNEAR attached, which a function-call key cannot attach).
 
-If the agent is fully compromised, the most it can do is make payments the policy already allows: to allowlisted recipients, within the limits, so at most `max_daily_spend` per day. The owner can pause the vault, or point it at a new agent account with `set_agent`, which makes the old key useless without touching the agent's account. Each of these behaviours is checked by the [sandbox tests](examples/near-vault/test/vault.sandbox.test.ts) against a real local NEAR node (the allowance figure is a measurement, not a test). None of it has been exercised on testnet yet.
+If the agent is fully compromised, the most it can do is make payments the policy already allows: to allowlisted recipients, within the limits, so at most `max_daily_spend` per day. The owner can pause the vault, or point it at a new agent account with `set_agent`, which makes the old key useless without touching the agent's account. Each of these behaviours is checked by the [sandbox tests](examples/near-vault/test/vault.sandbox.test.ts) against a real local NEAR node (the allowance figure is a measurement, not a test). None of it has been exercised on testnet yet. Design, threat model and measured storage and gas: [docs/vault-design.md](docs/vault-design.md).
+
+### Verify the vault yourself (optional)
+
+This is not part of the 5-minute path: it needs Rust (install [rustup](https://rustup.rs); `cargo` then installs the toolchain pinned in `contracts/vault/rust-toolchain.toml` by itself), a one-time download of the NEAR sandbox node, and Linux x86_64 for the commands below. Nothing touches testnet or mainnet, and no account or key is needed. Install cargo-near 0.22.0 the way CI does, from its release binary checked against the published SHA-256:
+
+```bash
+curl -sSfL -o /tmp/cargo-near.tar.gz https://github.com/near/cargo-near/releases/download/cargo-near-v0.22.0/cargo-near-x86_64-unknown-linux-gnu.tar.gz
+echo "9429064e30a427e96523f539cb255f3688d2345e5000d7d4e4873a8247247d1a  /tmp/cargo-near.tar.gz" | sha256sum -c -
+tar -xzf /tmp/cargo-near.tar.gz -C /tmp && install -m 0755 /tmp/cargo-near-x86_64-unknown-linux-gnu/cargo-near "$HOME/.cargo/bin/cargo-near"
+```
+
+Then, from the repository root (after step 1). The NEAR node needs an open-file limit of 65535, hence the `ulimit` (it fails if your hard limit is lower; in Docker use `--ulimit nofile=65535:65535`):
+
+```bash
+(cd contracts/vault && cargo test 2>&1 | grep "test result")
+pnpm build:vault
+ulimit -n 65535 && pnpm test:vault 2>&1 | grep -E "Test Files|Tests "
+ulimit -n 65535 && pnpm -s agentguard test --config examples/near-vault/agentguard.yaml --no-save --quiet | grep -E "Passed:|Failed:|Errors:|Skipped:|Result"
+ulimit -n 65535 && pnpm -s --filter @agentguard/example-near-vault demo | grep -E "^[0-9]\.|Vault decision|Rejected"
+```
+
+Expected: `test result: ok. 40 passed; 0 failed` (followed by a second line, `ok. 0 passed`, for the empty doc-test target), then the build ends with `Contract successfully built!`, then `Tests  30 passed (30)`, then `Passed:    16`, `Failed:    0`, `Errors:    0`, `Skipped:   24` and `Result: PASSED  (exit code 0)`. The demo then prints:
+
+```text
+1. Allowed: 0.1 NEAR to merchant-example.testnet (allowlisted, under every limit)
+  Vault decision: ALLOW, status SUBMITTED
+2. Blocked: 0.1 NEAR to attacker.testnet, with a prompt-injection memo
+  Vault decision: BLOCK (RECIPIENT_NOT_ALLOWED), status not stored
+3. Needs approval: 0.4 NEAR to merchant-example.testnet (above the 0.25 NEAR threshold)
+  Vault decision: REQUIRE_APPROVAL (APPROVAL_REQUIRED_AMOUNT), status PENDING
+4. The agent's key tries to withdraw the vault's funds
+  Rejected by the protocol before execution: Access key does not allow method withdraw
+5. The agent's key tries to send 0.01 NEAR directly
+  Rejected by the protocol before execution: Access key requires full access
+```
+
+Without the `grep`, the demo also prints each request's `EVENT_JSON` log lines, including the `payment_settled` event with status `PAID` for the first one.
 
 ## Project status
 
-Verified on 2026-11-05 (Node 22.23.4, pnpm 10.28.0, Linux):
+Verified on 2026-11-06 (Node 24.10.0, pnpm 10.28.0, Linux), unless a line gives another date:
 
-- `pnpm check` runs lint, build, the dashboard build, typecheck and 250 automated tests, and all of it passes.
-- From a fresh clone with an empty package cache (cold install from npm, frozen lockfile), the quick-start, the unsafe-policy demo (exit code 1) and an independent cross-check of the reports all pass. Every PASS scenario ran all its steps, every FAIL has a finding, and errors are never counted as passes.
-- AgentGuard was installed from local tarballs into an unrelated npm project, and its generated GitHub workflow steps were executed there ([docs/adoption.md](docs/adoption.md)).
+- `pnpm check` runs lint, build, the dashboard build, typecheck and 271 automated tests, and all of it passes.
+- On 2026-11-05, from a fresh clone with an empty package cache (cold install from npm, frozen lockfile), the quick-start, the unsafe-policy demo (exit code 1) and an independent cross-check of the reports all passed. Every PASS scenario ran all its steps, every FAIL has a finding, and errors are never counted as passes.
+- On 2026-11-05, AgentGuard was installed from local tarballs into an unrelated npm project, and its generated GitHub workflow steps were executed there ([docs/adoption.md](docs/adoption.md)).
 - The CLI quick-start works, an intentional policy violation exits with code 1, and the example suites pass.
-- Policy evaluation averages 25 to 35 µs (p99 under 0.2 ms) on a 2.1 GHz Xeon, against a target of under 10 ms. The 40-scenario suite takes about 20 ms in the runner, or about 0.3 s wall time including Node startup.
-
-- AgentGuard Vault, on a local NEAR node: `cargo test` passes 35 unit tests, `pnpm test:vault` passes 28 integration tests, and 16 of the 40 built-in scenarios pass against the contract (24 skipped, each with its reason). See [examples/near-vault](examples/near-vault).
+- `pnpm bench` (after `pnpm build`): over four runs on an Intel Core i7-1185G7, `authorize()` took a mean of 22.0 to 27.2 µs (p99 61 to 74 µs), against a target of under 10 ms. The 40-scenario suite took 14 to 22 ms in the runner, or 212 to 286 ms wall time including Node startup. Timings depend on the machine and its load.
+- AgentGuard Vault, on a local NEAR node: `cargo test` passes 40 unit tests, `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check` are clean, `pnpm test:vault` passes 30 integration tests, and 16 of the 40 built-in scenarios pass against the contract (24 skipped, each with its reason). See [Verify the vault yourself](#verify-the-vault-yourself-optional).
 - GitHub Actions: the four original CI jobs (checks, example suites, regression gate, dashboard build) [pass on GitHub](https://github.com/Adeolu05/agentguard-ci/actions). The vault job was added since and has not run on GitHub yet.
 - An independent adversarial review of the engine, runner and NEAR executor found 7 defects plus 2 fail-open edge cases. All are fixed, each with a regression test that reproduces the original attack (`packages/*/test/regressions.test.ts` and the NEAR tests).
 
