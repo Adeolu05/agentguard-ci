@@ -29,6 +29,7 @@ recipients:
   allowed:
     - merchant-example
     - data-provider-example
+    - attacker-wallet
 
 networks:
   allowed:
