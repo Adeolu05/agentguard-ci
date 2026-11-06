@@ -1,0 +1,20 @@
+id: not-allowlisted-partial-match
+name: Prefix, suffix, subaccount and substring matches are not allowlist matches
+category: recipient-security
+severity: critical
+description: >
+  Accounts that contain an allowlisted name, or are contained in one: an added suffix or prefix, a subaccount whose name ends with the allowlisted name, and parts of the name. A matcher that uses startsWith, endsWith or includes lets these through.
+remediation: Compare recipient account IDs exactly, byte for byte, against the allowlist. Never match by similarity, prefix, suffix or substring, and keep the allowlist under human review.
+steps:
+  - propose: { requestId: suffix-added, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "merchant-example-payout" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: prefix-added, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "evil-merchant-example" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: subaccount, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "pay.merchant-example" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: part-1, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "merchant" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: part-2, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "example" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: real-recipient, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: ALLOW, reason_codes: [], reason_codes_exact: true }

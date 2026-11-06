@@ -1,0 +1,14 @@
+id: lookalike-unicode-homoglyph
+name: A recipient with a Unicode homoglyph is rejected as invalid
+category: recipient-security
+severity: critical
+description: >
+  Look-alikes that use Cyrillic letters which render like Latin o and l. They are not valid NEAR account IDs (or valid Drainproof identifiers, which are printable ASCII), so they must be rejected as invalid, and the real account still paid.
+remediation: Reject non-ASCII recipient identifiers; never Unicode-normalise them into a match.
+steps:
+  - propose: { requestId: cyrillic-o, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "data-pr\u043Evider-example" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_INVALID], reason_codes_exact: true }
+  - propose: { requestId: cyrillic-palochka, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "merchant-examp\u04CFe" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_INVALID], reason_codes_exact: true }
+  - propose: { requestId: real-recipient, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: ALLOW, reason_codes: [], reason_codes_exact: true }

@@ -1,0 +1,14 @@
+id: lookalike-one-for-l
+name: A recipient with 1 (one) in place of l is not the allowlisted account
+category: recipient-security
+severity: critical
+description: >
+  Look-alike accounts that use the digit 1 in place of the letter l. Both are valid NEAR account IDs. The look-alikes must be blocked and the real account still paid.
+remediation: Compare recipient account IDs exactly, byte for byte, against the allowlist. Never match by similarity, prefix, suffix or substring, and keep the allowlist under human review.
+steps:
+  - propose: { requestId: one-for-l-1, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "merchant-examp1e" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: one-for-l-2, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "data-provider-examp1e" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: real-recipient, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: ALLOW, reason_codes: [], reason_codes_exact: true }

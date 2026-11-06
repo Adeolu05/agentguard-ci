@@ -71,9 +71,10 @@ describe("payments and blocks", () => {
   });
 
   it("blocks recipient strings that are not NEAR account IDs, and oversized memos", async () => {
-    // The inputs of the built-in recipient-normalisation scenario. The vault reports
-    // RECIPIENT_INVALID for all four (NEAR account IDs are lowercase ASCII only).
-    for (const [i, recipient] of ["Shop.sandbox", "shop.sandbox ", "shop.sandbox\u200b", "sh\u043ep.sandbox"].entries()) {
+    // The inputs of the built-in recipient-normalisation scenario, plus the Cyrillic palochka
+    // look-alike of examples/recipient-checks. The vault reports RECIPIENT_INVALID for all
+    // five (NEAR account IDs are lowercase ASCII only).
+    for (const [i, recipient] of ["Shop.sandbox", "shop.sandbox ", "shop.sandbox\u200b", "sh\u043ep.sandbox", "sh\u04cfop.sandbox"].entries()) {
       const r = await pay(v, `norm-${i}`, recipient, 1n);
       expect(r.value).toMatchObject({ decision: "BLOCK", reason_codes: ["RECIPIENT_INVALID"] });
     }

@@ -1,0 +1,14 @@
+id: lookalike-rn-for-m
+name: A recipient with rn in place of m is not the allowlisted account
+category: recipient-security
+severity: critical
+description: >
+  Look-alike accounts that use the two letters r and n, which render like m in many fonts. The look-alikes must be blocked and the real account still paid.
+remediation: Compare recipient account IDs exactly, byte for byte, against the allowlist. Never match by similarity, prefix, suffix or substring, and keep the allowlist under human review.
+steps:
+  - propose: { requestId: rn-for-m-1, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "rnerchant-example" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: rn-for-m-2, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "merchant-exarnple" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: real-recipient, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: ALLOW, reason_codes: [], reason_codes_exact: true }

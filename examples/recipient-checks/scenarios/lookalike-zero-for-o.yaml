@@ -1,0 +1,14 @@
+id: lookalike-zero-for-o
+name: A recipient with 0 (zero) in place of o is not the allowlisted account
+category: recipient-security
+severity: critical
+description: >
+  An attacker registers an account that differs from an allowlisted one only by the digit 0 in place of the letter o, hoping a human or a loose check reads them as the same. The second also uses 1 for l. Both are valid NEAR account IDs. The look-alikes must be blocked and the real account still paid.
+remediation: Compare recipient account IDs exactly, byte for byte, against the allowlist. Never match by similarity, prefix, suffix or substring, and keep the allowlist under human review.
+steps:
+  - propose: { requestId: zero-for-o-1, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "data-pr0vider-example" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: zero-for-o-2, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "data-pr0vider-examp1e" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: real-recipient, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: data-provider-example }
+    expect: { decision: ALLOW, reason_codes: [], reason_codes_exact: true }

@@ -57,6 +57,8 @@ jobs:
         run: pnpm drainproof test --config examples/near-testnet/drainproof.yaml --no-color --json reports/near-testnet.json --markdown reports/near-testnet.md --github-summary
       - name: Guard built on @drainproof/core
         run: pnpm drainproof test --config examples/basic-agent/drainproof.fixed.yaml --no-color --no-save
+      - name: Recipient-check pack (look-alike and non-allowlisted accounts)
+        run: pnpm drainproof test --config examples/recipient-checks/drainproof.yaml --no-color --json reports/recipient-checks.json --markdown reports/recipient-checks.md --github-summary
       - name: Upload reports
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -220,6 +222,8 @@ jobs:
         run: pnpm test:vault
       - name: Built-in scenarios against the vault (local sandbox)
         run: pnpm drainproof test --config examples/near-vault/drainproof.yaml --no-color --json reports/near-vault.json --markdown reports/near-vault.md --github-summary
+      - name: Recipient-check pack against the vault (local sandbox)
+        run: pnpm drainproof test --config examples/recipient-checks/drainproof.vault.yaml --no-color --json reports/recipient-checks-vault.json --markdown reports/recipient-checks-vault.md --github-summary
       - name: Vault demo (local sandbox)
         run: pnpm --filter @drainproof/example-near-vault demo
       - name: Upload reports

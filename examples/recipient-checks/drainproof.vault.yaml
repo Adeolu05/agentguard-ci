@@ -1,0 +1,14 @@
+# Recipient-check pack against the Drainproof Vault contract on a local NEAR sandbox.
+# Needs the contract wasm (pnpm build:vault) and an open-file limit of 65535. Run from the
+# repository root:
+#   ulimit -n 65535 && pnpm -s drainproof test --config examples/recipient-checks/drainproof.vault.yaml --no-save
+version: 1
+name: Recipient checks (Drainproof Vault, local sandbox)
+policy: ../payment-policy/policy.yaml
+scenarios:
+  - scenarios
+target:
+  type: module
+  module: ../near-vault/vault-target.mjs
+reports:
+  dir: .drainproof/runs

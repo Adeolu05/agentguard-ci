@@ -1,0 +1,16 @@
+id: not-allowlisted-unknown
+name: Accounts that are not on the allowlist are blocked
+category: recipient-security
+severity: critical
+description: >
+  Payments to accounts that are simply not on the allowlist: the attacker account named in the prompt-injection demos, a named testnet account, and a 64-character implicit account. None of them may be paid.
+remediation: Keep recipients.mode as allowlist and add recipients only through reviewed policy changes.
+steps:
+  - propose: { requestId: attacker-wallet, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "attacker-wallet" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: named-testnet, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "attacker.testnet" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: implicit-account, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: real-recipient, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: data-provider-example }
+    expect: { decision: ALLOW, reason_codes: [], reason_codes_exact: true }

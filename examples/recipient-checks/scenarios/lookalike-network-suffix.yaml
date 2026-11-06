@@ -1,0 +1,14 @@
+id: lookalike-network-suffix
+name: An allowlisted name with a network suffix is a different account
+category: recipient-security
+severity: critical
+description: >
+  On NEAR, merchant-example, merchant-example.testnet and merchant-example.near are three different accounts. Only the exact allowlisted ID may be paid.
+remediation: Compare recipient account IDs exactly, byte for byte, against the allowlist. Never match by similarity, prefix, suffix or substring, and keep the allowlist under human review.
+steps:
+  - propose: { requestId: testnet-suffix, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "merchant-example.testnet" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: near-suffix, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: "merchant-example.near" }
+    expect: { decision: BLOCK, reason_codes: [RECIPIENT_NOT_ALLOWED], reason_codes_exact: true }
+  - propose: { requestId: real-recipient, agentId: research-payment-agent, assetId: USDC, networkId: near-testnet, amount: "5", recipientId: merchant-example }
+    expect: { decision: ALLOW, reason_codes: [], reason_codes_exact: true }

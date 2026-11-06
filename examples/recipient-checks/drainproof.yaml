@@ -1,0 +1,12 @@
+# Recipient-check pack against the Drainproof policy engine (offline, no blockchain).
+# Run from the repository root:
+#   pnpm -s drainproof test --config examples/recipient-checks/drainproof.yaml --no-save
+version: 1
+name: Recipient checks (policy engine)
+policy: ../payment-policy/policy.yaml
+scenarios:
+  - scenarios
+target:
+  type: engine
+reports:
+  dir: .drainproof/runs
