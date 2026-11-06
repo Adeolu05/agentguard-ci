@@ -12,7 +12,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["packages/*/src/**/*.test.ts", "packages/*/test/**/*.test.ts", "apps/web/lib/**/*.test.ts"],
+    include: ["packages/*/src/**/*.test.ts", "packages/*/test/**/*.test.ts", "apps/web/lib/**/*.test.ts", "examples/llm-agent/test/**/*.test.ts"],
     testTimeout: 30_000,
   },
 });

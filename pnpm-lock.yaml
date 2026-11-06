@@ -88,6 +88,15 @@ importers:
         specifier: workspace:*
         version: link:../../packages/core
 
+  examples/llm-agent:
+    dependencies:
+      '@agentguard/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@agentguard/near':
+        specifier: workspace:*
+        version: link:../../packages/near
+
   examples/near-testnet:
     dependencies:
       '@agentguard/core':

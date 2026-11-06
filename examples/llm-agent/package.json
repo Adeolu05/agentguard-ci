@@ -1,0 +1,13 @@
+{
+  "name": "@agentguard/example-llm-agent",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "demo": "node agent.mjs",
+    "make-stub-recording": "node make-stub-recording.mjs"
+  },
+  "dependencies": {
+    "@agentguard/core": "workspace:*",
+    "@agentguard/near": "workspace:*"
+  }
+}
