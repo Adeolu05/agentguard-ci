@@ -15,23 +15,23 @@ These rules were confirmed by the project owner from the official NEAR HACKATHON
 
 | Requirement | Status |
 | --- | --- |
-| Public repository | Done: https://github.com/Adeolu05/drainproof |
+| Public repository | **To do (owner).** https://github.com/Adeolu05/drainproof returned 404 to anonymous requests on 2026-11-06, so it is private. It must be public before judging. |
 | README with "do X, see Y" steps an AI judge can follow | Done: [For judges: verify in 5 minutes](../README.md#for-judges-verify-in-5-minutes). Every command was run from a fresh clone on 2026-11-05 and the expected output is the real output. |
 | Public X demo post that states the project was built at NEAR HACKATHON, with a video or screenshots | **To do (owner).** Screenshots are in `docs/images/` and the demo script is [demo.md](demo.md). |
 | A mainnet NEAR account for the prize payout | **To do (owner).** Only the account ID is submitted. No mainnet key belongs anywhere in this repository, and nothing in it signs on mainnet. |
-| "What did you build?" description, 20 to 2,000 characters, covering the problem, the implementation and NEAR's role | **Draft below** (1,610 characters, counted with `wc -m`). Covers the vault; to be revised after the LLM demo phase. |
+| "What did you build?" description, 20 to 2,000 characters, covering the problem, the implementation and NEAR's role | **Draft below** (1,846 characters, counted with `wc -m`). Leads with CI: the GitHub Action and the scenarios against both the engine and the vault. |
 | No secrets anywhere in the git history | **Pending** a full-history secret scan in the final audit. By design, keys are only read from environment variables, which `.env.example` documents with empty values. |
 
 ## "What did you build?" (draft)
 
 ```text
-Drainproof is an open-source security test suite for AI agents that can move money.
+Drainproof: is your AI agent drainproof? It is the test suite for an AI agent's money rules. On every pull request, attack scenarios run against the agent's spending policy, off-chain in a policy engine and on-chain in a NEAR vault contract, and the pull request fails when a change would let the agent be drained.
 
-Problem: an agent with a wallet can be talked into paying the wrong account, paying twice after a retry, or overspending through parallel requests. Ordinary unit tests rarely cover these failures, and a policy change can quietly loosen a guardrail.
+Problem: an agent with a wallet can be talked into paying the wrong account, paying twice after a retry, or overspending through parallel requests. Many tools enforce spending rules; few test them. A policy file is code, and a one-line change to an allowlist or a limit can quietly open a hole.
 
-Implementation: a deterministic TypeScript policy engine (no LLM in the decision) evaluates every proposed payment against a YAML policy: per-transaction and daily limits, recipient and network allowlists, and human-approval thresholds. Amounts use exact integer arithmetic. Spending is reserved atomically, retries are idempotent, approvals are bound to the exact payment, and every error fails closed. A CLI runs 40 adversarial scenarios (prompt injection, boundary amounts, races, replayed approvals, malformed input) against that policy or against your own guard, writes reports, and exits non-zero so CI blocks unsafe changes. A read-only dashboard shows the results.
+Implementation: a deterministic TypeScript policy engine (no LLM in the decision) checks every proposed payment against a YAML policy: per-payment and daily limits, recipient and network allowlists, and approval thresholds, with exact integer amounts, atomic reservations, idempotent retries and fail-closed errors. A scenario runner attacks the policy with 40 scenarios (prompt injection, boundary amounts, races, replayed approvals, malformed input) and a look-alike recipient pack (0/o, 1/l, rn/m), against the engine, your own guard code or the vault. A GitHub Action runs it with one step and a policy file, writes the findings to the job summary and fails the check.
 
-NEAR's role: the NEAR package validates NEAR account IDs (including mainnet accounts on testnet), enforces limits in exact 24-decimal yoctoNEAR, and executes only payments the engine authorised on NEAR testnet, behind an execution gate that refuses stale policies, never broadcasts twice and refuses to sign unless the RPC reports testnet. A NEAR smart contract, the Drainproof Vault, holds the funds and enforces the same policy on-chain; the agent holds only a function-call key for one method, so even a compromised agent can only make payments the policy allows. Mainnet signing is not supported.
+NEAR's role: the Drainproof Vault, a NEAR smart contract in Rust, holds the funds and enforces the same policy on-chain. The agent holds only a function-call access key for one method, so the protocol itself stops a compromised agent from withdrawing, calling other methods or paying directly; it can only make payments the policy allows. The scenarios a contract can express (16 of 40, and 7 of the 8 recipient checks) run against it on a local NEAR node in CI. An optional LLM demo checks NEAR AI Cloud response signatures. Mainnet signing is not supported.
 ```
 
 ## Before sending (the submission cannot be edited)
@@ -67,6 +67,9 @@ NEAR's role: the NEAR package validates NEAR account IDs (including mainnet acco
 - [x] JSON and Markdown reports
 - [x] GitHub Actions workflows run on GitHub ([Actions](https://github.com/Adeolu05/drainproof/actions))
 - [x] An intentional policy violation makes the suite exit with code 1, locally and in the CI `regression-gate` job
+- [x] Composite GitHub Action (`action.yml`): one `uses:` step and a policy file; rehearsed locally from an outside project (pass, then fail with the CRITICAL finding)
+- [ ] The action has run on GitHub (the `action` CI job and `.github/workflows/drainproof.yml`; first run expected on the demo pull request)
+- [x] Recipient-check pack (`examples/recipient-checks`): engine 8/8, vault 7 pass and 1 skipped, catches 7 loose matchers
 
 ### Dashboard
 - [x] Data comes only from CLI reports (schema-validated); demo fixtures are generated by the real CLI and labelled
@@ -100,7 +103,7 @@ NEAR's role: the NEAR package validates NEAR account IDs (including mainnet acco
 - [ ] A real NEAR AI Cloud run recorded (needs the owner's API key); the shipped recording is a labelled stand-in
 
 ### Project delivery
-- [x] Repository is public
+- [ ] Repository is public (private as of 2026-11-06)
 - [x] README with a working quick-start and the "For judges" steps
 - [x] Architecture and threat model documented
 - [x] License (Apache-2.0)
