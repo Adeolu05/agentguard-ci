@@ -204,7 +204,7 @@ An expired request was never paid, so a later request with the same key is a new
 
 `approve` pays a pending request **at most once**, and only with the stored recipient and amount. It re-checks everything except the approval threshold, under the current policy and at the current time: not paused, not expired, the per-transaction limit, the recipient (in `allowlist` mode it must still be allowlisted), today's spend and count, and the vault balance. If a check fails it returns the reasons and leaves the request pending (an expired request is removed instead, and the outcome reports `APPROVAL_EXPIRED` with status `EXPIRED`). If they all pass it moves the request to `SUBMITTED`, counts it in today's usage and schedules the transfer.
 
-`clear_expired` removes every pending request whose approval period has passed and returns their keys, in one call. It reads at most `MAX_PENDING` entries, so it always fits in one transaction: with 50 expired requests it burnt 32.96 TGas on the local node (the limit per transaction is 300 TGas).
+`clear_expired` removes every pending request whose approval period has passed and returns their keys, in one call. It reads at most `MAX_PENDING` entries, so it always fits in one transaction: with 50 expired requests it burnt 32.97 TGas on the local node (the limit per transaction is 300 TGas).
 
 `set_agent` is the revocation path that does not depend on the agent account's keys: after it, the old agent key can no longer get anything paid.
 
@@ -270,7 +270,7 @@ Measured on the local node (vault funded with 3 NEAR, as `deploy.mjs` does by de
 
 | What | Storage |
 | --- | --- |
-| Contract code (wasm, 190,893 bytes) plus initial state | 191,326 bytes, 1.91326 NEAR of storage stake; 1.075 NEAR of the 3 NEAR stays available for payments |
+| Contract code (wasm, 190,925 bytes) plus initial state | 191,358 bytes, 1.91358 NEAR of storage stake; 1.075 NEAR of the 3 NEAR stays available for payments |
 | An allowed payment, short request ID (`m-1`) | +112 bytes (0.00112 NEAR) |
 | An allowed payment, 128-character request ID (the largest record) | +362 bytes (0.00362 NEAR) |
 | A pending request, 128-character request ID | +624 bytes (record plus pending-set entry) |
@@ -296,7 +296,7 @@ Recovery, in order of preference:
 | Allowed payment, 128-character request ID | 5.33 TGas | 0.000466 NEAR (about 536 per 0.25 NEAR) |
 | Blocked request (unknown recipient) | 2.08 TGas | 0.000186 NEAR |
 | Request that needs approval | 2.60 TGas | 0.000237 NEAR |
-| Refused request on a full queue with nothing expired (reads all 50 entries) | 10.25 TGas | not measured |
+| Refused request on a full queue with nothing expired (reads all 50 entries) | 10.26 TGas | not measured |
 | Request that frees one expired slot | 3.36 TGas | not measured |
 
 A function-call **gas key** could replace the allowance later, since the owner can top it up, but it is newer tooling and not needed for this version.
