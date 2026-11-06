@@ -1,0 +1,76 @@
+name: Drainproof
+description: Fail the pull request when a change would let your AI agent be drained. Runs 40 attack scenarios against its money policy.
+author: Adeolu05
+
+branding:
+  icon: shield
+  color: green
+
+inputs:
+  policy:
+    description: >-
+      Path to your transaction policy (YAML), relative to working-directory. The action runs the
+      40 built-in scenarios against it with the Drainproof policy engine. Set this or `config`.
+    required: false
+    default: ""
+  config:
+    description: >-
+      Path to a full Drainproof project file (drainproof.yaml), for your own scenarios or your own
+      guard as the target. Used when `policy` is empty. Defaults to drainproof.yaml if that file exists.
+    required: false
+    default: ""
+  working-directory:
+    description: Directory the paths above are relative to.
+    required: false
+    default: "."
+  report-dir:
+    description: Directory (relative to working-directory) for drainproof-report.json and drainproof-report.md.
+    required: false
+    default: drainproof-report
+  github-summary:
+    description: Append the Markdown report to the job summary ("true" or "false").
+    required: false
+    default: "true"
+  node-version:
+    description: Node.js version to set up with actions/setup-node. Set to "" to use the Node.js already on the runner (22.22.2 or newer).
+    required: false
+    default: "22.22.2"
+
+outputs:
+  exit-code:
+    description: "Drainproof exit code: 0 passed, 1 a required scenario failed, 2 configuration error, 3 run incomplete."
+    value: ${{ steps.run.outputs.exit-code }}
+  status:
+    description: PASSED, FAILED, INCOMPLETE or INVALID.
+    value: ${{ steps.run.outputs.status }}
+  report-json:
+    description: Absolute path of the JSON report (empty if nothing ran).
+    value: ${{ steps.run.outputs.report-json }}
+  report-markdown:
+    description: Absolute path of the Markdown report (empty if nothing ran).
+    value: ${{ steps.run.outputs.report-markdown }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      if: ${{ inputs.node-version != '' }}
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: ${{ inputs.node-version }}
+    - name: Install and build Drainproof
+      shell: bash
+      env:
+        DRAINPROOF_ACTION_PATH: ${{ github.action_path }}
+      run: bash "$DRAINPROOF_ACTION_PATH/action/setup.sh"
+    - name: Run Drainproof
+      id: run
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        DRAINPROOF_ACTION_PATH: ${{ github.action_path }}
+        DRAINPROOF_POLICY: ${{ inputs.policy }}
+        DRAINPROOF_CONFIG: ${{ inputs.config }}
+        DRAINPROOF_REPORT_DIR: ${{ inputs.report-dir }}
+        DRAINPROOF_GITHUB_SUMMARY: ${{ inputs.github-summary }}
+      run: bash "$DRAINPROOF_ACTION_PATH/action/run.sh"

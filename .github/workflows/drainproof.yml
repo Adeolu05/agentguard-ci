@@ -1,0 +1,37 @@
+# This repository checking itself with its own GitHub Action, exactly as another repository
+# would (README, "Add it to your repository"). The only difference: `uses: ./` runs the action
+# from this checkout instead of `uses: Adeolu05/drainproof@<commit-sha>`.
+name: Drainproof
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: drainproof-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  drainproof:
+    name: Is the agent drainproof?
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./
+        with:
+          policy: examples/github-action/policy.yaml
+      - name: Upload the Drainproof report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: drainproof-report
+          path: drainproof-report/
+          if-no-files-found: ignore
+          retention-days: 14

@@ -98,6 +98,67 @@ jobs:
           set -e
           if [ "$code" -ne 1 ]; then echo "expected exit code 1, got $code"; exit 1; fi
 
+  action:
+    name: The Drainproof GitHub Action (uses ./)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: "Action, policy input: the example policy must pass"
+        id: safe
+        uses: ./
+        with:
+          policy: examples/payment-policy/policy.yaml
+          report-dir: reports/action-safe
+      - name: "Action, config input: the NEAR suite must pass"
+        id: near
+        uses: ./
+        with:
+          config: examples/near-testnet/drainproof.yaml
+          report-dir: reports/action-near
+          node-version: ""
+      - name: Make the policy unsafe (allowlist attacker-wallet)
+        run: sed -i 's/    - data-provider-example/    - data-provider-example\n    - attacker-wallet/' examples/payment-policy/policy.yaml
+      - name: "Action, policy input: the unsafe policy must fail"
+        id: unsafe
+        continue-on-error: true
+        uses: ./
+        with:
+          policy: examples/payment-policy/policy.yaml
+          report-dir: reports/action-unsafe
+          node-version: ""
+      - name: Check the action's outcomes and outputs
+        env:
+          SAFE_OUTCOME: ${{ steps.safe.outcome }}
+          SAFE_CODE: ${{ steps.safe.outputs.exit-code }}
+          SAFE_STATUS: ${{ steps.safe.outputs.status }}
+          NEAR_CODE: ${{ steps.near.outputs.exit-code }}
+          UNSAFE_OUTCOME: ${{ steps.unsafe.outcome }}
+          UNSAFE_CODE: ${{ steps.unsafe.outputs.exit-code }}
+          UNSAFE_STATUS: ${{ steps.unsafe.outputs.status }}
+          UNSAFE_MD: ${{ steps.unsafe.outputs.report-markdown }}
+        run: |
+          set -eu
+          echo "safe: $SAFE_OUTCOME $SAFE_CODE $SAFE_STATUS; near: $NEAR_CODE; unsafe: $UNSAFE_OUTCOME $UNSAFE_CODE $UNSAFE_STATUS"
+          test "$SAFE_OUTCOME" = success && test "$SAFE_CODE" = 0 && test "$SAFE_STATUS" = PASSED
+          test "$NEAR_CODE" = 0
+          test "$UNSAFE_OUTCOME" = failure && test "$UNSAFE_CODE" = 1 && test "$UNSAFE_STATUS" = FAILED
+          grep -F "[CRITICAL] Instruction injection cannot override deterministic policy rules" "$UNSAFE_MD"
+          git checkout -- examples/payment-policy/policy.yaml
+          test -z "$(git status --porcelain --untracked-files=all -- examples)"
+          test -z "$(ls -A .drainproof-action-* 2>/dev/null)"
+          echo "The action passed the safe policy and failed the unsafe one, as required."
+      - name: Upload reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: action-reports
+          path: reports/
+          if-no-files-found: ignore
+          retention-days: 14
+
   dashboard:
     name: Dashboard build
     runs-on: ubuntu-latest
