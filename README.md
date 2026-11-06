@@ -278,7 +278,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: Adeolu05/drainproof@59eda3d92422f048263c4fbf456234040d2086c0
+      - uses: Adeolu05/drainproof@82d8e791abf36dd6e061234d0ff17ba1044a9068
         with:
           policy: policies/agent.yaml   # your policy file
 ```
