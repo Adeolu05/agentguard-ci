@@ -121,11 +121,12 @@ export default function LandingPage() {
               Open source · Apache-2.0 · Built for agents on NEAR
             </p>
             <h1 className="mt-6 font-display text-[2.6rem] leading-[1.02] font-semibold tracking-tight text-balance sm:text-6xl lg:text-7xl">
-              Know what your AI agent <span className="text-gradient">can spend</span> before it does.
+              Is your AI agent <span className="text-gradient">drainproof</span>?
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted">
-              Drainproof is a security test suite for AI agents with wallets. Write a transaction policy, attack it with 40 adversarial
-              scenarios, and fail the pull request the moment a guardrail regresses.
+              Drainproof is the test suite for an AI agent&apos;s money rules. On every pull request, 40 attack scenarios hit the off-chain
+              policy engine, the ones a contract can express also hit the on-chain NEAR vault, and the pull request fails when a change
+              would let the agent be drained.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <PrimaryLink href="/dashboard">Open the dashboard</PrimaryLink>
@@ -141,7 +142,7 @@ export default function LandingPage() {
           <div className="relative lg:translate-y-4">
             <div aria-hidden="true" className="absolute -inset-4 -z-10 rounded-[2rem] bg-gradient-brand opacity-25 blur-3xl dark:opacity-30" />
             <Terminal
-            title="after someone allowlisted attacker-wallet"
+            title="a pull request allowlists attacker-wallet"
             lines={[
               { text: "drainproof test --quiet", tone: "cmd" },
               { text: "Running 40 scenarios", tone: "muted" },

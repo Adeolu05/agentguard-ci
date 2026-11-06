@@ -1,6 +1,13 @@
 # Drainproof
 
-**Test what your AI agent is allowed to do before trusting it with the ability to move money.**
+**Is your AI agent drainproof?**
+
+Drainproof is the test suite for an AI agent's money rules. On every pull request, 40 attack scenarios run against the off-chain policy engine and against the on-chain NEAR vault, and the pull request fails when a change would let the agent be drained.
+
+In plain terms: you write down what your agent may pay (to whom, how much, how often, and when a person must approve). Drainproof attacks those rules the way a prompt-injected or buggy agent would: a payment to an attacker, an amount one unit over the limit, a replayed approval, parallel spending, a look-alike account name. It checks that every attack is still stopped. Add it to a repository with [one GitHub Action step](#add-it-to-your-repository-github-action); when a pull request loosens the rules, the check fails and shows the finding.
+
+- **Off-chain engine:** all 40 scenarios run against your policy, offline, in under a second.
+- **On-chain vault:** the [Drainproof Vault](#what-the-agents-key-can-and-cannot-do) is a NEAR contract that holds the money; the agent holds only a function-call key. The 16 scenarios a contract can express run against it on a local NEAR node. The other 24 (such as malformed JSON, several assets, or moving the clock) are skipped, each with its reason.
 
 ## For judges: verify in 5 minutes
 
@@ -135,22 +142,23 @@ Simulation only: testnet execution is disabled (set DRAINPROOF_NEAR_EXECUTION=te
 exit code: 0
 ```
 
-**Optional: a hand-written guard fails the same suite, and the full test suite passes.**
+**Optional: a hand-written guard fails the same suite, the recipient-check pack passes, and the full test suite passes.**
 
 ```bash
 pnpm -s --filter @drainproof/example-basic-agent test:naive --quiet | grep -E "Passed:|Failed:|Skipped:|Result"; echo "exit code: ${PIPESTATUS[0]}"
+pnpm -s drainproof test --config examples/recipient-checks/drainproof.yaml --no-save --quiet | grep -E "Passed:|Failed:|Result"
 pnpm -s test 2>&1 | grep -E "Test Files|Tests "
 ```
 
-Expected: the naive guard (which uses `parseFloat` and case-insensitive recipient matching) reports `Passed:    7`, `Failed:    16`, `Skipped:   17` and `exit code: 1`. The full suite reports `Test Files  16 passed (16)` and `Tests  283 passed (283)`.
+Expected: the naive guard (which uses `parseFloat` and case-insensitive recipient matching) reports `Passed:    7`, `Failed:    16`, `Skipped:   17` and `exit code: 1`. The [recipient-check pack](examples/recipient-checks) (look-alike and non-allowlisted accounts) reports `Passed:    8`, `Failed:    0` and `Result: PASSED  (exit code 0)`. The full suite reports `Test Files  17 passed (17)` and `Tests  292 passed (292)`.
 
 ## Overview
 
 ![Drainproof: project landing page](docs/images/landing.png)
 
-Drainproof is an open-source security testing toolkit for AI agents that can initiate financial transactions. You describe a transaction policy in YAML, for example limits, recipient and network allowlists, and approval thresholds. Drainproof then runs a suite of adversarial scenarios against it: boundary amounts, injected instructions, malformed input, replayed approvals, concurrent spending and retries. It reports exactly which security properties hold and which do not. It runs locally and in CI, needs no account, LLM or blockchain, and fails the build when a policy or guard regresses.
+Many agent guards enforce spending rules. Drainproof's focus is **testing** them, on every change: a policy file is code, and a one-line edit to an allowlist or a limit can quietly open a hole. You describe the policy in YAML (limits per payment and per day, recipient and network allowlists, approval thresholds). Drainproof runs adversarial scenarios against it (boundary amounts, injected instructions, malformed input, replayed approvals, concurrent spending, retries, look-alike recipients) and reports exactly which security properties hold and which do not. The same scenarios run against the off-chain engine, against your own guard code, and against the on-chain vault, and CI fails when any of them regresses. It needs no account, LLM or blockchain.
 
-Drainproof is **not** a wallet, a custody service or a trading bot. It never signs or sends a transaction during a test run. It is a deterministic policy engine plus a testing layer.
+Drainproof is **not** a wallet, a custody service or a trading bot. It never signs or sends a transaction during a test run. It is a deterministic policy engine, an on-chain vault that enforces the same rules, and a testing layer over both.
 
 ## What is in the box
 
@@ -163,11 +171,22 @@ Drainproof is **not** a wallet, a custody service or a trading bot. It never sig
 | 40 built-in security scenarios in 6 categories | `packages/cli/templates/scenarios` | Implemented, all executable |
 | CLI: `init`, `policy validate`, `scenarios validate\|list`, `test`, `report` | `@drainproof/cli` | Implemented, tested |
 | JSON and Markdown reports with findings, severity rationale and redaction | `@drainproof/runner` | Implemented, tested |
-| GitHub Actions: repository CI and a user workflow template (actions pinned to SHAs) | `.github/workflows` | Running on GitHub; every job passed on the first run |
+| GitHub Action: one `uses:` step and a policy file; fails the pull request on a finding | `action.yml` | Implemented, rehearsed locally, exercised by the `action` CI job. Not run on GitHub yet ([details](#add-it-to-your-repository-github-action)) |
+| Recipient-check pack: 8 scenarios for look-alike (0/o, 1/l, rn/m, small edits) and non-allowlisted accounts | `examples/recipient-checks` | Engine 8/8 pass; vault 7 pass, 1 skipped (Unicode look-alikes are not valid NEAR account IDs). Catches 7 deliberately loose matchers ([details](examples/recipient-checks)) |
+| GitHub Actions: repository CI and a user workflow template (actions pinned to SHAs) | `.github/workflows` | The four original jobs passed on GitHub. The `vault` and `action` jobs and the Drainproof workflow have not run on GitHub yet |
 | Read-only web dashboard over CLI reports | `apps/web` | Implemented, data layer tested, visually checked |
 | NEAR: account-ID validation, testnet executor behind the execution gate | `@drainproof/near` | Implemented, tested against a local RPC stub. Live testnet run pending ([details](#live-testnet-run)) |
 | LLM prompt-injection demo: an LLM agent reads a poisoned page; recorded by default, NEAR AI Cloud live with a key, optional vault | `examples/llm-agent` | Implemented, 12 offline tests. Live mode was checked only up to authentication (no key was available); the shipped recording is a labelled stand-in ([details](#a-real-llm-a-poisoned-page)) |
 | Drainproof Vault: a NEAR contract that holds the funds and enforces the policy on-chain; the agent holds only a function-call key | `contracts/vault`, `examples/near-vault` | Implemented. 40 unit tests and 30 tests on a local NEAR node pass; 16 of the 40 built-in scenarios pass against it and 24 are skipped with reasons. Not deployed to testnet yet ([details](#what-the-agents-key-can-and-cannot-do)) |
+
+## NEAR technology used
+
+- **Function-call access keys.** The agent's NEAR key is a function-call access key that only allows `request_payment` on the vault contract, with a gas allowance. The NEAR protocol itself rejects a transfer, any other method, any other contract and any deposit made with it. The [sandbox tests](examples/near-vault/test/vault.sandbox.test.ts) check each of these on a local NEAR node.
+- **A NEAR smart contract, the Drainproof Vault** ([contracts/vault](contracts/vault)): Rust with near-sdk 5.30.0, built with cargo-near 0.22.0. It holds the funds (native NEAR), enforces the policy on-chain and writes NEP-297 events for every decision. Tested on a local NEAR node (near-sandbox, nearcore 2.14.0) through near-api-js 7.4.0. Not deployed to testnet yet.
+- **NEAR AI Cloud response signatures**, in the optional live mode of the [LLM demo](#a-real-llm-a-poisoned-page): each completion's Ed25519 signature is checked against the exact request and response bytes. TEE attestation is not verified, and no live run is recorded yet.
+- **NEAR account IDs and yoctoNEAR** in `@drainproof/near`: account-ID validation (including a mainnet account used on testnet) and exact 24-decimal amounts. A testnet executor built on near-api-js is prepared, but no testnet transaction has been sent yet ([Live testnet run](#live-testnet-run)).
+
+Not used: NEAR mainnet (signing is refused), chain signatures, NEAR Intents, fungible-token (NEP-141) payments, and TEE attestation verification.
 
 ## Quick start
 
@@ -373,25 +392,26 @@ Without the `grep`, the demo also prints each request's `EVENT_JSON` log lines, 
 pnpm -s --filter @drainproof/example-llm-agent demo; echo "exit code: $?"
 ```
 
-By default it replays recorded model responses, offline and without a key. **The recording shipped today is a hand-written stand-in from a local stub, not model output, and the demo's first line says so**; it will be replaced by a recorded NEAR AI Cloud run. With `NEAR_AI_API_KEY` set it calls [NEAR AI Cloud](https://docs.near.ai/cloud/quickstart.md) live and checks each response's Ed25519 signature against the exact request and response bytes (it does not verify TEE attestation, and says so). With `-- --vault` it also sends every proposal to the Drainproof Vault on a local NEAR node, so a blocked payment's on-chain rejection event is printed too. Details: [examples/llm-agent/README.md](examples/llm-agent/README.md).
+By default it replays recorded model responses, offline and without a key. **The recording shipped today is a hand-written stand-in from a local stub, not model output, and the demo's first line says so**; it may later be replaced by a recorded NEAR AI Cloud run. With `NEAR_AI_API_KEY` set it calls [NEAR AI Cloud](https://docs.near.ai/cloud/quickstart.md) live and checks each response's Ed25519 signature against the exact request and response bytes (it does not verify TEE attestation, and says so). With `-- --vault` it also sends every proposal to the Drainproof Vault on a local NEAR node, so a blocked payment's on-chain rejection event is printed too. Details: [examples/llm-agent/README.md](examples/llm-agent/README.md).
 
 ## Project status
 
 Verified on 2026-11-06 (Node 24.10.0, pnpm 10.28.0, Linux), unless a line gives another date:
 
-- `pnpm check` runs lint, build, the dashboard build, typecheck and 283 automated tests, and all of it passes.
+- `pnpm check` runs lint, build, the dashboard build, typecheck and 292 automated tests, and all of it passes.
 - On 2026-11-05, from a fresh clone with an empty package cache (cold install from npm, frozen lockfile), the quick-start, the unsafe-policy demo (exit code 1) and an independent cross-check of the reports all passed. Every PASS scenario ran all its steps, every FAIL has a finding, and errors are never counted as passes.
 - On 2026-11-05, Drainproof was installed from local tarballs into an unrelated npm project, and its generated GitHub workflow steps were executed there ([docs/adoption.md](docs/adoption.md)).
 - The CLI quick-start works, an intentional policy violation exits with code 1, and the example suites pass.
 - `pnpm bench` (after `pnpm build`): over four runs on an Intel Core i7-1185G7, `authorize()` took a mean of 22.0 to 27.2 µs (p99 61 to 74 µs), against a target of under 10 ms. The 40-scenario suite took 14 to 22 ms in the runner, or 212 to 286 ms wall time including Node startup. Timings depend on the machine and its load.
-- Drainproof Vault, on a local NEAR node: `cargo test` passes 40 unit tests, `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check` are clean, `pnpm test:vault` passes 30 integration tests, and 16 of the 40 built-in scenarios pass against the contract (24 skipped, each with its reason). See [Verify the vault yourself](#verify-the-vault-yourself-optional).
-- GitHub Actions: the four original CI jobs (checks, example suites, regression gate, dashboard build) [pass on GitHub](https://github.com/Adeolu05/drainproof/actions). The vault job was added since and has not run on GitHub yet.
+- Drainproof Vault, on a local NEAR node: `cargo test` passes 40 unit tests, `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check` are clean, `pnpm test:vault` passes 30 integration tests, and 16 of the 40 built-in scenarios pass against the contract (24 skipped, each with its reason). The [recipient-check pack](examples/recipient-checks) passes 7 of 8 against the contract (1 skipped: Unicode look-alikes are not valid NEAR account IDs). See [Verify the vault yourself](#verify-the-vault-yourself-optional).
+- GitHub Actions: the four original CI jobs (checks, example suites, regression gate, dashboard build) [pass on GitHub](https://github.com/Adeolu05/drainproof/actions). The `vault` and `action` jobs and the Drainproof workflow were added since and have not run on GitHub yet.
 - An independent adversarial review of the engine, runner and NEAR executor found 7 defects plus 2 fail-open edge cases. All are fixed, each with a regression test that reproduces the original attack (`packages/*/test/regressions.test.ts` and the NEAR tests).
 
 Not yet verified:
 
 - Live NEAR testnet execution (see [Live testnet run](#live-testnet-run)).
 - The vault on testnet. Its deploy, agent-key and policy scripts were rehearsed only against a local sandbox.
+- The GitHub Action on GitHub, and from another repository. It was rehearsed locally: an outside project with only a policy file passed (exit code 0) and, after allowlisting `attacker-wallet`, failed with exit code 1 and the CRITICAL finding.
 
 ## Limitations
 
