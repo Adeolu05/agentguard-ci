@@ -4,7 +4,7 @@ agent:
   id: near-research-agent
   name: NEAR research agent
 execution:
-  mode: testnet   # informational: execution still requires AGENTGUARD_NEAR_EXECUTION=testnet
+  mode: testnet   # informational: execution still requires DRAINPROOF_NEAR_EXECUTION=testnet
 assets:
   - id: NEAR
     decimals: 24                    # 1 NEAR = 10^24 yoctoNEAR

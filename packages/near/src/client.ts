@@ -13,16 +13,16 @@ export type EnvConfigResult =
 
 /**
  * Read testnet execution settings from the environment. Execution is OFF unless
- * AGENTGUARD_NEAR_EXECUTION=testnet is set explicitly. Mainnet is not supported.
+ * DRAINPROOF_NEAR_EXECUTION=testnet is set explicitly. Mainnet is not supported.
  *
- *   AGENTGUARD_NEAR_EXECUTION=testnet
+ *   DRAINPROOF_NEAR_EXECUTION=testnet
  *   NEAR_TESTNET_ACCOUNT_ID=your-account.testnet
  *   NEAR_TESTNET_PRIVATE_KEY=ed25519:...        (a testnet-only key; never a mainnet key)
  *   NEAR_TESTNET_RPC_URL=https://...             (optional)
  */
 export function nearTestnetConfigFromEnv(env: NodeJS.ProcessEnv = process.env): EnvConfigResult {
-  if (env.AGENTGUARD_NEAR_EXECUTION !== "testnet") {
-    return { ok: false, reason: "testnet execution is disabled (set AGENTGUARD_NEAR_EXECUTION=testnet to enable)" };
+  if (env.DRAINPROOF_NEAR_EXECUTION !== "testnet") {
+    return { ok: false, reason: "testnet execution is disabled (set DRAINPROOF_NEAR_EXECUTION=testnet to enable)" };
   }
   const accountId = env.NEAR_TESTNET_ACCOUNT_ID;
   const privateKey = env.NEAR_TESTNET_PRIVATE_KEY;
@@ -55,7 +55,7 @@ export async function createNearTestnetClient(config: NearTestnetConfig, private
   // Broadcasts get exactly one HTTP attempt. By default near-api-js 7.4.0 re-sends a signed
   // transaction on HTTP 500/503/408 or fetch errors, and signAndSendTransaction re-signs with
   // a NEW nonce on InvalidNonceError. If a first broadcast landed but its response was lost,
-  // that combination could produce a second, different transfer. AgentGuard allows at most
+  // that combination could produce a second, different transfer. Drainproof allows at most
   // one broadcast per authorised reservation; ambiguity is resolved with reconcile().
   const broadcastProvider = new JsonRpcProvider({ url: config.rpcUrl }, { retries: 1 });
   const BROADCAST = new Set(["sendTransactionUntil", "sendTransaction", "sendTransactionAsync"]);

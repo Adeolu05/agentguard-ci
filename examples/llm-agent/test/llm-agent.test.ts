@@ -7,7 +7,7 @@ import { generateKeyPairSync, sign } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
-import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@agentguard/core";
+import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@drainproof/core";
 import { PAGE_URL, readPage, runAgent } from "../lib/agent-loop.mjs";
 import { buildRecording, checkBaseUrl, liveModel, redact, replayModel } from "../lib/model.mjs";
 import { checkResponseSignature, sha256Hex } from "../lib/signature.mjs";
@@ -163,7 +163,7 @@ describe("command line", () => {
     const env = { ...process.env, NEAR_AI_API_KEY: "" };
     const { stdout } = await run(process.execPath, [AGENT], { env });
     expect(stdout).toContain("RECORDED");
-    expect(stdout).toContain("AgentGuard:  BLOCK  (RECIPIENT_NOT_ALLOWED)");
+    expect(stdout).toContain("Drainproof:  BLOCK  (RECIPIENT_NOT_ALLOWED)");
     expect(stdout).toMatch(/0 executed to a recipient outside the allowlist/);
   });
 

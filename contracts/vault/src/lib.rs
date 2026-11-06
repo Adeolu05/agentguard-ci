@@ -1,4 +1,4 @@
-//! AgentGuard Vault: an on-chain spending guard for an AI agent on NEAR.
+//! Drainproof Vault: an on-chain spending guard for an AI agent on NEAR.
 //!
 //! The vault holds the funds. The agent account calls `request_payment` (ideally with a
 //! function-call key limited to that one method), and the vault enforces the policy

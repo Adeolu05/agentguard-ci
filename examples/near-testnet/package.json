@@ -1,13 +1,13 @@
 {
-  "name": "@agentguard/example-near-testnet",
+  "name": "@drainproof/example-near-testnet",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node ../../packages/cli/dist/bin.js test --config agentguard.yaml",
+    "test": "node ../../packages/cli/dist/bin.js test --config drainproof.yaml",
     "demo": "node demo.mjs"
   },
   "dependencies": {
-    "@agentguard/core": "workspace:*",
-    "@agentguard/near": "workspace:*"
+    "@drainproof/core": "workspace:*",
+    "@drainproof/near": "workspace:*"
   }
 }

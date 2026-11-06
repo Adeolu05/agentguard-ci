@@ -32,8 +32,8 @@ jobs:
       - run: pnpm -r typecheck
       - run: pnpm test
 
-  agentguard:
-    name: AgentGuard security suites
+  drainproof:
+    name: Drainproof security suites
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -49,19 +49,19 @@ jobs:
       - run: pnpm build
       - name: Validate example policy and scenarios
         run: |
-          pnpm agentguard policy validate --config examples/payment-policy/agentguard.yaml
-          pnpm agentguard scenarios validate --config examples/payment-policy/agentguard.yaml
+          pnpm drainproof policy validate --config examples/payment-policy/drainproof.yaml
+          pnpm drainproof scenarios validate --config examples/payment-policy/drainproof.yaml
       - name: Payment policy suite
-        run: pnpm agentguard test --config examples/payment-policy/agentguard.yaml --no-color --json reports/payment-policy.json --markdown reports/payment-policy.md --github-summary
+        run: pnpm drainproof test --config examples/payment-policy/drainproof.yaml --no-color --json reports/payment-policy.json --markdown reports/payment-policy.md --github-summary
       - name: NEAR testnet policy suite (offline, no transactions)
-        run: pnpm agentguard test --config examples/near-testnet/agentguard.yaml --no-color --json reports/near-testnet.json --markdown reports/near-testnet.md --github-summary
-      - name: Guard built on @agentguard/core
-        run: pnpm agentguard test --config examples/basic-agent/agentguard.fixed.yaml --no-color --no-save
+        run: pnpm drainproof test --config examples/near-testnet/drainproof.yaml --no-color --json reports/near-testnet.json --markdown reports/near-testnet.md --github-summary
+      - name: Guard built on @drainproof/core
+        run: pnpm drainproof test --config examples/basic-agent/drainproof.fixed.yaml --no-color --no-save
       - name: Upload reports
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: agentguard-reports
+          name: drainproof-reports
           path: reports/
           if-no-files-found: ignore
           retention-days: 14
@@ -85,7 +85,7 @@ jobs:
         run: |
           sed -i 's/    - data-provider-example/    - data-provider-example\n    - attacker-wallet/' examples/payment-policy/policy.yaml
           set +e
-          pnpm agentguard test --config examples/payment-policy/agentguard.yaml --no-color --no-save
+          pnpm drainproof test --config examples/payment-policy/drainproof.yaml --no-color --no-save
           code=$?
           set -e
           if [ "$code" -ne 1 ]; then echo "expected exit code 1, got $code"; exit 1; fi
@@ -93,7 +93,7 @@ jobs:
       - name: The naive guard example must fail
         run: |
           set +e
-          pnpm agentguard test --config examples/basic-agent/agentguard.yaml --no-color --no-save --quiet
+          pnpm drainproof test --config examples/basic-agent/drainproof.yaml --no-color --no-save --quiet
           code=$?
           set -e
           if [ "$code" -ne 1 ]; then echo "expected exit code 1, got $code"; exit 1; fi
@@ -114,7 +114,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm build:web
-      - run: pnpm --filter @agentguard/web typecheck
+      - run: pnpm --filter @drainproof/web typecheck
 
   vault:
     name: Vault contract (unit tests, sandbox tests, scenarios)
@@ -158,9 +158,9 @@ jobs:
       - name: Sandbox integration tests (local NEAR node, no testnet)
         run: pnpm test:vault
       - name: Built-in scenarios against the vault (local sandbox)
-        run: pnpm agentguard test --config examples/near-vault/agentguard.yaml --no-color --json reports/near-vault.json --markdown reports/near-vault.md --github-summary
+        run: pnpm drainproof test --config examples/near-vault/drainproof.yaml --no-color --json reports/near-vault.json --markdown reports/near-vault.md --github-summary
       - name: Vault demo (local sandbox)
-        run: pnpm --filter @agentguard/example-near-vault demo
+        run: pnpm --filter @drainproof/example-near-vault demo
       - name: Upload reports
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

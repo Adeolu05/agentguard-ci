@@ -14,7 +14,7 @@ import {
   type PolicyDocument,
   type ProposalValidator,
   type Reservation,
-} from "@agentguard/core";
+} from "@drainproof/core";
 import type { Scenario } from "./scenario.js";
 
 export interface TargetProposeResult {
@@ -126,7 +126,7 @@ class UnavailableLedger implements Ledger {
   }
 }
 
-/** The built-in target: AgentGuard's own engine with an isolated in-memory ledger per scenario. */
+/** The built-in target: Drainproof's own engine with an isolated in-memory ledger per scenario. */
 export const engineTargetFactory: TargetFactory = (ctx) => {
   const trusted = new ApprovalAuthority(randomBytes(32));
   const untrusted = new ApprovalAuthority(randomBytes(32));
@@ -142,7 +142,7 @@ export const engineTargetFactory: TargetFactory = (ctx) => {
     r.ok ? { ok: true } : { ok: false, ...(r.reason ? { reasonCode: r.reason.code } : {}) };
 
   return {
-    name: "agentguard-engine",
+    name: "drainproof-engine",
     capabilities: {
       reasonCodes: true,
       approvals: true,

@@ -1,11 +1,11 @@
 // Guard rails shared by the vault's testnet scripts. A script signs nothing unless:
-//  - AGENTGUARD_NEAR_EXECUTION=testnet is set (an explicit opt-in),
+//  - DRAINPROOF_NEAR_EXECUTION=testnet is set (an explicit opt-in),
 //  - the RPC URL is https and does not look like a mainnet endpoint,
 //  - the RPC node itself reports the chain id "testnet",
 //  - every account involved is a testnet account (a .testnet name or an implicit account).
 // Private keys are read only from the environment variables listed in .env.example.
-import { parseDecimalAmount } from "@agentguard/core";
-import { checkTestnetAccountId, nearTestnetConfigFromEnv, testnetExplorerTxUrl } from "@agentguard/near";
+import { parseDecimalAmount } from "@drainproof/core";
+import { checkTestnetAccountId, nearTestnetConfigFromEnv, testnetExplorerTxUrl } from "@drainproof/near";
 import { Account, JsonRpcProvider, KeyPair } from "near-api-js";
 import { decodeReturn, eventsOf, failureMessage, logsOf } from "./outcome.mjs";
 

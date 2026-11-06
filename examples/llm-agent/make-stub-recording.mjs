@@ -2,7 +2,7 @@
 // This is the stand-in recording shipped until a real NEAR AI Cloud run is recorded with
 // `NEAR_AI_API_KEY=... node agent.mjs --record`. It is labelled as such wherever it is replayed.
 import { readFile, writeFile } from "node:fs/promises";
-import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@agentguard/core";
+import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@drainproof/core";
 import { runAgent } from "./lib/agent-loop.mjs";
 import { buildRecording, liveModel } from "./lib/model.mjs";
 import { startStub } from "./lib/stub.mjs";

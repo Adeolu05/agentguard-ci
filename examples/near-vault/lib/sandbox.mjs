@@ -1,4 +1,4 @@
-// Local NEAR sandbox harness for the AgentGuard Vault.
+// Local NEAR sandbox harness for the Drainproof Vault.
 //
 // Everything here runs against a NEAR node on 127.0.0.1 started by the official
 // `near-sandbox` package (nearcore sandbox 2.14.0). Nothing touches testnet or mainnet.

@@ -66,10 +66,10 @@ export function renderMarkdown(report: RunReport): string {
   const s = report.summary;
   const icon = report.status === "PASSED" ? "✅" : report.status === "FAILED" ? "❌" : "⚠️";
   const out: string[] = [];
-  out.push(`# ${icon} AgentGuard CI: ${report.status}`);
+  out.push(`# ${icon} Drainproof: ${report.status}`);
   out.push("");
   out.push(
-    `Run ${code(report.runId)} · ${report.startedAt} · ${report.executionMode} · AgentGuard ${report.agentguardVersion} · exit code ${report.exitCode}`,
+    `Run ${code(report.runId)} · ${report.startedAt} · ${report.executionMode} · Drainproof ${report.drainproofVersion} · exit code ${report.exitCode}`,
   );
   out.push("");
   out.push("| Scenarios | Passed | Failed | Errors | Skipped |");
@@ -78,7 +78,7 @@ export function renderMarkdown(report: RunReport): string {
   out.push("");
   out.push(`- Policy: ${code(report.policy.file)} (${code(report.policy.hash.slice(0, 19))}…), agent ${code(report.policy.agentId)}`);
   out.push(`- Suite: ${s.total} of ${report.suite.scenarioCount} scenarios, hash ${code(report.suite.hash.slice(0, 19))}…`);
-  out.push(`- Target: ${report.target.type === "engine" ? "AgentGuard engine" : code(report.target.module ?? report.target.name)}`);
+  out.push(`- Target: ${report.target.type === "engine" ? "Drainproof engine" : code(report.target.module ?? report.target.name)}`);
   if (report.integrations.length > 0) out.push(`- Integrations: ${report.integrations.join(", ")}`);
   for (const w of report.policy.warnings) out.push(`- ⚠️ Policy warning: ${mdEscape(w)}`);
   out.push("");
@@ -119,7 +119,7 @@ export function renderMarkdown(report: RunReport): string {
   }
   out.push("");
   out.push(
-    "> AgentGuard tests the behaviours defined in these scenarios under the stated conditions. Passing them is not proof that an agent or wallet is secure in general. See docs/limitations.md.",
+    "> Drainproof tests the behaviours defined in these scenarios under the stated conditions. Passing them is not proof that an agent or wallet is secure in general. See docs/limitations.md.",
   );
   out.push("");
   return out.join("\n");

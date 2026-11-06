@@ -1,5 +1,5 @@
 {
-  "name": "@agentguard/core",
+  "name": "@drainproof/core",
   "version": "0.1.0",
   "description": "Deterministic transaction policy engine, ledger and approvals for AI agents that move money.",
   "license": "Apache-2.0",

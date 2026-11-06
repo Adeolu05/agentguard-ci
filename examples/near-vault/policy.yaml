@@ -1,4 +1,4 @@
-# Policy for the AgentGuard Vault on NEAR testnet. The vault holds native NEAR only, so
+# Policy for the Drainproof Vault on NEAR testnet. The vault holds native NEAR only, so
 # this policy has exactly one asset (NEAR, 24 decimals) and one network (near-testnet).
 # push-policy.mjs converts it exactly or refuses; deploy.mjs installs it at deployment.
 version: 1

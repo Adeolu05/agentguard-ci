@@ -1,7 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
-import { hashCanonical, isReasonCode, parseYamlWithSchema, type ConfigIssue } from "@agentguard/core";
+import { hashCanonical, isReasonCode, parseYamlWithSchema, type ConfigIssue } from "@drainproof/core";
 
 export const SCENARIO_CATEGORIES = [
   "transaction-limits",
@@ -19,7 +19,7 @@ export type Severity = (typeof SEVERITIES)[number];
 
 const decisionSchema = z.enum(["ALLOW", "BLOCK", "REQUIRE_APPROVAL"]);
 const refSchema = z.string().regex(/^[A-Za-z0-9_.-]{1,64}$/, "must be 1-64 characters [A-Za-z0-9_.-]");
-const reasonCodeSchema = z.string().refine(isReasonCode, { message: "is not a known AgentGuard reason code" });
+const reasonCodeSchema = z.string().refine(isReasonCode, { message: "is not a known Drainproof reason code" });
 const amountString = z.string({ error: "must be a quoted decimal string" });
 const isoTime = z.iso.datetime({ offset: false, message: "must be an ISO-8601 UTC timestamp ending in Z" });
 

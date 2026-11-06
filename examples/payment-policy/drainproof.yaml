@@ -1,6 +1,6 @@
 # Example project: the built-in scenario library against the default payment policy.
 # Run from the repository root:
-#   pnpm agentguard test --config examples/payment-policy/agentguard.yaml
+#   pnpm drainproof test --config examples/payment-policy/drainproof.yaml
 version: 1
 name: Payment policy example
 policy: policy.yaml
@@ -9,4 +9,4 @@ scenarios:
 target:
   type: engine
 reports:
-  dir: .agentguard/runs
+  dir: .drainproof/runs

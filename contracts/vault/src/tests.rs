@@ -132,7 +132,7 @@ fn allowed_payment_is_submitted_counted_and_logged() {
     assert_eq!((u.spent.0, u.count), (NEAR / 10, 1));
 
     let e = last_event();
-    assert_eq!(e["standard"], "agentguard_vault");
+    assert_eq!(e["standard"], "drainproof_vault");
     assert_eq!(e["version"], "1.0.0");
     assert_eq!(e["event"], "payment_decision");
     assert_eq!(e["data"][0]["decision"], "ALLOW");

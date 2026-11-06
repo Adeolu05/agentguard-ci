@@ -1,11 +1,11 @@
-// End-to-end illustration of where AgentGuard sits in an agent's payment loop.
+// End-to-end illustration of where Drainproof sits in an agent's payment loop.
 //
 // The "agent" below is a deterministic stand-in for an LLM (no model, no network). It is
-// deliberately vulnerable: it follows instructions embedded in tool output. AgentGuard does
+// deliberately vulnerable: it follows instructions embedded in tool output. Drainproof does
 // not try to detect the injection; it enforces the deterministic policy on whatever the
 // agent proposes. Execution is SIMULATED: nothing is signed or sent.
 import { readFile } from "node:fs/promises";
-import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@agentguard/core";
+import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@drainproof/core";
 
 const loaded = policyFromYaml(await readFile(new URL("../payment-policy/policy.yaml", import.meta.url), "utf8"), "policy.yaml");
 if (!loaded.ok) throw new Error("invalid policy");
@@ -41,7 +41,7 @@ for (const [i, step] of steps.entries()) {
   const e = await engine.authorize(proposal);
   console.log(`\n▶ ${step.task}`);
   console.log(`  agent proposed: ${proposal.amount} USDC → ${proposal.recipientId}`);
-  console.log(`  AgentGuard:     ${e.decision}${e.reasonCodes.length ? `  (${e.reasonCodes.join(", ")})` : ""}`);
+  console.log(`  Drainproof:     ${e.decision}${e.reasonCodes.length ? `  (${e.reasonCodes.join(", ")})` : ""}`);
   if (e.decision === "ALLOW" && !e.replay) {
     const gate = await engine.beginExecution(e.reservation.reservationId);
     if (gate.ok) {

@@ -1,6 +1,6 @@
 # Security policy
 
-AgentGuard CI is security tooling, so we treat defects in it as security issues. This includes a scenario that passes when it should fail, a decision path that fails open, or a redaction gap.
+Drainproof is security tooling, so we treat defects in it as security issues. This includes a scenario that passes when it should fail, a decision path that fails open, or a redaction gap.
 
 ## Reporting a vulnerability
 
@@ -32,4 +32,4 @@ Every confirmed security bug is fixed together with a regression test, and the f
 
 ## Scope limits
 
-See [docs/threat-model.md](docs/threat-model.md) and [docs/limitations.md](docs/limitations.md) for what AgentGuard does and does not protect against.
+See [docs/threat-model.md](docs/threat-model.md) and [docs/limitations.md](docs/limitations.md) for what Drainproof does and does not protect against.

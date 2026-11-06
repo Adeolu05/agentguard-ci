@@ -1,7 +1,7 @@
-# AgentGuard CI security tests for agent transaction policies.
-# Requires @agentguard/cli as a devDependency (see docs/adoption.md) and a committed lockfile.
+# Drainproof security tests for agent transaction policies.
+# Requires @drainproof/cli as a devDependency (see docs/adoption.md) and a committed lockfile.
 # Third-party actions are pinned to full commit SHAs (tag shown in the comment).
-name: AgentGuard
+name: Drainproof
 
 on:
   pull_request:
@@ -12,11 +12,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: agentguard-${{ github.ref }}
+  group: drainproof-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  agentguard:
+  drainproof:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -31,17 +31,17 @@ jobs:
       - run: npm ci
       - name: Validate policy and scenarios
         run: |
-          npx --no-install agentguard policy validate
-          npx --no-install agentguard scenarios validate
-      - name: Run AgentGuard security suite
-        run: npx --no-install agentguard test --no-color --json agentguard-report.json --markdown agentguard-report.md --github-summary
+          npx --no-install drainproof policy validate
+          npx --no-install drainproof scenarios validate
+      - name: Run Drainproof security suite
+        run: npx --no-install drainproof test --no-color --json drainproof-report.json --markdown drainproof-report.md --github-summary
       - name: Upload report
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: agentguard-report
+          name: drainproof-report
           path: |
-            agentguard-report.json
-            agentguard-report.md
+            drainproof-report.json
+            drainproof-report.md
           if-no-files-found: ignore
           retention-days: 14

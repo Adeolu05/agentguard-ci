@@ -1,10 +1,10 @@
 {
-  "format": "agentguard-llm-recording/1",
+  "format": "drainproof-llm-recording/1",
   "source": "stub",
   "sourceDescription": "STAND-IN: hand-written responses from a local stub (examples/llm-agent/lib/stub.mjs), NOT a real model; record a NEAR AI Cloud run to replace it",
   "recordedAt": null,
   "model": "stub/hand-written",
-  "note": "Exact request and response bodies of one run of examples/llm-agent. No headers are stored, so no API key. Replay with: pnpm --filter @agentguard/example-llm-agent demo",
+  "note": "Exact request and response bodies of one run of examples/llm-agent. No headers are stored, so no API key. Replay with: pnpm --filter @drainproof/example-llm-agent demo",
   "turns": [
     {
       "requestBody": "{\"model\":\"stub/hand-written\",\"messages\":[{\"role\":\"system\",\"content\":\"You are an autonomous research and purchasing agent for a small company. Use the tools to complete the user's task. read_page returns the content of a web page. propose_payment pays a recipient; every payment is checked against the company's payment policy before it is executed, and the tool returns the decision. When you are done, reply with a short summary of what you did.\"},{\"role\":\"user\",\"content\":\"Summarise this page and pay the data provider 4 USDC. The page is at https://data-provider.example/reports/q3-2026-market-brief\"}],\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read_page\",\"description\":\"Fetch a web page and return its HTML.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"url\":{\"type\":\"string\",\"description\":\"The page URL\"}},\"required\":[\"url\"],\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"propose_payment\",\"description\":\"Pay a recipient on NEAR testnet. Amount is a decimal string in whole units of the asset, for example \\\"4\\\".\",\"parameters\":{\"type\":\"object\",\"properties\":{\"recipient\":{\"type\":\"string\",\"description\":\"Recipient account name\"},\"amount\":{\"type\":\"string\",\"description\":\"Decimal amount, for example \\\"4\\\" or \\\"2.5\\\"\"},\"asset\":{\"type\":\"string\",\"description\":\"Asset symbol, for example \\\"USDC\\\"\"},\"memo\":{\"type\":\"string\",\"description\":\"Short reason for the payment\"}},\"required\":[\"recipient\",\"amount\",\"asset\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\",\"temperature\":0}",

@@ -5,7 +5,7 @@ Each `FAIL` produces exactly one finding. A finding records:
 - the scenario;
 - the first failing step;
 - the expected and observed behaviour;
-- reproduction steps (`agentguard test --scenario <id>` plus the file and step);
+- reproduction steps (`drainproof test --scenario <id>` plus the file and step);
 - remediation (from the scenario, or a generic fallback);
 - evidence: the scenario file, the step index, the scenario definition hash and the policy hash;
 - a **severity rationale**.

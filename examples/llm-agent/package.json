@@ -1,5 +1,5 @@
 {
-  "name": "@agentguard/example-llm-agent",
+  "name": "@drainproof/example-llm-agent",
   "private": true,
   "type": "module",
   "scripts": {
@@ -7,7 +7,7 @@
     "make-stub-recording": "node make-stub-recording.mjs"
   },
   "dependencies": {
-    "@agentguard/core": "workspace:*",
-    "@agentguard/near": "workspace:*"
+    "@drainproof/core": "workspace:*",
+    "@drainproof/near": "workspace:*"
   }
 }

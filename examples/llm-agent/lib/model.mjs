@@ -11,7 +11,7 @@ import { checkResponseSignature } from "./signature.mjs";
 export const OFFICIAL_BASE_URL = "https://cloud-api.near.ai/v1";
 /** A NEAR AI-hosted (Confidential TEE) model with tool support, per GET /v1/models on 2026-11-06. */
 export const DEFAULT_MODEL = "z-ai/glm-5.3-flash";
-export const RECORDING_FORMAT = "agentguard-llm-recording/1";
+export const RECORDING_FORMAT = "drainproof-llm-recording/1";
 
 /** Only https, or http on the loopback interface (for the offline tests' local stub). */
 export function checkBaseUrl(raw) {
@@ -138,7 +138,7 @@ export function buildRecording(liveClient, { apiKey, sourceDescription }) {
     sourceDescription,
     recordedAt: new Date().toISOString(),
     model: liveClient.model,
-    note: "Exact request and response bodies of one run of examples/llm-agent. No headers are stored, so no API key. Replay with: pnpm --filter @agentguard/example-llm-agent demo",
+    note: "Exact request and response bodies of one run of examples/llm-agent. No headers are stored, so no API key. Replay with: pnpm --filter @drainproof/example-llm-agent demo",
     turns: liveClient.turns,
   };
   const text = `${JSON.stringify(recording, null, 2)}\n`;

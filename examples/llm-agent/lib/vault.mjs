@@ -1,12 +1,12 @@
-// Optional: send the model's payment proposals to the AgentGuard Vault contract, signed with
+// Optional: send the model's payment proposals to the Drainproof Vault contract, signed with
 // the agent's function-call key. Default is a local NEAR sandbox (needs `pnpm build:vault`);
-// with AGENTGUARD_NEAR_EXECUTION=testnet it uses a vault you deployed on testnet.
+// with DRAINPROOF_NEAR_EXECUTION=testnet it uses a vault you deployed on testnet.
 //
 // The vault holds native NEAR only, while the task is priced in USDC. This demo converts at a
 // fixed, made-up rate of 1 USDC = 0.01 NEAR, and maps the policy's recipient names to NEAR
 // accounts with a fixed address book (configured by the operator, never by the model). Any
 // other recipient string is sent to the vault unchanged.
-import { formatAtomic, parseDecimalAmount } from "@agentguard/core";
+import { formatAtomic, parseDecimalAmount } from "@drainproof/core";
 
 const NEAR_VAULT = new URL("../../near-vault/", import.meta.url);
 const TGAS = 10n ** 12n;
@@ -63,15 +63,15 @@ export async function sandboxVault() {
 /** Your vault on NEAR testnet (opt-in). Every check of examples/near-vault/lib/testnet.mjs applies. */
 export async function testnetVault(env = process.env) {
   const t = await import(new URL("lib/testnet.mjs", NEAR_VAULT));
-  const { testnetExplorerTxUrl } = await import("@agentguard/near");
+  const { testnetExplorerTxUrl } = await import("@drainproof/near");
   const { actions } = await import(new URL("lib/sandbox.mjs", NEAR_VAULT)); // re-exports near-api-js actions
-  const vaultId = t.testnetAccountFromEnv("AGENTGUARD_VAULT_ACCOUNT_ID", env);
-  const agentId = t.testnetAccountFromEnv("AGENTGUARD_AGENT_ACCOUNT_ID", env);
-  const agentKey = t.requireEnv("AGENTGUARD_AGENT_PRIVATE_KEY", env);
-  const dataProvider = t.testnetAccountFromEnv("AGENTGUARD_LLM_DATA_PROVIDER", env);
+  const vaultId = t.testnetAccountFromEnv("DRAINPROOF_VAULT_ACCOUNT_ID", env);
+  const agentId = t.testnetAccountFromEnv("DRAINPROOF_AGENT_ACCOUNT_ID", env);
+  const agentKey = t.requireEnv("DRAINPROOF_AGENT_PRIVATE_KEY", env);
+  const dataProvider = t.testnetAccountFromEnv("DRAINPROOF_LLM_DATA_PROVIDER", env);
   const agent = await t.connectTestnet({ ...env, NEAR_TESTNET_ACCOUNT_ID: agentId, NEAR_TESTNET_PRIVATE_KEY: agentKey });
   const policy = await t.view(agent.provider, vaultId, "get_policy");
-  if (!policy.allowed_recipients.includes(dataProvider)) throw new t.Refusal(`AGENTGUARD_LLM_DATA_PROVIDER ${dataProvider} is not in the vault's allowlist`);
+  if (!policy.allowed_recipients.includes(dataProvider)) throw new t.Refusal(`DRAINPROOF_LLM_DATA_PROVIDER ${dataProvider} is not in the vault's allowlist`);
   const run = Date.now();
   return {
     ...makeRequester({

@@ -1,6 +1,6 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
-import { loadProject, runReportSchema, type RunReport } from "@agentguard/runner";
+import { loadProject, runReportSchema, type RunReport } from "@drainproof/runner";
 
 const RUN_ID_RE = /^run_[a-f0-9]{32}$/;
 const MAX_REPORT_BYTES = 20 * 1024 * 1024;
@@ -16,19 +16,19 @@ export interface DataSource {
  * Where run reports come from. The dashboard is read-only: it never writes files,
  * never runs tests and never executes transactions.
  *
- *  - AGENTGUARD_DEMO=1          bundled demo reports (clearly labelled in the UI)
- *  - AGENTGUARD_RUNS_DIR=<dir>  directory of CLI run reports (default ./.agentguard/runs)
- *  - AGENTGUARD_PROJECT=<file>  agentguard.yaml whose policy is shown on the Policy page
+ *  - DRAINPROOF_DEMO=1          bundled demo reports (clearly labelled in the UI)
+ *  - DRAINPROOF_RUNS_DIR=<dir>  directory of CLI run reports (default ./.drainproof/runs)
+ *  - DRAINPROOF_PROJECT=<file>  drainproof.yaml whose policy is shown on the Policy page
  */
 export function dataSource(): DataSource {
-  if (process.env.AGENTGUARD_DEMO === "1") {
+  if (process.env.DRAINPROOF_DEMO === "1") {
     return { mode: "demo", runsDir: path.join(/*turbopackIgnore: true*/ process.cwd(), "demo-runs"), projectFile: undefined };
   }
   return {
     mode: "project",
     // Paths are chosen at runtime by the operator; exclude them from build-time tracing.
-    runsDir: path.resolve(/*turbopackIgnore: true*/ process.env.AGENTGUARD_RUNS_DIR ?? ".agentguard/runs"),
-    projectFile: process.env.AGENTGUARD_PROJECT ? path.resolve(/*turbopackIgnore: true*/ process.env.AGENTGUARD_PROJECT) : undefined,
+    runsDir: path.resolve(/*turbopackIgnore: true*/ process.env.DRAINPROOF_RUNS_DIR ?? ".drainproof/runs"),
+    projectFile: process.env.DRAINPROOF_PROJECT ? path.resolve(/*turbopackIgnore: true*/ process.env.DRAINPROOF_PROJECT) : undefined,
   };
 }
 
@@ -50,7 +50,7 @@ async function readReport(file: string): Promise<RunReport> {
   const parsed = runReportSchema.safeParse(JSON.parse(await readFile(file, "utf8")));
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
-    throw new Error(`not a valid AgentGuard report (${issue?.path.join(".") || "root"}: ${issue?.message ?? "invalid"})`);
+    throw new Error(`not a valid Drainproof report (${issue?.path.join(".") || "root"}: ${issue?.message ?? "invalid"})`);
   }
   return parsed.data;
 }

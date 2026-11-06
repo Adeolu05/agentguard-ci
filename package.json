@@ -1,5 +1,5 @@
 {
-  "name": "agentguard-ci-monorepo",
+  "name": "drainproof-monorepo",
   "private": true,
   "type": "module",
   "license": "Apache-2.0",
@@ -9,16 +9,16 @@
   },
   "scripts": {
     "build": "pnpm -r --filter './packages/*' build",
-    "build:web": "pnpm --filter @agentguard/web build",
+    "build:web": "pnpm --filter @drainproof/web build",
     "typecheck": "pnpm build && pnpm build:web && pnpm -r typecheck",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:vault": "pnpm --filter @agentguard/example-near-vault build:contract",
-    "test:vault": "pnpm --filter @agentguard/example-near-vault test:sandbox",
-    "agentguard": "node packages/cli/dist/bin.js",
+    "build:vault": "pnpm --filter @drainproof/example-near-vault build:contract",
+    "test:vault": "pnpm --filter @drainproof/example-near-vault test:sandbox",
+    "drainproof": "node packages/cli/dist/bin.js",
     "check": "pnpm lint && pnpm build && pnpm build:web && pnpm -r typecheck && pnpm test",
-    "dashboard:demo": "pnpm build && pnpm build:web && AGENTGUARD_DEMO=1 pnpm --filter @agentguard/web start",
+    "dashboard:demo": "pnpm build && pnpm build:web && DRAINPROOF_DEMO=1 pnpm --filter @drainproof/web start",
     "pack:local": "bash scripts/pack-local.sh",
     "bench": "node scripts/bench.mjs"
   },

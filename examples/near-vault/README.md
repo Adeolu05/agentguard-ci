@@ -1,11 +1,11 @@
-# AgentGuard Vault example
+# Drainproof Vault example
 
-The [AgentGuard Vault](../../contracts/vault) is a NEAR contract that holds the funds and enforces the payment policy on-chain. The agent never holds a key that can move money: it holds a **function-call key** that can call one method, `request_payment`, on the vault. The vault checks the recipient allowlist, the per-transaction and daily limits, owner approval above a threshold, idempotency and a pause switch before it pays anything. Design and threat model: [docs/vault-design.md](../../docs/vault-design.md).
+The [Drainproof Vault](../../contracts/vault) is a NEAR contract that holds the funds and enforces the payment policy on-chain. The agent never holds a key that can move money: it holds a **function-call key** that can call one method, `request_payment`, on the vault. The vault checks the recipient allowlist, the per-transaction and daily limits, owner approval above a threshold, idempotency and a pause switch before it pays anything. Design and threat model: [docs/vault-design.md](../../docs/vault-design.md).
 
 | File | What it does |
 | --- | --- |
 | `test/vault.sandbox.test.ts` | Integration tests against the real contract on a local NEAR node |
-| `vault-target.mjs`, `agentguard.yaml` | Runs the built-in AgentGuard scenarios against the vault (local node) |
+| `vault-target.mjs`, `drainproof.yaml` | Runs the built-in Drainproof scenarios against the vault (local node) |
 | `demo.mjs` | One payment that goes through and one that is blocked, with the contract's event logs (local node by default, testnet opt-in) |
 | `deploy.mjs` | Deploys the vault to **testnet only** |
 | `add-agent-key.mjs` | Gives the agent its function-call key (**testnet only**) |
@@ -29,11 +29,11 @@ pnpm test:vault
 ```
 
 ```bash
-pnpm -s agentguard test --config examples/near-vault/agentguard.yaml --no-save
+pnpm -s drainproof test --config examples/near-vault/drainproof.yaml --no-save
 ```
 
 ```bash
-pnpm --filter @agentguard/example-near-vault demo
+pnpm --filter @drainproof/example-near-vault demo
 ```
 
 Results of these commands on 2026-11-06 (Node 24.10.0, Rust 1.97.0, cargo-near 0.22.0, Linux), with `ulimit -n 65535 &&` in front of each sandbox command:
@@ -54,16 +54,16 @@ You need three testnet accounts (see [docs/testnet-run.md](../../docs/testnet-ru
 1. Check what will be deployed (signs nothing):
 
    ```bash
-   NEAR_TESTNET_ACCOUNT_ID=<owner>.testnet AGENTGUARD_VAULT_ACCOUNT_ID=vault.<owner>.testnet AGENTGUARD_AGENT_ACCOUNT_ID=<agent>.testnet node deploy.mjs --dry-run
+   NEAR_TESTNET_ACCOUNT_ID=<owner>.testnet DRAINPROOF_VAULT_ACCOUNT_ID=vault.<owner>.testnet DRAINPROOF_AGENT_ACCOUNT_ID=<agent>.testnet node deploy.mjs --dry-run
    ```
 
-2. Deploy, as the owner. With `AGENTGUARD_NEAR_EXECUTION=testnet` exported and the owner's key read into `NEAR_TESTNET_PRIVATE_KEY` (`read -rs NEAR_TESTNET_PRIVATE_KEY && export NEAR_TESTNET_PRIVATE_KEY`):
+2. Deploy, as the owner. With `DRAINPROOF_NEAR_EXECUTION=testnet` exported and the owner's key read into `NEAR_TESTNET_PRIVATE_KEY` (`read -rs NEAR_TESTNET_PRIVATE_KEY && export NEAR_TESTNET_PRIVATE_KEY`):
 
    ```bash
    node deploy.mjs
    ```
 
-   It creates `vault.<owner>.testnet` with 3 NEAR (`AGENTGUARD_VAULT_FUNDING`), deploys the contract, initialises it in the same transaction and checks that the on-chain policy equals the YAML policy. About 1.9 NEAR stays locked as storage stake for the contract code.
+   It creates `vault.<owner>.testnet` with 3 NEAR (`DRAINPROOF_VAULT_FUNDING`), deploys the contract, initialises it in the same transaction and checks that the on-chain policy equals the YAML policy. About 1.9 NEAR stays locked as storage stake for the contract code.
 
 3. Give the agent its function-call key, signed once with the agent account's full-access key (set `NEAR_TESTNET_ACCOUNT_ID` and `NEAR_TESTNET_PRIVATE_KEY` to the agent account for this step):
 
@@ -71,7 +71,7 @@ You need three testnet accounts (see [docs/testnet-run.md](../../docs/testnet-ru
    node add-agent-key.mjs
    ```
 
-   It reads the key back from the chain and checks that it can call only `request_payment` on the vault. The new private key is printed once; read it into `AGENTGUARD_AGENT_PRIVATE_KEY`.
+   It reads the key back from the chain and checks that it can call only `request_payment` on the vault. The new private key is printed once; read it into `DRAINPROOF_AGENT_PRIVATE_KEY`.
 
 4. Later policy changes go through the same YAML file (dry run first, then `--send` as the owner):
 

@@ -1,7 +1,7 @@
 {
-  "name": "@agentguard/near",
+  "name": "@drainproof/near",
   "version": "0.1.0",
-  "description": "NEAR integration for AgentGuard CI: account-ID validation and a testnet execution adapter behind the AgentGuard execution gate.",
+  "description": "NEAR integration for Drainproof: account-ID validation and a testnet execution adapter behind the Drainproof execution gate.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,7 +20,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@agentguard/core": "workspace:*",
+    "@drainproof/core": "workspace:*",
     "near-api-js": "7.4.0"
   }
 }

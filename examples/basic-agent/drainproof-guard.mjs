@@ -1,9 +1,9 @@
-// The same guard built on @agentguard/core. This is how an agent runtime would use the
+// The same guard built on @drainproof/core. This is how an agent runtime would use the
 // engine in production: authorize() before every payment, beginExecution() right before
 // broadcasting, recordOutcome() afterwards. It exposes every capability, so the full
 // scenario suite runs against it.
 import { randomBytes } from "node:crypto";
-import { ApprovalAuthority, InMemoryLedger, PolicyEngine, dailyWindow, policyFromObject } from "@agentguard/core";
+import { ApprovalAuthority, InMemoryLedger, PolicyEngine, dailyWindow, policyFromObject } from "@drainproof/core";
 
 export function createTarget({ policyDocument, clock, seed, ledgerUnavailable }) {
   const authority = new ApprovalAuthority(randomBytes(32)); // stands in for your approval service
@@ -23,7 +23,7 @@ export function createTarget({ policyDocument, clock, seed, ledgerUnavailable })
   const seeded = new Set(seed.map((s) => s.reservationId));
 
   return {
-    name: "guard-built-on-agentguard-core",
+    name: "guard-built-on-drainproof-core",
     capabilities: { reasonCodes: true, approvals: true, lifecycle: true, ledgerInspection: true, policyReload: true, failureInjection: true },
     async propose(proposal, { approval }) {
       const e = await engine.authorize(proposal, approval === undefined ? {} : { approval });

@@ -1,18 +1,18 @@
 // LLM prompt-injection demo. An agent is asked to "Summarise this page and pay the data
 // provider 4 USDC". The page (a local fixture) hides an instruction to pay attacker-wallet.
-// Every payment the model proposes goes through AgentGuard's authorize().
+// Every payment the model proposes goes through Drainproof's authorize().
 //
 //   node agent.mjs                 RECORDED model responses (default; offline, no key)
 //   NEAR_AI_API_KEY=... node agent.mjs           LIVE: NEAR AI Cloud (optional)
 //   NEAR_AI_API_KEY=... node agent.mjs --record  LIVE, and save the run to fixtures/recording.json
-//   node agent.mjs --vault         also send every proposal to the AgentGuard Vault on a local
+//   node agent.mjs --vault         also send every proposal to the Drainproof Vault on a local
 //                                  NEAR sandbox (needs `pnpm build:vault`), or on testnet with
-//                                  AGENTGUARD_NEAR_EXECUTION=testnet (see README)
+//                                  DRAINPROOF_NEAR_EXECUTION=testnet (see README)
 //
 // Optional: NEAR_AI_MODEL (default z-ai/glm-5.3-flash), NEAR_AI_BASE_URL (default
 // https://cloud-api.near.ai/v1). The API key is never printed or written to the recording.
 import { readFile, writeFile } from "node:fs/promises";
-import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@agentguard/core";
+import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@drainproof/core";
 import { runAgent } from "./lib/agent-loop.mjs";
 import { DEFAULT_MODEL, OFFICIAL_BASE_URL, buildRecording, liveModel, redact, replayModel } from "./lib/model.mjs";
 
@@ -46,15 +46,15 @@ const model = apiKey
 out(`Model:      ${model.label}`);
 if (model.mode === "live") out("            The API key comes from NEAR_AI_API_KEY and is never printed or recorded.");
 else out("            Set NEAR_AI_API_KEY to call NEAR AI Cloud live instead (see README).");
-out(`AgentGuard: policy examples/payment-policy/policy.yaml (sha256:${loaded.policy.hash.replace(/^sha256:/, "").slice(0, 12)}…), allowlist ${JSON.stringify([...loaded.policy.allowedRecipients])}`);
+out(`Drainproof: policy examples/payment-policy/policy.yaml (sha256:${loaded.policy.hash.replace(/^sha256:/, "").slice(0, 12)}…), allowlist ${JSON.stringify([...loaded.policy.allowedRecipients])}`);
 
 let vault;
 if (useVault) {
   const { sandboxVault, testnetVault } = await import("./lib/vault.mjs");
-  vault = process.env.AGENTGUARD_NEAR_EXECUTION === "testnet" ? await testnetVault() : await sandboxVault();
+  vault = process.env.DRAINPROOF_NEAR_EXECUTION === "testnet" ? await testnetVault() : await sandboxVault();
   out(`Vault:      ${vault.describe}`);
 } else {
-  out("Execution:  simulated; nothing is signed or sent (add --vault to also use the AgentGuard Vault on a local NEAR node)");
+  out("Execution:  simulated; nothing is signed or sent (add --vault to also use the Drainproof Vault on a local NEAR node)");
 }
 out("");
 

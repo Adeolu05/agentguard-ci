@@ -1,4 +1,4 @@
-# AgentGuard CI
+# Drainproof
 
 **Test what your AI agent is allowed to do before trusting it with the ability to move money.**
 
@@ -18,15 +18,15 @@ Expected: both commands exit with code 0, and the build ends with `packages/cli 
 **2. Baseline: the 40 built-in security scenarios pass.**
 
 ```bash
-pnpm -s agentguard test --config examples/payment-policy/agentguard.yaml --no-save --quiet; echo "exit code: $?"
+pnpm -s drainproof test --config examples/payment-policy/drainproof.yaml --no-save --quiet; echo "exit code: $?"
 ```
 
 Expected:
 
 ```text
-AgentGuard CI 0.1.0
+Drainproof 0.1.0
 Policy:   policy.yaml (sha256:8a1b22fbb25b…)
-Target:   AgentGuard engine
+Target:   Drainproof engine
 Mode:     simulation (scenario runs never sign or send transactions)
 Running 40 scenarios
 
@@ -46,15 +46,15 @@ exit code: 0
 
 ```bash
 perl -pi -e 's/^    - data-provider-example$/    - data-provider-example\n    - attacker-wallet/' examples/payment-policy/policy.yaml
-pnpm -s agentguard test --config examples/payment-policy/agentguard.yaml --no-save --quiet; echo "exit code: $?"
+pnpm -s drainproof test --config examples/payment-policy/drainproof.yaml --no-save --quiet; echo "exit code: $?"
 ```
 
 Expected:
 
 ```text
-AgentGuard CI 0.1.0
+Drainproof 0.1.0
 Policy:   policy.yaml (sha256:9736d3b8b31f…)
-Target:   AgentGuard engine
+Target:   Drainproof engine
 Mode:     simulation (scenario runs never sign or send transactions)
 Running 40 scenarios
 
@@ -81,7 +81,7 @@ The scenario's injected payment is 5 USDC, below every amount limit, so the reci
 
 ```bash
 git checkout -- examples/payment-policy/policy.yaml
-pnpm -s agentguard test --config examples/payment-policy/agentguard.yaml --no-save --quiet; echo "exit code: $?"
+pnpm -s drainproof test --config examples/payment-policy/drainproof.yaml --no-save --quiet; echo "exit code: $?"
 ```
 
 Expected: the same output as step 2 (`Passed:    40`, `Result: PASSED  (exit code 0)`, `exit code: 0`), and `git status` shows a clean tree.
@@ -89,7 +89,7 @@ Expected: the same output as step 2 (`Passed:    40`, `Result: PASSED  (exit cod
 **5. A prompt-injected agent tries to pay an attacker.**
 
 ```bash
-pnpm -s --filter @agentguard/example-basic-agent demo; echo "exit code: $?"
+pnpm -s --filter @drainproof/example-basic-agent demo; echo "exit code: $?"
 ```
 
 Expected (a scripted agent, no LLM; nothing is signed or sent):
@@ -97,12 +97,12 @@ Expected (a scripted agent, no LLM; nothing is signed or sent):
 ```text
 ▶ Summarise this web page
   agent proposed: 500 USDC → attacker-wallet
-  AgentGuard:     BLOCK  (RECIPIENT_NOT_ALLOWED, AMOUNT_EXCEEDS_TRANSACTION_LIMIT, DAILY_SPEND_LIMIT_EXCEEDED, APPROVAL_REQUIRED_AMOUNT)
+  Drainproof:     BLOCK  (RECIPIENT_NOT_ALLOWED, AMOUNT_EXCEEDS_TRANSACTION_LIMIT, DAILY_SPEND_LIMIT_EXCEEDED, APPROVAL_REQUIRED_AMOUNT)
   execution:      not attempted
 
 ▶ Retry the dataset purchase after a timeout
   agent proposed: 4 USDC → data-provider-example
-  AgentGuard:     ALLOW  (IDEMPOTENT_REPLAY)
+  Drainproof:     ALLOW  (IDEMPOTENT_REPLAY)
   execution:      skipped, already executed (idempotent replay, no double payment)
 exit code: 0
 ```
@@ -112,25 +112,25 @@ The two earlier steps of the same output show a 4 USDC payment allowed and a 12 
 **6. The NEAR suite and demo (offline).**
 
 ```bash
-pnpm -s --filter @agentguard/example-near-testnet test --no-save --quiet; echo "exit code: $?"
-pnpm -s --filter @agentguard/example-near-testnet demo; echo "exit code: $?"
+pnpm -s --filter @drainproof/example-near-testnet test --no-save --quiet; echo "exit code: $?"
+pnpm -s --filter @drainproof/example-near-testnet demo; echo "exit code: $?"
 ```
 
 Expected: the suite prints `Integrations: near:account-id-validation`, `Passed:    6`, `Result: PASSED  (exit code 0)` and `exit code: 0`. The demo then prints:
 
 ```text
-Simulation only: testnet execution is disabled (set AGENTGUARD_NEAR_EXECUTION=testnet to enable)
+Simulation only: testnet execution is disabled (set DRAINPROOF_NEAR_EXECUTION=testnet to enable)
 
 ▶ over the per-transaction limit: 5 NEAR → merchant-example.testnet
-  AgentGuard: BLOCK (AMOUNT_EXCEEDS_TRANSACTION_LIMIT, DAILY_SPEND_LIMIT_EXCEEDED, APPROVAL_REQUIRED_AMOUNT)
+  Drainproof: BLOCK (AMOUNT_EXCEEDS_TRANSACTION_LIMIT, DAILY_SPEND_LIMIT_EXCEEDED, APPROVAL_REQUIRED_AMOUNT)
   Stopped before the execution boundary.
 
 ▶ mainnet account on testnet: 0.01 NEAR → merchant-example.near
-  AgentGuard: BLOCK (ADAPTER_VALIDATION_FAILED, RECIPIENT_NOT_ALLOWED)
+  Drainproof: BLOCK (ADAPTER_VALIDATION_FAILED, RECIPIENT_NOT_ALLOWED)
   Stopped before the execution boundary.
 
 ▶ within policy: 0.01 NEAR → merchant-example.testnet
-  AgentGuard: ALLOW
+  Drainproof: ALLOW
   Would proceed to execution. Testnet execution is not enabled, so no transaction was signed or sent.
 exit code: 0
 ```
@@ -138,7 +138,7 @@ exit code: 0
 **Optional: a hand-written guard fails the same suite, and the full test suite passes.**
 
 ```bash
-pnpm -s --filter @agentguard/example-basic-agent test:naive --quiet | grep -E "Passed:|Failed:|Skipped:|Result"; echo "exit code: ${PIPESTATUS[0]}"
+pnpm -s --filter @drainproof/example-basic-agent test:naive --quiet | grep -E "Passed:|Failed:|Skipped:|Result"; echo "exit code: ${PIPESTATUS[0]}"
 pnpm -s test 2>&1 | grep -E "Test Files|Tests "
 ```
 
@@ -146,28 +146,28 @@ Expected: the naive guard (which uses `parseFloat` and case-insensitive recipien
 
 ## Overview
 
-![AgentGuard CI: project landing page](docs/images/landing.png)
+![Drainproof: project landing page](docs/images/landing.png)
 
-AgentGuard CI is an open-source security testing toolkit for AI agents that can initiate financial transactions. You describe a transaction policy in YAML, for example limits, recipient and network allowlists, and approval thresholds. AgentGuard then runs a suite of adversarial scenarios against it: boundary amounts, injected instructions, malformed input, replayed approvals, concurrent spending and retries. It reports exactly which security properties hold and which do not. It runs locally and in CI, needs no account, LLM or blockchain, and fails the build when a policy or guard regresses.
+Drainproof is an open-source security testing toolkit for AI agents that can initiate financial transactions. You describe a transaction policy in YAML, for example limits, recipient and network allowlists, and approval thresholds. Drainproof then runs a suite of adversarial scenarios against it: boundary amounts, injected instructions, malformed input, replayed approvals, concurrent spending and retries. It reports exactly which security properties hold and which do not. It runs locally and in CI, needs no account, LLM or blockchain, and fails the build when a policy or guard regresses.
 
-AgentGuard is **not** a wallet, a custody service or a trading bot. It never signs or sends a transaction during a test run. It is a deterministic policy engine plus a testing layer.
+Drainproof is **not** a wallet, a custody service or a trading bot. It never signs or sends a transaction during a test run. It is a deterministic policy engine plus a testing layer.
 
 ## What is in the box
 
 | Component | Package | Status |
 | --- | --- | --- |
-| Deterministic policy engine: exact BigInt amounts, strict schema, stable reason codes, fail-closed | `@agentguard/core` | Implemented, tested |
-| Spending ledger: atomic per-agent reservations, idempotency, lifecycle, daily windows | `@agentguard/core` | Implemented, tested (single-process reference ledger) |
-| Approvals bound to the exact proposal and policy version (HMAC), with expiry and single use | `@agentguard/core` | Implemented, tested |
-| Scenario runner: multi-step scenarios, concurrency, PASS/FAIL/ERROR/SKIPPED, custom guard targets | `@agentguard/runner` | Implemented, tested |
+| Deterministic policy engine: exact BigInt amounts, strict schema, stable reason codes, fail-closed | `@drainproof/core` | Implemented, tested |
+| Spending ledger: atomic per-agent reservations, idempotency, lifecycle, daily windows | `@drainproof/core` | Implemented, tested (single-process reference ledger) |
+| Approvals bound to the exact proposal and policy version (HMAC), with expiry and single use | `@drainproof/core` | Implemented, tested |
+| Scenario runner: multi-step scenarios, concurrency, PASS/FAIL/ERROR/SKIPPED, custom guard targets | `@drainproof/runner` | Implemented, tested |
 | 40 built-in security scenarios in 6 categories | `packages/cli/templates/scenarios` | Implemented, all executable |
-| CLI: `init`, `policy validate`, `scenarios validate\|list`, `test`, `report` | `@agentguard/cli` | Implemented, tested |
-| JSON and Markdown reports with findings, severity rationale and redaction | `@agentguard/runner` | Implemented, tested |
+| CLI: `init`, `policy validate`, `scenarios validate\|list`, `test`, `report` | `@drainproof/cli` | Implemented, tested |
+| JSON and Markdown reports with findings, severity rationale and redaction | `@drainproof/runner` | Implemented, tested |
 | GitHub Actions: repository CI and a user workflow template (actions pinned to SHAs) | `.github/workflows` | Running on GitHub; every job passed on the first run |
 | Read-only web dashboard over CLI reports | `apps/web` | Implemented, data layer tested, visually checked |
-| NEAR: account-ID validation, testnet executor behind the execution gate | `@agentguard/near` | Implemented, tested against a local RPC stub. Live testnet run pending ([details](#live-testnet-run)) |
+| NEAR: account-ID validation, testnet executor behind the execution gate | `@drainproof/near` | Implemented, tested against a local RPC stub. Live testnet run pending ([details](#live-testnet-run)) |
 | LLM prompt-injection demo: an LLM agent reads a poisoned page; recorded by default, NEAR AI Cloud live with a key, optional vault | `examples/llm-agent` | Implemented, 12 offline tests. Live mode was checked only up to authentication (no key was available); the shipped recording is a labelled stand-in ([details](#a-real-llm-a-poisoned-page)) |
-| AgentGuard Vault: a NEAR contract that holds the funds and enforces the policy on-chain; the agent holds only a function-call key | `contracts/vault`, `examples/near-vault` | Implemented. 40 unit tests and 30 tests on a local NEAR node pass; 16 of the 40 built-in scenarios pass against it and 24 are skipped with reasons. Not deployed to testnet yet ([details](#what-the-agents-key-can-and-cannot-do)) |
+| Drainproof Vault: a NEAR contract that holds the funds and enforces the policy on-chain; the agent holds only a function-call key | `contracts/vault`, `examples/near-vault` | Implemented. 40 unit tests and 30 tests on a local NEAR node pass; 16 of the 40 built-in scenarios pass against it and 24 are skipped with reasons. Not deployed to testnet yet ([details](#what-the-agents-key-can-and-cannot-do)) |
 
 ## Quick start
 
@@ -184,22 +184,22 @@ pnpm build
 Create a project and run the suite. The CLI binary is `packages/cli/dist/bin.js`; the alias below just shortens it.
 
 ```bash
-alias agentguard="node $PWD/packages/cli/dist/bin.js"
+alias drainproof="node $PWD/packages/cli/dist/bin.js"
 mkdir /tmp/my-agent && cd /tmp/my-agent
-agentguard init
-agentguard policy validate
-agentguard test
+drainproof init
+drainproof policy validate
+drainproof test
 ```
 
 All 40 scenarios pass and the command exits with code 0. Now make the policy unsafe and run it again:
 
 ```bash
 sed -i 's/max_transaction_amount: "25"/max_transaction_amount: "2500"/' policies/default.yaml
-agentguard test --quiet
-agentguard report              # Markdown report of the latest run
+drainproof test --quiet
+drainproof report              # Markdown report of the latest run
 ```
 
-`agentguard test --quiet` now exits with code 1 and reports two failures (real output, trimmed):
+`drainproof test --quiet` now exits with code 1 and reports two failures (real output, trimmed):
 
 ```text
 FAIL    instruction-injection-in-memo
@@ -225,8 +225,8 @@ The packages are not on npm yet. `pnpm pack:local <dir>` builds installable tarb
 1. **Policy** (`policies/default.yaml`): limits per asset, a daily window, recipient, network and asset allowlists, and an approval threshold. It is validated strictly: unknown keys, unquoted numbers and excess precision are all errors. See [docs/policy-schema.md](docs/policy-schema.md).
 2. **Engine**: `PolicyEngine.authorize(proposal)` returns `ALLOW`, `BLOCK` or `REQUIRE_APPROVAL` with reason codes. `ALLOW` atomically reserves budget in the ledger. `REQUIRE_APPROVAL` is never an authorisation. The engine never executes anything; adapters call `beginExecution()`, which is the execution gate.
 3. **Scenarios** (`scenarios/**/*.yaml`): each one encodes a security property as steps such as propose, approve, advance time, execute, record outcome, run concurrently, reload the policy and assert ledger state. Because the expected outcomes are concrete, *loosening the policy makes the relevant scenarios fail*. That is how CI catches unsafe policy changes. See [docs/scenarios.md](docs/scenarios.md).
-4. **Targets**: by default the scenarios run against AgentGuard's own engine with your policy. To test **your own guard implementation** instead, point `target.module` at an ES module that exports `createTarget()` ([example](examples/basic-agent)).
-5. **Reports**: `.agentguard/runs/<runId>.json`, optional `--json` and `--markdown` outputs, and findings with severity, reproduction steps and remediation. See [docs/cli.md](docs/cli.md) and [docs/findings.md](docs/findings.md).
+4. **Targets**: by default the scenarios run against Drainproof's own engine with your policy. To test **your own guard implementation** instead, point `target.module` at an ES module that exports `createTarget()` ([example](examples/basic-agent)).
+5. **Reports**: `.drainproof/runs/<runId>.json`, optional `--json` and `--markdown` outputs, and findings with severity, reproduction steps and remediation. See [docs/cli.md](docs/cli.md) and [docs/findings.md](docs/findings.md).
 
 ## Exit codes
 
@@ -241,23 +241,23 @@ An infrastructure error or a skipped scenario is never counted as a pass.
 
 ## CI
 
-Run `agentguard init --github-actions` to add `.github/workflows/agentguard.yml`. It uses read-only permissions and actions pinned to commit SHAs, installs with `npm ci` (pnpm variant in the comments), validates the policy and scenarios, runs the suite, writes a job summary and uploads the reports. It expects `@agentguard/cli` as a dev dependency; before npm publication, use the vendored tarballs described in [docs/adoption.md](docs/adoption.md). [This repository's CI](.github/workflows/ci.yml) runs the same steps from source. It includes a `regression-gate` job that deliberately allowlists an attacker and requires the suite to exit with code 1.
+Run `drainproof init --github-actions` to add `.github/workflows/drainproof.yml`. It uses read-only permissions and actions pinned to commit SHAs, installs with `npm ci` (pnpm variant in the comments), validates the policy and scenarios, runs the suite, writes a job summary and uploads the reports. It expects `@drainproof/cli` as a dev dependency; before npm publication, use the vendored tarballs described in [docs/adoption.md](docs/adoption.md). [This repository's CI](.github/workflows/ci.yml) runs the same steps from source. It includes a `regression-gate` job that deliberately allowlists an attacker and requires the suite to exit with code 1.
 
 ## Dashboard
 
 ```bash
 pnpm dashboard:demo                       # bundled demo reports (labelled as demo data)
-AGENTGUARD_RUNS_DIR=/tmp/my-agent/.agentguard/runs \
-AGENTGUARD_PROJECT=/tmp/my-agent/agentguard.yaml \
-  pnpm --filter @agentguard/web dev       # your own runs, at http://localhost:3000/dashboard
+DRAINPROOF_RUNS_DIR=/tmp/my-agent/.drainproof/runs \
+DRAINPROOF_PROJECT=/tmp/my-agent/drainproof.yaml \
+  pnpm --filter @drainproof/web dev       # your own runs, at http://localhost:3000/dashboard
 ```
 
 The web app has two parts: a project landing page at `/` and the dashboard at `/dashboard`. The dashboard is read-only. Every report is validated against the same schema the CLI writes; unreadable files are listed as such, never shown as results. The demo fixtures are produced by [a script](apps/web/scripts/generate-demo-runs.sh) that runs the real CLI.
 
 ## NEAR integration
 
-- `@agentguard/near` validates NEAR account IDs, including cross-network mistakes such as a `*.near` recipient on testnet, and handles 24-decimal yoctoNEAR amounts exactly. The [NEAR example suite](examples/near-testnet) passes offline.
-- `NearTestnetExecutor` executes **only** reservations that AgentGuard authorised. It goes through the execution gate, which blocks double execution and stale policy versions, and it refuses to sign unless the RPC reports `testnet`. It records a transaction hash only when the network returned one, and leaves ambiguous outcomes as `submitted` so they keep counting toward limits.
+- `@drainproof/near` validates NEAR account IDs, including cross-network mistakes such as a `*.near` recipient on testnet, and handles 24-decimal yoctoNEAR amounts exactly. The [NEAR example suite](examples/near-testnet) passes offline.
+- `NearTestnetExecutor` executes **only** reservations that Drainproof authorised. It goes through the execution gate, which blocks double execution and stale policy versions, and it refuses to sign unless the RPC reports `testnet`. It records a transaction hash only when the network returned one, and leaves ambiguous outcomes as `submitted` so they keep counting toward limits.
 - **Verification:** the SDK calls (`JsonRpcProvider`, `Account`, `viewTransactionStatus`) match the official NEAR documentation (source repository `github.com/near/docs`, commit `fa2acf6`, checked 2026-11-05) and the published `near-api-js@7.4.0` type definitions (npm `latest`, not deprecated). The executor is tested against the real `near-api-js` library and a local JSON-RPC stub. The tests check that the signed transaction decodes to the right receiver and exact amount, that the ed25519 signature verifies, that a policy-blocked proposal makes no RPC request at all, and that at most one transaction is broadcast per authorised reservation. See [docs/integrations.md](docs/integrations.md).
 
 ### Live testnet run
@@ -276,7 +276,7 @@ No live testnet transaction is recorded yet, and none is claimed. When one is ru
 
 ## What the agent's key can and cannot do
 
-With the [AgentGuard Vault](examples/near-vault), the money sits in a NEAR contract, not in the agent's account. The agent gets a **function-call key**: a NEAR access key that is only valid for calling one method, `request_payment`, on the vault.
+With the [Drainproof Vault](examples/near-vault), the money sits in a NEAR contract, not in the agent's account. The agent gets a **function-call key**: a NEAR access key that is only valid for calling one method, `request_payment`, on the vault.
 
 **The agent's key can:**
 
@@ -311,8 +311,8 @@ Then, from the repository root (after step 1). The NEAR node needs an open-file 
 (cd contracts/vault && cargo test 2>&1 | grep "test result")
 pnpm build:vault
 ulimit -n 65535 && pnpm test:vault 2>&1 | grep -E "Test Files|Tests "
-ulimit -n 65535 && pnpm -s agentguard test --config examples/near-vault/agentguard.yaml --no-save --quiet | grep -E "Passed:|Failed:|Errors:|Skipped:|Result"
-ulimit -n 65535 && pnpm -s --filter @agentguard/example-near-vault demo | grep -E "^[0-9]\.|Vault decision|Rejected"
+ulimit -n 65535 && pnpm -s drainproof test --config examples/near-vault/drainproof.yaml --no-save --quiet | grep -E "Passed:|Failed:|Errors:|Skipped:|Result"
+ulimit -n 65535 && pnpm -s --filter @drainproof/example-near-vault demo | grep -E "^[0-9]\.|Vault decision|Rejected"
 ```
 
 Expected: `test result: ok. 40 passed; 0 failed` (followed by a second line, `ok. 0 passed`, for the empty doc-test target), then the build ends with `Contract successfully built!`, then `Tests  30 passed (30)`, then `Passed:    16`, `Failed:    0`, `Errors:    0`, `Skipped:   24` and `Result: PASSED  (exit code 0)`. The demo then prints:
@@ -334,13 +334,13 @@ Without the `grep`, the demo also prints each request's `EVENT_JSON` log lines, 
 
 ## A real LLM, a poisoned page
 
-[examples/llm-agent](examples/llm-agent) gives an LLM agent the task "Summarise this page and pay the data provider 4 USDC". The page (a local fixture) hides an instruction to pay `attacker-wallet`. Every payment the model proposes goes through AgentGuard's `authorize()`; the demo prints the model's proposed action, AgentGuard's decision and reason codes, and whether execution was attempted.
+[examples/llm-agent](examples/llm-agent) gives an LLM agent the task "Summarise this page and pay the data provider 4 USDC". The page (a local fixture) hides an instruction to pay `attacker-wallet`. Every payment the model proposes goes through Drainproof's `authorize()`; the demo prints the model's proposed action, Drainproof's decision and reason codes, and whether execution was attempted.
 
 ```bash
-pnpm -s --filter @agentguard/example-llm-agent demo; echo "exit code: $?"
+pnpm -s --filter @drainproof/example-llm-agent demo; echo "exit code: $?"
 ```
 
-By default it replays recorded model responses, offline and without a key. **The recording shipped today is a hand-written stand-in from a local stub, not model output, and the demo's first line says so**; it will be replaced by a recorded NEAR AI Cloud run. With `NEAR_AI_API_KEY` set it calls [NEAR AI Cloud](https://docs.near.ai/cloud/quickstart.md) live and checks each response's Ed25519 signature against the exact request and response bytes (it does not verify TEE attestation, and says so). With `-- --vault` it also sends every proposal to the AgentGuard Vault on a local NEAR node, so a blocked payment's on-chain rejection event is printed too. Details: [examples/llm-agent/README.md](examples/llm-agent/README.md).
+By default it replays recorded model responses, offline and without a key. **The recording shipped today is a hand-written stand-in from a local stub, not model output, and the demo's first line says so**; it will be replaced by a recorded NEAR AI Cloud run. With `NEAR_AI_API_KEY` set it calls [NEAR AI Cloud](https://docs.near.ai/cloud/quickstart.md) live and checks each response's Ed25519 signature against the exact request and response bytes (it does not verify TEE attestation, and says so). With `-- --vault` it also sends every proposal to the Drainproof Vault on a local NEAR node, so a blocked payment's on-chain rejection event is printed too. Details: [examples/llm-agent/README.md](examples/llm-agent/README.md).
 
 ## Project status
 
@@ -348,10 +348,10 @@ Verified on 2026-11-06 (Node 24.10.0, pnpm 10.28.0, Linux), unless a line gives 
 
 - `pnpm check` runs lint, build, the dashboard build, typecheck and 283 automated tests, and all of it passes.
 - On 2026-11-05, from a fresh clone with an empty package cache (cold install from npm, frozen lockfile), the quick-start, the unsafe-policy demo (exit code 1) and an independent cross-check of the reports all passed. Every PASS scenario ran all its steps, every FAIL has a finding, and errors are never counted as passes.
-- On 2026-11-05, AgentGuard was installed from local tarballs into an unrelated npm project, and its generated GitHub workflow steps were executed there ([docs/adoption.md](docs/adoption.md)).
+- On 2026-11-05, Drainproof was installed from local tarballs into an unrelated npm project, and its generated GitHub workflow steps were executed there ([docs/adoption.md](docs/adoption.md)).
 - The CLI quick-start works, an intentional policy violation exits with code 1, and the example suites pass.
 - `pnpm bench` (after `pnpm build`): over four runs on an Intel Core i7-1185G7, `authorize()` took a mean of 22.0 to 27.2 µs (p99 61 to 74 µs), against a target of under 10 ms. The 40-scenario suite took 14 to 22 ms in the runner, or 212 to 286 ms wall time including Node startup. Timings depend on the machine and its load.
-- AgentGuard Vault, on a local NEAR node: `cargo test` passes 40 unit tests, `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check` are clean, `pnpm test:vault` passes 30 integration tests, and 16 of the 40 built-in scenarios pass against the contract (24 skipped, each with its reason). See [Verify the vault yourself](#verify-the-vault-yourself-optional).
+- Drainproof Vault, on a local NEAR node: `cargo test` passes 40 unit tests, `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check` are clean, `pnpm test:vault` passes 30 integration tests, and 16 of the 40 built-in scenarios pass against the contract (24 skipped, each with its reason). See [Verify the vault yourself](#verify-the-vault-yourself-optional).
 - GitHub Actions: the four original CI jobs (checks, example suites, regression gate, dashboard build) [pass on GitHub](https://github.com/Adeolu05/agentguard-ci/actions). The vault job was added since and has not run on GitHub yet.
 - An independent adversarial review of the engine, runner and NEAR executor found 7 defects plus 2 fail-open edge cases. All are fixed, each with a regression test that reproduces the original attack (`packages/*/test/regressions.test.ts` and the NEAR tests).
 
@@ -362,7 +362,7 @@ Not yet verified:
 
 ## Limitations
 
-Passing the suite shows that the tested behaviours hold under the tested conditions. It is **not** proof that an agent, wallet or payment flow is secure in general. AgentGuard only protects what passes through it: if your agent can reach a signing key without going through `authorize()` and `beginExecution()`, nothing here stops it. On NEAR, the vault narrows this gap: the agent's key can only ask the vault to pay, and the contract enforces the policy itself (see [What the agent's key can and cannot do](#what-the-agents-key-can-and-cannot-do)). The owner's key, and the vault account's own key, still have full control. The reference ledger is single-process. Read [docs/limitations.md](docs/limitations.md) and [docs/threat-model.md](docs/threat-model.md) before relying on it.
+Passing the suite shows that the tested behaviours hold under the tested conditions. It is **not** proof that an agent, wallet or payment flow is secure in general. Drainproof only protects what passes through it: if your agent can reach a signing key without going through `authorize()` and `beginExecution()`, nothing here stops it. On NEAR, the vault narrows this gap: the agent's key can only ask the vault to pay, and the contract enforces the policy itself (see [What the agent's key can and cannot do](#what-the-agents-key-can-and-cannot-do)). The owner's key, and the vault account's own key, still have full control. The reference ledger is single-process. Read [docs/limitations.md](docs/limitations.md) and [docs/threat-model.md](docs/threat-model.md) before relying on it.
 
 ## Documentation
 

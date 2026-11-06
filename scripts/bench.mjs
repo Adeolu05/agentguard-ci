@@ -11,7 +11,7 @@ import { cpus, tmpdir } from "node:os";
 import { join } from "node:path";
 import { performance } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
-// The built package, by path: the repository root does not depend on @agentguard/core.
+// The built package, by path: the repository root does not depend on @drainproof/core.
 import { InMemoryLedger, PolicyEngine, policyFromYaml } from "../packages/core/dist/index.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -47,14 +47,14 @@ const times = (await measure(ITERATIONS, true)).sort((a, b) => a - b);
 const mean = times.reduce((s, t) => s + t, 0) / times.length;
 const p99 = times[Math.floor(times.length * 0.99)];
 
-const dir = mkdtempSync(join(tmpdir(), "agentguard-bench-"));
+const dir = mkdtempSync(join(tmpdir(), "drainproof-bench-"));
 const runner = [];
 const wall = [];
 try {
   for (let i = 0; i < SUITE_RUNS; i++) {
     const out = join(dir, `run-${i}.json`);
     const t0 = performance.now();
-    execFileSync(process.execPath, [join(root, "packages/cli/dist/bin.js"), "test", "--config", join(root, "examples/payment-policy/agentguard.yaml"), "--no-save", "--quiet", "--json", out], { stdio: "ignore" });
+    execFileSync(process.execPath, [join(root, "packages/cli/dist/bin.js"), "test", "--config", join(root, "examples/payment-policy/drainproof.yaml"), "--no-save", "--quiet", "--json", out], { stdio: "ignore" });
     wall.push(performance.now() - t0);
     runner.push(JSON.parse(readFileSync(out, "utf8")).durationMs);
   }

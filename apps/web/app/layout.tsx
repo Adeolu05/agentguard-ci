@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "AgentGuard CI · Security tests for AI agents that move money", template: "%s · AgentGuard CI" },
+  title: { default: "Drainproof · Security tests for AI agents that move money", template: "%s · Drainproof" },
   description:
     "Open-source security test suite for AI agents with wallets: define a transaction policy, run adversarial scenarios, and fail the build when a guardrail regresses.",
 };

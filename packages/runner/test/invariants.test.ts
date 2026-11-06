@@ -6,7 +6,7 @@
 import path from "node:path";
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { policyFromYaml } from "@agentguard/core";
+import { policyFromYaml } from "@drainproof/core";
 import { loadModuleTarget, runSuite, type RunReport, type RunOptions } from "../src/index.js";
 import { builtinSuite, DEFAULT_POLICY_PATH, tempProject } from "./helpers.js";
 
@@ -26,7 +26,7 @@ async function run(yaml: string, extra: Partial<RunOptions> = {}): Promise<RunRe
   const loaded = policyFromYaml(yaml);
   if (!loaded.ok) throw new Error(JSON.stringify(loaded.issues));
   const set = await builtinSuite();
-  return runSuite({ agentguardVersion: "test", policy: loaded.policy, policyFile: "p.yaml", scenarios: set.scenarios, suiteHash: set.suiteHash, ...extra });
+  return runSuite({ drainproofVersion: "test", policy: loaded.policy, policyFile: "p.yaml", scenarios: set.scenarios, suiteHash: set.suiteHash, ...extra });
 }
 
 async function checkInvariants(report: RunReport) {

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@agentguard/core";
+import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@drainproof/core";
 import {
   checkAccountNetwork,
   checkDirectSubAccount,
@@ -40,7 +40,7 @@ const proposal = (o: Record<string, unknown> = {}) => ({
 
 function fakeClient(overrides: Partial<NearClient> = {}): NearClient & { transfer: ReturnType<typeof vi.fn> } {
   return {
-    signerAccountId: "agentguard-demo.testnet",
+    signerAccountId: "drainproof-demo.testnet",
     getNetworkId: async () => "testnet",
     transfer: vi.fn(async () => ({ status: { SuccessValue: "" }, transaction_outcome: { id: "FakeHashFromNetwork111" } })),
     transactionStatus: async (h: string) => ({ status: { SuccessValue: "" }, transaction_outcome: { id: h } }),
@@ -209,7 +209,7 @@ describe("NearTestnetExecutor", () => {
     const view = (receiver: string, deposit: string, hash: string) => ({
       status: { SuccessValue: "" },
       transaction_outcome: { id: hash },
-      transaction: { signer_id: "agentguard-demo.testnet", receiver_id: receiver, actions: [{ Transfer: { deposit } }] },
+      transaction: { signer_id: "drainproof-demo.testnet", receiver_id: receiver, actions: [{ Transfer: { deposit } }] },
     });
     const amount = (500_000_000_000_000_000_000_000n).toString();
     await new NearTestnetExecutor({ engine, client: fakeClient({ transfer: vi.fn(async () => { throw new Error("timeout"); }) }) }).execute(id);
@@ -263,7 +263,7 @@ describe("nearTestnetConfigFromEnv", () => {
     expect(nearTestnetConfigFromEnv({ NEAR_TESTNET_ACCOUNT_ID: "a.testnet", NEAR_TESTNET_PRIVATE_KEY: key }).ok).toBe(false);
   });
   it("requires credentials, a key-shaped secret and an https non-mainnet RPC", () => {
-    const base = { AGENTGUARD_NEAR_EXECUTION: "testnet", NEAR_TESTNET_ACCOUNT_ID: "a.testnet", NEAR_TESTNET_PRIVATE_KEY: key };
+    const base = { DRAINPROOF_NEAR_EXECUTION: "testnet", NEAR_TESTNET_ACCOUNT_ID: "a.testnet", NEAR_TESTNET_PRIVATE_KEY: key };
     expect(nearTestnetConfigFromEnv(base).ok).toBe(true);
     expect(nearTestnetConfigFromEnv({ ...base, NEAR_TESTNET_PRIVATE_KEY: "word word word" }).ok).toBe(false);
     expect(nearTestnetConfigFromEnv({ ...base, NEAR_TESTNET_RPC_URL: "http://rpc.testnet.example" }).ok).toBe(false);

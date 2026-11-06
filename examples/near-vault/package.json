@@ -1,16 +1,16 @@
 {
-  "name": "@agentguard/example-near-vault",
+  "name": "@drainproof/example-near-vault",
   "private": true,
   "type": "module",
   "scripts": {
     "build:contract": "cd ../../contracts/vault && cargo near build non-reproducible-wasm",
     "test:sandbox": "vitest run --config vitest.config.mjs",
-    "scenarios": "node ../../packages/cli/dist/bin.js test --config agentguard.yaml --no-save",
+    "scenarios": "node ../../packages/cli/dist/bin.js test --config drainproof.yaml --no-save",
     "demo": "node demo.mjs"
   },
   "dependencies": {
-    "@agentguard/core": "workspace:*",
-    "@agentguard/near": "workspace:*",
+    "@drainproof/core": "workspace:*",
+    "@drainproof/near": "workspace:*",
     "near-api-js": "7.4.0",
     "near-sandbox": "0.3.5"
   },

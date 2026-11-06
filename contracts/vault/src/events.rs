@@ -1,5 +1,5 @@
 //! NEP-297 events. Each is written to the log as
-//! `EVENT_JSON:{"standard":"agentguard_vault","version":"1.0.0","event":"<name>","data":[...]}`.
+//! `EVENT_JSON:{"standard":"drainproof_vault","version":"1.0.0","event":"<name>","data":[...]}`.
 
 use near_sdk::json_types::U128;
 use near_sdk::{near, AccountId};
@@ -64,7 +64,7 @@ pub struct WithdrawnLog {
     pub amount: U128,
 }
 
-#[near(event_json(standard = "agentguard_vault"))]
+#[near(event_json(standard = "drainproof_vault"))]
 pub enum VaultEvent {
     #[event_version("1.0.0")]
     PaymentDecision(Vec<PaymentDecisionLog>),

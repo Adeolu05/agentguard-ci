@@ -102,7 +102,7 @@ Treat the whole block as secret. `--signature-scheme ed25519` avoids an interact
 ## 5. Set the environment variables
 
 ```bash
-export AGENTGUARD_NEAR_EXECUTION=testnet
+export DRAINPROOF_NEAR_EXECUTION=testnet
 export NEAR_TESTNET_ACCOUNT_ID="$AGENT_ACCOUNT"
 export RECIPIENT="$SHOP_ACCOUNT"
 ```
@@ -140,7 +140,7 @@ networks:
 ## 7. Run the demo
 
 ```bash
-pnpm -s --filter @agentguard/example-near-testnet demo
+pnpm -s --filter @drainproof/example-near-testnet demo
 ```
 
 The first line must read `Testnet execution ENABLED (signer <your-name>-agent.testnet, RPC https://test.rpc.fastnear.com)`. If it starts with `Simulation only:`, a variable from step 5 is missing or malformed, and the rest of the line says which.
@@ -201,7 +201,7 @@ near account list-keys "$AGENT_ACCOUNT" network-config testnet now
 Remove the key from the shell and restore the policy:
 
 ```bash
-unset NEAR_TESTNET_PRIVATE_KEY AGENTGUARD_NEAR_EXECUTION
+unset NEAR_TESTNET_PRIVATE_KEY DRAINPROOF_NEAR_EXECUTION
 ```
 
 ```bash

@@ -1,11 +1,11 @@
 {
-  "name": "@agentguard/cli",
+  "name": "@drainproof/cli",
   "version": "0.1.0",
-  "description": "AgentGuard CI: test whether an AI agent's proposed financial actions comply with explicit transaction policies.",
+  "description": "Drainproof: test whether an AI agent's proposed financial actions comply with explicit transaction policies.",
   "license": "Apache-2.0",
   "type": "module",
   "bin": {
-    "agentguard": "./dist/bin.js"
+    "drainproof": "./dist/bin.js"
   },
   "main": "./dist/main.js",
   "types": "./dist/main.d.ts",
@@ -21,18 +21,18 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@agentguard/core": "workspace:*",
-    "@agentguard/runner": "workspace:*"
+    "@drainproof/core": "workspace:*",
+    "@drainproof/runner": "workspace:*"
   },
   "peerDependencies": {
-    "@agentguard/near": "0.1.0"
+    "@drainproof/near": "0.1.0"
   },
   "peerDependenciesMeta": {
-    "@agentguard/near": {
+    "@drainproof/near": {
       "optional": true
     }
   },
   "devDependencies": {
-    "@agentguard/near": "workspace:*"
+    "@drainproof/near": "workspace:*"
   }
 }

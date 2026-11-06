@@ -1,4 +1,4 @@
-import type { Policy } from "@agentguard/core";
+import type { Policy } from "@drainproof/core";
 import { checkAccountNetwork, checkNearAccountId, type NearNetworkId } from "./account-id.js";
 
 /** Mirrors `MAX_RECIPIENTS` in contracts/vault/src/types.rs. */
@@ -34,7 +34,7 @@ export interface VaultPolicyOptions {
 export type VaultPolicyResult = { ok: true; policy: VaultPolicyJson } | { ok: false; issues: string[] };
 
 /**
- * Converts an AgentGuard policy into the vault's on-chain policy, or explains why it
+ * Converts a Drainproof policy into the vault's on-chain policy, or explains why it
  * cannot be represented exactly. Nothing is rounded, dropped or defaulted silently:
  * anything the vault cannot enforce exactly is an issue.
  */

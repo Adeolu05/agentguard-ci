@@ -1,9 +1,9 @@
-# The built-in security scenarios against the AgentGuard Vault contract on a local NEAR
+# The built-in security scenarios against the Drainproof Vault contract on a local NEAR
 # sandbox. Needs the contract wasm (pnpm build:vault) and downloads the sandbox node on
 # first use. Run from the repository root:
-#   pnpm -s agentguard test --config examples/near-vault/agentguard.yaml
+#   pnpm -s drainproof test --config examples/near-vault/drainproof.yaml
 version: 1
-name: AgentGuard Vault (local sandbox)
+name: Drainproof Vault (local sandbox)
 policy: ../payment-policy/policy.yaml
 scenarios:
   - ../../packages/cli/templates/scenarios
@@ -11,4 +11,4 @@ target:
   type: module
   module: ./vault-target.mjs
 reports:
-  dir: .agentguard/runs
+  dir: .drainproof/runs

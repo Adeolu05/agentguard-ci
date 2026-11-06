@@ -35,7 +35,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@agentguard/runner':
+      '@drainproof/runner':
         specifier: workspace:*
         version: link:../../packages/runner
       '@fontsource-variable/inter':
@@ -84,34 +84,34 @@ importers:
 
   examples/basic-agent:
     dependencies:
-      '@agentguard/core':
+      '@drainproof/core':
         specifier: workspace:*
         version: link:../../packages/core
 
   examples/llm-agent:
     dependencies:
-      '@agentguard/core':
+      '@drainproof/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@agentguard/near':
+      '@drainproof/near':
         specifier: workspace:*
         version: link:../../packages/near
 
   examples/near-testnet:
     dependencies:
-      '@agentguard/core':
+      '@drainproof/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@agentguard/near':
+      '@drainproof/near':
         specifier: workspace:*
         version: link:../../packages/near
 
   examples/near-vault:
     dependencies:
-      '@agentguard/core':
+      '@drainproof/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@agentguard/near':
+      '@drainproof/near':
         specifier: workspace:*
         version: link:../../packages/near
       near-api-js:
@@ -127,14 +127,14 @@ importers:
 
   packages/cli:
     dependencies:
-      '@agentguard/core':
+      '@drainproof/core':
         specifier: workspace:*
         version: link:../core
-      '@agentguard/runner':
+      '@drainproof/runner':
         specifier: workspace:*
         version: link:../runner
     devDependencies:
-      '@agentguard/near':
+      '@drainproof/near':
         specifier: workspace:*
         version: link:../near
 
@@ -149,7 +149,7 @@ importers:
 
   packages/near:
     dependencies:
-      '@agentguard/core':
+      '@drainproof/core':
         specifier: workspace:*
         version: link:../core
       near-api-js:
@@ -158,7 +158,7 @@ importers:
 
   packages/runner:
     dependencies:
-      '@agentguard/core':
+      '@drainproof/core':
         specifier: workspace:*
         version: link:../core
       yaml:

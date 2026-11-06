@@ -4,25 +4,25 @@
 // signed or sent, and the output says so.
 //
 // Real testnet execution happens only when you opt in with a TESTNET account you control:
-//   AGENTGUARD_NEAR_EXECUTION=testnet \
+//   DRAINPROOF_NEAR_EXECUTION=testnet \
 //   NEAR_TESTNET_ACCOUNT_ID=<you>.testnet \
 //   NEAR_TESTNET_PRIVATE_KEY=ed25519:<testnet key> \
 //   RECIPIENT=<an existing testnet account you added to policy.yaml> \
 //   node demo.mjs
-// The allowed proposal then goes through the AgentGuard execution gate and is broadcast with
+// The allowed proposal then goes through the Drainproof execution gate and is broadcast with
 // near-api-js. For each executed transfer the demo prints the transaction hash exactly as the
 // network returned it, a NearBlocks testnet explorer link and the final status, then re-reads
 // the status from the RPC by hash (read-only). An ambiguous outcome is reported as UNKNOWN.
 // Step-by-step guide: docs/testnet-run.md
 import { readFile } from "node:fs/promises";
-import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@agentguard/core";
+import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@drainproof/core";
 import {
   NearTestnetExecutor,
   createNearTestnetClient,
   describeExecution,
   nearAccountIdValidator,
   nearTestnetConfigFromEnv,
-} from "@agentguard/near";
+} from "@drainproof/near";
 
 const loaded = policyFromYaml(await readFile(new URL("./policy.yaml", import.meta.url), "utf8"), "policy.yaml");
 if (!loaded.ok) {
@@ -57,7 +57,7 @@ console.log(executor ? `Testnet execution ENABLED (signer ${env.config.accountId
 for (const { label, p } of proposals) {
   const e = await engine.authorize(p);
   console.log(`\n▶ ${label}: ${p.amount} NEAR → ${p.recipientId}`);
-  console.log(`  AgentGuard: ${e.decision}${e.reasonCodes.length ? ` (${e.reasonCodes.join(", ")})` : ""}`);
+  console.log(`  Drainproof: ${e.decision}${e.reasonCodes.length ? ` (${e.reasonCodes.join(", ")})` : ""}`);
   if (e.decision !== "ALLOW") {
     console.log("  Stopped before the execution boundary.");
     continue;

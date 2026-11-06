@@ -11,7 +11,7 @@ A policy is a YAML file validated against a strict schema (`policyDocumentSchema
 Each error names the file, line, column and field.
 
 ```bash
-agentguard policy validate policies/default.yaml
+drainproof policy validate policies/default.yaml
 ```
 
 ## Example
@@ -73,7 +73,7 @@ There are no hidden defaults beyond those listed. Limits have no "unlimited" val
 - **Policy amounts** are quoted decimal strings in whole units (`"25"`, `"0.5"`).
 - **Proposal amounts** are either `amount`, a decimal string in whole units, or `amountAtomic`, an integer string in atomic units. Exactly one must be supplied; both together is `AMOUNT_AMBIGUOUS`.
 - The grammar is `0` or `[1-9][0-9]*`, optionally followed by `.` and digits. The following are all rejected: exponents, signs, whitespace, leading zeros, `.5`, `5.`, thousands separators, hex, `NaN` and `Infinity`.
-- JSON or YAML **numbers** are rejected (`AMOUNT_INVALID`), because a floating-point value may already have lost precision before AgentGuard sees it.
+- JSON or YAML **numbers** are rejected (`AMOUNT_INVALID`), because a floating-point value may already have lost precision before Drainproof sees it.
 - Non-zero digits beyond the asset's decimals are rejected (`AMOUNT_PRECISION_EXCEEDED`). Trailing zeros are accepted.
 - Strings longer than 78 integer digits are rejected (`AMOUNT_TOO_LARGE`).
 - All comparisons and sums use `BigInt` atomic units. No floating point is ever used for a decision.

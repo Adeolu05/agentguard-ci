@@ -1,6 +1,6 @@
 [package]
-name = "agentguard-vault"
-description = "AgentGuard Vault: an on-chain spending guard for AI agents on NEAR"
+name = "drainproof-vault"
+description = "Drainproof Vault: an on-chain spending guard for AI agents on NEAR"
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"

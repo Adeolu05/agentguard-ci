@@ -2,7 +2,7 @@
  * Exercises the real near-api-js v7 code path (key handling, transaction building,
  * Borsh encoding, signing, JSON-RPC calls) against a local JSON-RPC stub.
  *
- * What this verifies: AgentGuard's client wrapper drives near-api-js correctly. It builds
+ * What this verifies: Drainproof's client wrapper drives near-api-js correctly. It builds
  * a correctly signed transfer with the exact amount and receiver, asks for FINAL, and
  * reads the network ID. What it does NOT verify: live NEAR testnet behaviour. The stub's
  * responses are minimal fixtures, not real network output.
@@ -12,7 +12,7 @@ import type { AddressInfo } from "node:net";
 import { createHash } from "node:crypto";
 import { afterEach, describe, expect, it } from "vitest";
 import { KeyPair, base64Decode, baseEncode, decodeSignedTransaction, encodeTransaction } from "near-api-js";
-import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@agentguard/core";
+import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@drainproof/core";
 import { NearTestnetExecutor, createNearTestnetClient, describeExecution, nearAccountIdValidator } from "../src/index.js";
 
 interface Stub {

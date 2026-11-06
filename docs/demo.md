@@ -7,9 +7,9 @@ Every command below was run on 2026-11-04 from a fresh clone of `main`, and the 
 ```bash
 git clone https://github.com/Adeolu05/agentguard-ci.git && cd agentguard-ci
 pnpm install && pnpm build
-alias agentguard="node $PWD/packages/cli/dist/bin.js"
+alias drainproof="node $PWD/packages/cli/dist/bin.js"
 export REPO=$PWD
-mkdir -p /tmp/ag-demo && cd /tmp/ag-demo && agentguard init
+mkdir -p /tmp/dp-demo && cd /tmp/dp-demo && drainproof init
 ```
 
 Open a second terminal for the dashboard (step 4) and run `export REPO=<path to the clone>` there too. Keep the GitHub Actions page of the repository open in a browser tab.
@@ -17,17 +17,17 @@ Open a second terminal for the dashboard (step 4) and run `export REPO=<path to 
 ## 1. The problem: an agent that follows injected instructions (30 s)
 
 ```bash
-pnpm -s --dir "$REPO" --filter @agentguard/example-basic-agent demo
+pnpm -s --dir "$REPO" --filter @drainproof/example-basic-agent demo
 ```
 
 A simulated agent (no LLM) reads a poisoned tool response and proposes a payment of "500 USDC → attacker-wallet". It prints:
 
 ```text
 ▶ Summarise this web page
-  AgentGuard:     BLOCK  (RECIPIENT_NOT_ALLOWED, AMOUNT_EXCEEDS_TRANSACTION_LIMIT, DAILY_SPEND_LIMIT_EXCEEDED, APPROVAL_REQUIRED_AMOUNT)
+  Drainproof:     BLOCK  (RECIPIENT_NOT_ALLOWED, AMOUNT_EXCEEDS_TRANSACTION_LIMIT, DAILY_SPEND_LIMIT_EXCEEDED, APPROVAL_REQUIRED_AMOUNT)
   execution:      not attempted
 ▶ Retry the dataset purchase after a timeout
-  AgentGuard:     ALLOW  (IDEMPOTENT_REPLAY)
+  Drainproof:     ALLOW  (IDEMPOTENT_REPLAY)
   execution:      skipped, already executed (idempotent replay, no double payment)
 ```
 
@@ -36,7 +36,7 @@ A simulated agent (no LLM) reads a poisoned tool response and proposes a payment
 ## 2. Baseline: the security suite passes (20 s)
 
 ```bash
-agentguard test --quiet
+drainproof test --quiet
 ```
 
 ```text
@@ -51,7 +51,7 @@ Someone "temporarily" adds a new payee to the allowlist:
 
 ```bash
 sed -i 's/    - data-provider-example/    - data-provider-example\n    - attacker-wallet/' policies/default.yaml
-agentguard test --quiet; echo "exit code: $?"
+drainproof test --quiet; echo "exit code: $?"
 ```
 
 ```text
@@ -69,8 +69,8 @@ exit code: 1
 In the second terminal:
 
 ```bash
-AGENTGUARD_RUNS_DIR=/tmp/ag-demo/.agentguard/runs AGENTGUARD_PROJECT=/tmp/ag-demo/agentguard.yaml \
-  pnpm --dir "$REPO" --filter @agentguard/web dev
+DRAINPROOF_RUNS_DIR=/tmp/dp-demo/.drainproof/runs DRAINPROOF_PROJECT=/tmp/dp-demo/drainproof.yaml \
+  pnpm --dir "$REPO" --filter @drainproof/web dev
 ```
 
 Open http://localhost:3000/dashboard (the project landing page is at http://localhost:3000). The overview shows the passing and the failing run. Open the CRITICAL finding: it shows expected versus observed behaviour, the reproduction command, the remediation and the policy hash. Everything on screen comes from the JSON reports the CLI just wrote; the dashboard is read-only.
@@ -78,7 +78,7 @@ Open http://localhost:3000/dashboard (the project landing page is at http://loca
 ## 5. Fix and rerun (15 s)
 
 ```bash
-sed -i '/attacker-wallet/d' policies/default.yaml && agentguard test --quiet
+sed -i '/attacker-wallet/d' policies/default.yaml && drainproof test --quiet
 ```
 
 ```text
@@ -88,21 +88,21 @@ Result: PASSED  (exit code 0)
 ## 6. NEAR (30 s)
 
 ```bash
-pnpm -s --dir "$REPO" --filter @agentguard/example-near-testnet test --no-save --quiet
+pnpm -s --dir "$REPO" --filter @drainproof/example-near-testnet test --no-save --quiet
 node "$REPO/examples/near-testnet/demo.mjs"
 ```
 
 ```text
 Result: PASSED  (exit code 0)
-Simulation only: testnet execution is disabled (set AGENTGUARD_NEAR_EXECUTION=testnet to enable)
+Simulation only: testnet execution is disabled (set DRAINPROOF_NEAR_EXECUTION=testnet to enable)
 ▶ over the per-transaction limit: 5 NEAR → merchant-example.testnet
-  AgentGuard: BLOCK (AMOUNT_EXCEEDS_TRANSACTION_LIMIT, DAILY_SPEND_LIMIT_EXCEEDED, APPROVAL_REQUIRED_AMOUNT)
+  Drainproof: BLOCK (AMOUNT_EXCEEDS_TRANSACTION_LIMIT, DAILY_SPEND_LIMIT_EXCEEDED, APPROVAL_REQUIRED_AMOUNT)
   Stopped before the execution boundary.
 ▶ mainnet account on testnet: 0.01 NEAR → merchant-example.near
-  AgentGuard: BLOCK (ADAPTER_VALIDATION_FAILED, RECIPIENT_NOT_ALLOWED)
+  Drainproof: BLOCK (ADAPTER_VALIDATION_FAILED, RECIPIENT_NOT_ALLOWED)
   Stopped before the execution boundary.
 ▶ within policy: 0.01 NEAR → merchant-example.testnet
-  AgentGuard: ALLOW
+  Drainproof: ALLOW
   Would proceed to execution. Testnet execution is not enabled, so no transaction was signed or sent.
 ```
 

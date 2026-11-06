@@ -3,7 +3,7 @@ import { appendFile, cp, mkdir, readdir, readFile, stat, writeFile } from "node:
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs, type ParseArgsConfig } from "node:util";
-import { formatIssue, type ConfigIssue, type ProposalValidator } from "@agentguard/core";
+import { formatIssue, type ConfigIssue, type ProposalValidator } from "@drainproof/core";
 import {
   EXIT_CODES,
   PROJECT_FILE,
@@ -23,7 +23,7 @@ import {
   selectScenarios,
   type LoadedProject,
   type RunReport,
-} from "@agentguard/runner";
+} from "@drainproof/runner";
 
 export interface CliIO {
   stdout: (s: string) => void;
@@ -41,16 +41,16 @@ export const VERSION: string = (
 
 class UsageError extends Error {}
 
-const HELP = `AgentGuard CI ${VERSION}
+const HELP = `Drainproof ${VERSION}
 Test whether an AI agent's proposed financial actions comply with explicit transaction policies.
 
 Usage:
-  agentguard init [dir] [--force] [--github-actions]
-  agentguard policy validate [policy.yaml] [--config <file>]
-  agentguard scenarios validate [--config <file>]
-  agentguard scenarios list [--category <c>] [--config <file>]
-  agentguard test [--scenario <id>]... [--category <c>]... [options]
-  agentguard report [--run <id>] [--format markdown|json] [--output <file>] [--config <file>]
+  drainproof init [dir] [--force] [--github-actions]
+  drainproof policy validate [policy.yaml] [--config <file>]
+  drainproof scenarios validate [--config <file>]
+  drainproof scenarios list [--category <c>] [--config <file>]
+  drainproof test [--scenario <id>]... [--category <c>]... [options]
+  drainproof report [--run <id>] [--format markdown|json] [--output <file>] [--config <file>]
 
 Test options:
   --config <file>        Project file (default: ./${PROJECT_FILE})
@@ -117,13 +117,13 @@ async function integrationValidators(project: LoadedProject): Promise<{ validato
   const validators: ProposalValidator[] = [];
   const names: string[] = [];
   if (project.config.integrations.near?.validate_account_ids) {
-    let near: typeof import("@agentguard/near");
+    let near: typeof import("@drainproof/near");
     try {
-      near = await import("@agentguard/near");
+      near = await import("@drainproof/near");
     } catch {
-      // @agentguard/near is an optional peer dependency: projects without NEAR do not pay for it.
+      // @drainproof/near is an optional peer dependency: projects without NEAR do not pay for it.
       throw new UsageError(
-        "integrations.near is enabled in agentguard.yaml, but the @agentguard/near package is not installed. Install it next to @agentguard/cli, or remove integrations.near.",
+        "integrations.near is enabled in drainproof.yaml, but the @drainproof/near package is not installed. Install it next to @drainproof/cli, or remove integrations.near.",
       );
     }
     validators.push(near.nearAccountIdValidator());
@@ -162,21 +162,21 @@ async function cmdInit(io: CliIO, args: string[]): Promise<number> {
   }
   const created = [...files];
   if (values["github-actions"]) {
-    const wf = path.join(".github", "workflows", "agentguard.yml");
+    const wf = path.join(".github", "workflows", "drainproof.yml");
     if ((await exists(path.join(target, wf))) && !values.force) {
       io.stderr(`Refusing to overwrite ${wf} (use --force)\n`);
       return EXIT_CODES.USAGE;
     }
     await mkdir(path.dirname(path.join(target, wf)), { recursive: true });
-    await cp(path.join(TEMPLATES_DIR, "github", "agentguard.yml"), path.join(target, wf));
+    await cp(path.join(TEMPLATES_DIR, "github", "drainproof.yml"), path.join(target, wf));
     created.push(wf);
   }
-  io.stdout(`Initialised AgentGuard project in ${path.relative(io.cwd, target) || "."}\n`);
+  io.stdout(`Initialised Drainproof project in ${path.relative(io.cwd, target) || "."}\n`);
   const scenarioFiles = created.filter((f) => f.startsWith(`scenarios${path.sep}`));
   for (const f of created.filter((c) => !scenarioFiles.includes(c))) io.stdout(`  + ${f.split(path.sep).join("/")}\n`);
   const categories = new Set(scenarioFiles.map((f) => f.split(path.sep)[1]));
   io.stdout(`  + scenarios/ (${scenarioFiles.length} scenarios in ${categories.size} categories)\n`);
-  io.stdout(`\nNext steps:\n  agentguard policy validate\n  agentguard test\n`);
+  io.stdout(`\nNext steps:\n  drainproof policy validate\n  drainproof test\n`);
   return EXIT_CODES.PASSED;
 }
 
@@ -302,16 +302,16 @@ async function cmdTest(io: CliIO, args: string[]): Promise<number> {
   }
   const { validators, names } = await integrationValidators(project);
 
-  io.stdout(`AgentGuard CI ${VERSION}\n`);
+  io.stdout(`Drainproof ${VERSION}\n`);
   io.stdout(`Policy:   ${project.policyFile} (${project.policy.hash.slice(0, 19)}…)\n`);
-  io.stdout(`Target:   ${target.type === "engine" ? "AgentGuard engine" : target.module}\n`);
+  io.stdout(`Target:   ${target.type === "engine" ? "Drainproof engine" : target.module}\n`);
   io.stdout(`Mode:     simulation (scenario runs never sign or send transactions)\n`);
   if (names.length > 0) io.stdout(`Integrations: ${names.join(", ")}\n`);
   for (const w of project.policyWarnings) io.stdout(`⚠ ${formatIssue(w)}\n`);
   io.stdout(`Running ${selected.length} scenario${selected.length === 1 ? "" : "s"}\n\n`);
 
   const report = await runSuite({
-    agentguardVersion: VERSION,
+    drainproofVersion: VERSION,
     ...(project.config.name ? { projectName: project.config.name } : {}),
     policy: project.policy,
     policyFile: project.policyFile,
@@ -379,7 +379,7 @@ async function cmdReport(io: CliIO, args: string[]): Promise<number> {
   } else {
     const entries = (await exists(dir)) ? (await readdir(dir)).filter((f) => /^run_[a-f0-9]{32}\.json$/.test(f)) : [];
     if (entries.length === 0) {
-      io.stderr("No stored runs found. Run `agentguard test` first.\n");
+      io.stderr("No stored runs found. Run `drainproof test` first.\n");
       return EXIT_CODES.USAGE;
     }
     const withTimes = await Promise.all(entries.map(async (f) => ({ f, t: (await stat(path.join(dir, f))).mtimeMs })));
@@ -436,7 +436,7 @@ export async function main(argv: string[], io: CliIO): Promise<number> {
     }
   } catch (err) {
     if (err instanceof UsageError) {
-      io.stderr(`Error: ${err.message}\nRun \`agentguard --help\` for usage.\n`);
+      io.stderr(`Error: ${err.message}\nRun \`drainproof --help\` for usage.\n`);
       return EXIT_CODES.USAGE;
     }
     const message = redactString((err as Error)?.message ?? String(err), { secrets: secretsFromEnv(io.env) });

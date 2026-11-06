@@ -2,7 +2,7 @@
 import path from "node:path";
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { policyFromYaml } from "@agentguard/core";
+import { policyFromYaml } from "@drainproof/core";
 import { loadModuleTarget, loadScenarios, runSuite, type RunOptions } from "../src/index.js";
 import { DEFAULT_POLICY_PATH, tempProject } from "./helpers.js";
 
@@ -18,7 +18,7 @@ async function run(files: Record<string, string>, guard?: string, extra: Partial
   const loaded = policyFromYaml(policyYaml);
   if (!loaded.ok) throw new Error("policy");
   return runSuite({
-    agentguardVersion: "test",
+    drainproofVersion: "test",
     policy: loaded.policy,
     policyFile: "p.yaml",
     scenarios: set.scenarios,
@@ -93,14 +93,14 @@ describe("runner regressions", () => {
 
   it("stops running steps after a timeout and keeps the reported steps fixed", async () => {
     const guard = `let n = 0; export const createTarget = () => ({ name: "slow", capabilities: {},
-      async propose() { n++; await new Promise((r) => setTimeout(r, n === 1 ? 300 : 1)); globalThis.__agentguardSteps = n; return { decision: "ALLOW" }; } });`;
+      async propose() { n++; await new Promise((r) => setTimeout(r, n === 1 ? 300 : 1)); globalThis.__drainproofSteps = n; return { decision: "ALLOW" }; } });`;
     const steps = Array.from({ length: 5 }, (_, i) => `  - propose: { requestId: r${i}, ${P}, amount: "1" }\n    expect: { decision: ALLOW }\n`).join("");
     const report = await run({ "scenarios/a.yaml": `${header("slow")}steps:\n${steps}` }, guard, { scenarioTimeoutMs: 100 });
     expect(report.scenarios[0]?.status).toBe("ERROR");
     const reported = report.scenarios[0]!.steps.length;
     await new Promise((r) => setTimeout(r, 400));
     expect(report.scenarios[0]!.steps.length).toBe(reported);
-    expect((globalThis as { __agentguardSteps?: number }).__agentguardSteps).toBe(1);
+    expect((globalThis as { __drainproofSteps?: number }).__drainproofSteps).toBe(1);
   });
 
   it("classifies approvals where blocks were expected under concurrency as permissive", async () => {

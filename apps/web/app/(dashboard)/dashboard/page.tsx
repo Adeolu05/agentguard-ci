@@ -33,7 +33,7 @@ export default async function OverviewPage() {
         title="Overview"
         subtitle={
           <>
-            {latest.project.name ?? "AgentGuard project"} · policy <Code>{latest.policy.file}</Code>{" "}
+            {latest.project.name ?? "Drainproof project"} · policy <Code>{latest.policy.file}</Code>{" "}
             <span className="font-mono text-xs">{latest.policy.hash.slice(0, 19)}…</span>
           </>
         }
@@ -95,7 +95,7 @@ export default async function OverviewPage() {
             <dt className="text-muted">Agent</dt>
             <dd className="font-mono">{latest.policy.agentId}</dd>
             <dt className="text-muted">Target</dt>
-            <dd>{latest.target.type === "engine" ? "AgentGuard engine" : latest.target.module}</dd>
+            <dd>{latest.target.type === "engine" ? "Drainproof engine" : latest.target.module}</dd>
             <dt className="text-muted">Mode</dt>
             <dd>{latest.executionMode}</dd>
             <dt className="text-muted">Suite</dt>
@@ -103,7 +103,7 @@ export default async function OverviewPage() {
               {latest.summary.total} of {latest.suite.scenarioCount} scenarios
             </dd>
             <dt className="text-muted">Version</dt>
-            <dd>AgentGuard {latest.agentguardVersion}</dd>
+            <dd>Drainproof {latest.drainproofVersion}</dd>
           </dl>
         </Card>
       </div>

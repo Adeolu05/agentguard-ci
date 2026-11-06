@@ -37,7 +37,7 @@ export default async function PolicyPage() {
             {latest && latest.policy.hash !== status.hash ? (
               <span className="mt-1 block text-skip">
                 This differs from the policy used in the latest run ({latest.policy.hash.slice(0, 19)}…). Re-run{" "}
-                <Code>agentguard test</Code> to test the current version.
+                <Code>drainproof test</Code> to test the current version.
               </span>
             ) : null}
           </Notice>
@@ -68,7 +68,7 @@ export default async function PolicyPage() {
       ) : latest ? (
         <>
           <Notice tone="info">
-            No project is configured (<Code>AGENTGUARD_PROJECT</Code>), so this is the policy <em>as recorded</em> in the latest run (
+            No project is configured (<Code>DRAINPROOF_PROJECT</Code>), so this is the policy <em>as recorded</em> in the latest run (
             <TextLink href={`/runs/${latest.runId}`}>{latest.runId.slice(0, 12)}</TextLink>, {formatTime(latest.startedAt)}). It was valid when
             that run started.
           </Notice>
@@ -78,8 +78,8 @@ export default async function PolicyPage() {
         </>
       ) : (
         <EmptyState title="No policy to show">
-          Set <Code>AGENTGUARD_PROJECT</Code> to your <Code>agentguard.yaml</Code> to validate and display its policy, or run{" "}
-          <Code>agentguard test</Code> to record one in a run report.
+          Set <Code>DRAINPROOF_PROJECT</Code> to your <Code>drainproof.yaml</Code> to validate and display its policy, or run{" "}
+          <Code>drainproof test</Code> to record one in a run report.
         </EmptyState>
       )}
     </>

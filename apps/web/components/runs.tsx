@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { RunReport } from "@agentguard/runner";
+import type { RunReport } from "@drainproof/runner";
 import type { DataSource, InvalidReport } from "@/lib/data";
 import { formatDuration, formatTime, shortId } from "@/lib/data";
 import { Code, EmptyState, Notice, StatusBadge } from "./ui";
@@ -92,11 +92,11 @@ export function NoRuns({ source }: { source: DataSource }) {
   return (
     <EmptyState title="No test runs yet">
       <p>
-        The dashboard shows reports written by the AgentGuard CLI. It looked in <Code>{source.runsDir}</Code>.
+        The dashboard shows reports written by the Drainproof CLI. It looked in <Code>{source.runsDir}</Code>.
       </p>
       <p className="mt-3">Run the suite in your project, then point the dashboard at its reports directory:</p>
       <pre className="mt-3 rounded bg-surface-2 p-3 text-left font-mono text-xs whitespace-pre-wrap text-fg">
-        {`agentguard test\nAGENTGUARD_RUNS_DIR=<project>/.agentguard/runs pnpm --filter @agentguard/web dev`}
+        {`drainproof test\nDRAINPROOF_RUNS_DIR=<project>/.drainproof/runs pnpm --filter @drainproof/web dev`}
       </pre>
     </EmptyState>
   );

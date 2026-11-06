@@ -43,7 +43,7 @@ export const policyDocumentSchema = z.strictObject({
     .strictObject({
       mode: z.enum(["simulation", "testnet"]).default("simulation"),
       fail_closed: z
-        .literal(true, { error: "fail_closed cannot be disabled; AgentGuard always fails closed" })
+        .literal(true, { error: "fail_closed cannot be disabled; Drainproof always fails closed" })
         .default(true),
     })
     .default({ mode: "simulation", fail_closed: true }),

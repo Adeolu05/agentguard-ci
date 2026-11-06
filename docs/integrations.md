@@ -2,7 +2,7 @@
 
 ## Adapter boundary
 
-Integrations plug into AgentGuard at three separate points:
+Integrations plug into Drainproof at three separate points:
 
 | Stage | Interface | May move money? |
 | --- | --- | --- |
@@ -12,7 +12,7 @@ Integrations plug into AgentGuard at three separate points:
 
 A custom **scenario target** (see [scenarios.md](scenarios.md#custom-targets)) is how you connect an agent framework or your own guard to the test runner.
 
-## NEAR (`@agentguard/near`)
+## NEAR (`@drainproof/near`)
 
 ### Sources and verification
 
@@ -22,7 +22,7 @@ Checked on 2026-11-05 against the official documentation source repository, `git
 | --- | --- | --- |
 | SDK: `near-api-js@7.4.0` (latest on npm, not deprecated) | npm registry; the package README directs users of the older `@near-js/*` packages to migrate to it | Verified |
 | `new JsonRpcProvider({ url })`, `new Account(accountId, provider, privateKey)`, private key passed as `KeyPairString` from the environment | Official docs `tools/near-api.mdx` (send-tokens and account examples) and the published `.d.ts` | Verified against docs and types; exercised at runtime against a local RPC stub |
-| `Account.signAndSendTransaction({ receiverId, actions, waitUntil, throwOnFailure, retries })`, `actions.transfer(deposit: bigint)` | Published `.d.ts` and compiled JS of `near-api-js@7.4.0`. The docs show the higher-level `account.transfer()`, which throws on an on-chain failure; AgentGuard uses the lower-level call so that a failed transfer still returns its hash. | Verified at type level and at runtime against the stub |
+| `Account.signAndSendTransaction({ receiverId, actions, waitUntil, throwOnFailure, retries })`, `actions.transfer(deposit: bigint)` | Published `.d.ts` and compiled JS of `near-api-js@7.4.0`. The docs show the higher-level `account.transfer()`, which throws on an on-chain failure; Drainproof uses the lower-level call so that a failed transfer still returns its hash. | Verified at type level and at runtime against the stub |
 | `provider.viewTransactionStatus({ txHash, accountId, waitUntil })` | Official docs `tools/near-api.mdx` and the published types | Verified against docs and types |
 | `getNetworkId()` reads `chain_id` from the `status` RPC | Compiled JS of `near-api-js@7.4.0` | Verified (stub) |
 | Default testnet RPC `https://test.rpc.fastnear.com` | Official docs examples (`tools/near-api.mdx`) | Documented endpoint, used as the default. Override with `NEAR_TESTNET_RPC_URL`. It has not yet been exercised by a recorded live run (see below). |
@@ -58,17 +58,17 @@ If a first broadcast landed but its response was lost, these could combine into 
 - **Configuration** is off by default:
 
   ```bash
-  AGENTGUARD_NEAR_EXECUTION=testnet          # explicit opt-in
+  DRAINPROOF_NEAR_EXECUTION=testnet          # explicit opt-in
   NEAR_TESTNET_ACCOUNT_ID=<you>.testnet
   NEAR_TESTNET_PRIVATE_KEY=ed25519:...        # testnet-only key; never mainnet
   NEAR_TESTNET_RPC_URL=https://...            # optional; must be https and not look like mainnet
   ```
 
-### AgentGuard Vault (on-chain enforcement)
+### Drainproof Vault (on-chain enforcement)
 
-The executor above signs native transfers, which needs a full-access key. The [AgentGuard Vault](vault-design.md) removes that requirement: a NEAR contract (`contracts/vault`, Rust, `near-sdk` 5.30.0) holds the funds and enforces the policy itself (recipient allowlist, per-transaction and daily limits, owner approval above a threshold with expiry, idempotency, pause). The agent holds only a function-call key that can call `request_payment` on the vault and nothing else, so even a fully compromised agent can only make payments the policy allows.
+The executor above signs native transfers, which needs a full-access key. The [Drainproof Vault](vault-design.md) removes that requirement: a NEAR contract (`contracts/vault`, Rust, `near-sdk` 5.30.0) holds the funds and enforces the policy itself (recipient allowlist, per-transaction and daily limits, owner approval above a threshold with expiry, idempotency, pause). The agent holds only a function-call key that can call `request_payment` on the vault and nothing else, so even a fully compromised agent can only make payments the policy allows.
 
-- `vaultPolicyFromPolicy(policy)` in `@agentguard/near` converts a YAML policy into the vault's on-chain policy, or lists why it cannot (one asset `NEAR` with 24 decimals, `near-testnet` only, valid account IDs).
+- `vaultPolicyFromPolicy(policy)` in `@drainproof/near` converts a YAML policy into the vault's on-chain policy, or lists why it cannot (one asset `NEAR` with 24 decimals, `near-testnet` only, valid account IDs).
 - `checkTestnetAccountId` and `checkDirectSubAccount` guard the testnet scripts in [`examples/near-vault`](../examples/near-vault) (`deploy.mjs`, `add-agent-key.mjs`, `push-policy.mjs`), which refuse to sign unless the RPC reports `testnet`.
 - **Tested on a local NEAR node only** (nearcore 2.14.0 through the official `near-sandbox` package): 40 contract unit tests, 30 sandbox integration tests, and 16 of the 40 built-in scenarios run against the contract (24 skipped, each with its reason). The vault has **not** been deployed to testnet, and no vault transaction is claimed. Run it with the commands in [examples/near-vault/README.md](../examples/near-vault/README.md).
 

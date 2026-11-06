@@ -6,13 +6,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
-import { runReportSchema } from "@agentguard/runner";
+import { runReportSchema } from "@drainproof/runner";
 import { main, type CliIO } from "../src/main.js";
 
 const BIN = fileURLToPath(new URL("../dist/bin.js", import.meta.url));
 
 async function tmp(): Promise<string> {
-  return mkdtemp(path.join(os.tmpdir(), "agentguard-cli-"));
+  return mkdtemp(path.join(os.tmpdir(), "drainproof-cli-"));
 }
 
 async function run(cwd: string, ...argv: string[]) {
@@ -30,10 +30,10 @@ async function initProject(): Promise<string> {
   return dir;
 }
 
-describe("agentguard init / validate", () => {
+describe("drainproof init / validate", () => {
   it("creates a runnable project and refuses to overwrite it", async () => {
     const dir = await initProject();
-    expect(existsSync(path.join(dir, "agentguard.yaml"))).toBe(true);
+    expect(existsSync(path.join(dir, "drainproof.yaml"))).toBe(true);
     expect(existsSync(path.join(dir, "policies/default.yaml"))).toBe(true);
     expect((await readdir(path.join(dir, "scenarios"))).length).toBeGreaterThan(3);
     expect(existsSync(path.join(dir, "github"))).toBe(false);
@@ -45,7 +45,7 @@ describe("agentguard init / validate", () => {
   it("optionally adds a GitHub Actions workflow", async () => {
     const dir = await tmp();
     expect((await run(dir, "init", "--github-actions")).code).toBe(0);
-    const wf = await readFile(path.join(dir, ".github/workflows/agentguard.yml"), "utf8");
+    const wf = await readFile(path.join(dir, ".github/workflows/drainproof.yml"), "utf8");
     expect(wf).toMatch(/actions\/checkout@[0-9a-f]{40}/);
     expect(wf).toMatch(/permissions:\n {2}contents: read/);
   });
@@ -84,11 +84,11 @@ describe("agentguard init / validate", () => {
   it("explains a missing project file", async () => {
     const r = await run(await tmp(), "test");
     expect(r.code).toBe(2);
-    expect(r.stderr).toMatch(/agentguard init/);
+    expect(r.stderr).toMatch(/drainproof init/);
   });
 });
 
-describe("agentguard test", () => {
+describe("drainproof test", () => {
   it("passes the default suite, writes a valid report and exits 0", async () => {
     const dir = await initProject();
     const r = await run(dir, "test", "--json", "out/report.json", "--markdown", "out/report.md");
@@ -98,8 +98,8 @@ describe("agentguard test", () => {
     const report = runReportSchema.parse(JSON.parse(await readFile(path.join(dir, "out/report.json"), "utf8")));
     expect(report.summary.failed).toBe(0);
     expect(report.summary.total).toBeGreaterThanOrEqual(30);
-    expect(await readFile(path.join(dir, "out/report.md"), "utf8")).toMatch(/AgentGuard CI: PASSED/);
-    const runs = (await readdir(path.join(dir, ".agentguard/runs"))).filter((f) => f.endsWith(".json"));
+    expect(await readFile(path.join(dir, "out/report.md"), "utf8")).toMatch(/Drainproof: PASSED/);
+    const runs = (await readdir(path.join(dir, ".drainproof/runs"))).filter((f) => f.endsWith(".json"));
     expect(runs).toEqual([`${report.runId}.json`]);
   });
 
@@ -145,7 +145,7 @@ describe("agentguard test", () => {
     await writeFile(path.join(dir, "guard.mjs"), `export function createTarget() {
       return { name: "always-allow", capabilities: {}, async propose() { return { decision: "ALLOW" }; } };
     }`);
-    const cfg = path.join(dir, "agentguard.yaml");
+    const cfg = path.join(dir, "drainproof.yaml");
     await writeFile(cfg, (await readFile(cfg, "utf8")).replace("  type: engine", "  type: module\n  module: ./guard.mjs"));
     const r = await run(dir, "test", "--no-save");
     expect(r.code).toBe(1);

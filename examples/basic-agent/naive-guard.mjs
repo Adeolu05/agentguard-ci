@@ -1,5 +1,5 @@
 // A deliberately naive, hand-rolled spending guard of the kind often written inline in
-// agent tool code. AgentGuard's scenario suite finds its bugs:
+// agent tool code. Drainproof's scenario suite finds its bugs:
 //  - parseFloat amounts (accepts "-50", "1e1", 5.5; precision is lost)
 //  - case-insensitive, trimmed recipient matching (equates distinct identities)
 //  - no daily accounting, no idempotency, no network or asset checks

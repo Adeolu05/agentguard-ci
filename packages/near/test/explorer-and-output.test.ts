@@ -3,7 +3,7 @@
  * status check. No network access: the client is a fake.
  */
 import { describe, expect, it, vi } from "vitest";
-import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@agentguard/core";
+import { InMemoryLedger, PolicyEngine, policyFromYaml } from "@drainproof/core";
 import {
   NearTestnetExecutor,
   TESTNET_EXPLORER_TX_BASE,
@@ -116,7 +116,7 @@ networks: { allowed: [near-testnet] }
     if (!loaded.ok) throw new Error(JSON.stringify(loaded.issues));
     const engine = new PolicyEngine({ policy: loaded.policy, ledger: new InMemoryLedger(), validators: [nearAccountIdValidator()] });
     const full: NearClient = {
-      signerAccountId: "agentguard-demo.testnet",
+      signerAccountId: "drainproof-demo.testnet",
       getNetworkId: async () => "testnet",
       transfer: async () => ({ status: { SuccessValue: "" }, transaction_outcome: { id: DOCS_HASH } }),
       transactionStatus: async (h: string) => ({ status: { SuccessValue: "" }, transaction_outcome: { id: h } }),

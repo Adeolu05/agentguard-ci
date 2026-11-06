@@ -1,4 +1,4 @@
-import { reason, type Policy, type ProposalValidator, type Reason } from "@agentguard/core";
+import { reason, type Policy, type ProposalValidator, type Reason } from "@drainproof/core";
 
 /**
  * NEAR account ID syntax (protocol rules):

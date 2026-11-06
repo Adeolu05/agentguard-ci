@@ -1,9 +1,9 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
-import { parseYamlWithSchema, policyFromYaml, type ConfigIssue, type Policy } from "@agentguard/core";
+import { parseYamlWithSchema, policyFromYaml, type ConfigIssue, type Policy } from "@drainproof/core";
 
-export const PROJECT_FILE = "agentguard.yaml";
+export const PROJECT_FILE = "drainproof.yaml";
 
 export const projectSchema = z.strictObject({
   version: z.literal(1, { error: "only project config version 1 is supported" }),
@@ -27,7 +27,7 @@ export const projectSchema = z.strictObject({
       near: z.strictObject({ validate_account_ids: z.boolean() }).optional(),
     })
     .default({}),
-  reports: z.strictObject({ dir: z.string().min(1).default(".agentguard/runs") }).default({ dir: ".agentguard/runs" }),
+  reports: z.strictObject({ dir: z.string().min(1).default(".drainproof/runs") }).default({ dir: ".drainproof/runs" }),
 });
 export type ProjectConfig = z.output<typeof projectSchema>;
 
@@ -70,7 +70,7 @@ export async function loadProject(configPath: string): Promise<ProjectLoadResult
       issues: [
         {
           path: "",
-          message: code === "ENOENT" ? "project file not found; run `agentguard init` to create one" : `cannot read: ${code ?? String(err)}`,
+          message: code === "ENOENT" ? "project file not found; run `drainproof init` to create one" : `cannot read: ${code ?? String(err)}`,
           source: display,
         },
       ],

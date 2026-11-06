@@ -6,9 +6,9 @@ const src = (pkg: string) => fileURLToPath(new URL(`./packages/${pkg}/src/index.
 export default defineConfig({
   resolve: {
     alias: {
-      "@agentguard/core": src("core"),
-      "@agentguard/runner": src("runner"),
-      "@agentguard/near": src("near"),
+      "@drainproof/core": src("core"),
+      "@drainproof/runner": src("runner"),
+      "@drainproof/near": src("near"),
     },
   },
   test: {

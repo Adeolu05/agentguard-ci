@@ -7,7 +7,7 @@ import {
   type Policy,
   type ProposalValidator,
   type Reservation,
-} from "@agentguard/core";
+} from "@drainproof/core";
 import {
   type DecisionExpectation,
   type LoadedScenario,
@@ -38,7 +38,7 @@ import {
 } from "./report.js";
 
 export interface RunOptions {
-  agentguardVersion: string;
+  drainproofVersion: string;
   projectName?: string;
   policy: Policy;
   policyFile: string;
@@ -505,7 +505,7 @@ function buildFinding(runId: string, loaded: LoadedScenario, result: ScenarioRes
     expected: result.expected ?? "",
     observed: result.observed ?? "",
     reproduction: [
-      `agentguard test --scenario ${s.id}`,
+      `drainproof test --scenario ${s.id}`,
       `Scenario file: ${loaded.file} (step ${info.step + 1} of ${s.steps.length}: ${step ? stepKind(step) : "unknown"})`,
     ],
     remediation:
@@ -542,7 +542,7 @@ export async function runSuite(opts: RunOptions): Promise<RunReport> {
     durationMs: Math.round(performance.now() - t0),
     status,
     exitCode,
-    agentguardVersion: opts.agentguardVersion,
+    drainproofVersion: opts.drainproofVersion,
     // Scenario runs evaluate proposals only; they never sign or send transactions.
     executionMode: "simulation",
     project: opts.projectName ? { name: opts.projectName } : {},
@@ -561,7 +561,7 @@ export async function runSuite(opts: RunOptions): Promise<RunReport> {
         ? { type: "module", name: target.module, module: target.module, capabilities: {} }
         : {
             type: "engine",
-            name: "agentguard-engine",
+            name: "drainproof-engine",
             capabilities: { reasonCodes: true, approvals: true, lifecycle: true, ledgerInspection: true, policyReload: true, failureInjection: true },
           },
     integrations: [...(opts.integrations ?? [])],

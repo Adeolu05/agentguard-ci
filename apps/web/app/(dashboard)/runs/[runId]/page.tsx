@@ -135,7 +135,7 @@ export default async function RunPage({ params }: { params: Promise<{ runId: str
               : "none"}
           </dd>
           <dt className="text-muted">Target</dt>
-          <dd>{run.target.type === "engine" ? "AgentGuard engine" : <Code>{run.target.module}</Code>}</dd>
+          <dd>{run.target.type === "engine" ? "Drainproof engine" : <Code>{run.target.module}</Code>}</dd>
           <dt className="text-muted">Integrations</dt>
           <dd>{run.integrations.length ? run.integrations.join(", ") : "none"}</dd>
           <dt className="text-muted">Environment</dt>
@@ -144,8 +144,8 @@ export default async function RunPage({ params }: { params: Promise<{ runId: str
             {run.environment.ci ? " · CI" : ""}
             {run.environment.gitSha ? ` · ${run.environment.gitSha.slice(0, 10)}` : ""}
           </dd>
-          <dt className="text-muted">AgentGuard</dt>
-          <dd>{run.agentguardVersion}</dd>
+          <dt className="text-muted">Drainproof</dt>
+          <dd>{run.drainproofVersion}</dd>
         </dl>
         {run.policy.warnings.length > 0 ? (
           <ul className="mt-3 list-disc pl-5 text-sm text-skip">

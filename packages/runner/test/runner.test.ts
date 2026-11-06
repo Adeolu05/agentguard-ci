@@ -9,7 +9,7 @@ import {
   loadModuleTarget,
   type RunReport,
 } from "../src/index.js";
-import { policyFromYaml } from "@agentguard/core";
+import { policyFromYaml } from "@drainproof/core";
 import { builtinSuite, DEFAULT_POLICY_PATH, runWithPolicyYaml, tempProject, TEMPLATES } from "./helpers.js";
 
 const defaultYaml = await readFile(DEFAULT_POLICY_PATH, "utf8");
@@ -55,7 +55,7 @@ describe("detecting unsafe policy changes", () => {
     const f = report.findings.find((x) => x.scenarioId === "tx-limit-one-unit-above-maximum")!;
     expect(f.severity).toBe("critical");
     expect(f.expected).toContain("BLOCK");
-    expect(f.reproduction[0]).toBe("agentguard test --scenario tx-limit-one-unit-above-maximum");
+    expect(f.reproduction[0]).toBe("drainproof test --scenario tx-limit-one-unit-above-maximum");
   });
 
   it("adding an attacker to the allowlist is caught", async () => {
@@ -104,7 +104,7 @@ describe("scenario validation", () => {
     expect(files.size).toBe(6);
     const messages = set.issues.map((i) => `${i.source} ${i.path} ${i.message}`).join("\n");
     expect(messages).toMatch(/refers to unknown or later proposal/);
-    expect(messages).toMatch(/not a known AgentGuard reason code/);
+    expect(messages).toMatch(/not a known Drainproof reason code/);
     expect(messages).toMatch(/unknown field "typo_field"/);
     expect(messages).toMatch(/exactly one action/);
     expect(set.issues.find((i) => i.source === "scenarios/bad-1.yaml")?.line).toBe(8);
@@ -132,7 +132,7 @@ describe("custom targets", () => {
     if (!loaded.ok) throw new Error("policy");
     const set = await builtinSuite();
     return runSuite({
-      agentguardVersion: "test",
+      drainproofVersion: "test",
       policy: loaded.policy,
       policyFile: "p.yaml",
       scenarios: set.scenarios,
@@ -234,7 +234,7 @@ describe("custom targets", () => {
     if (!loaded.ok) throw new Error("policy");
     const set = await builtinSuite();
     const report = await runSuite({
-      agentguardVersion: "test", policy: loaded.policy, policyFile: "p", scenarios: set.scenarios, suiteHash: set.suiteHash,
+      drainproofVersion: "test", policy: loaded.policy, policyFile: "p", scenarios: set.scenarios, suiteHash: set.suiteHash,
       target: { type: "module", module: "guard.mjs", factory }, filter: { scenarioIds: ["unknown-recipient-blocked"] }, scenarioTimeoutMs: 200,
     });
     expect(report.scenarios[0]?.status).toBe("ERROR");
@@ -252,7 +252,7 @@ describe("reports", () => {
     if (!loaded.ok) throw new Error("policy");
     const set = await builtinSuite();
     const report = await runSuite({
-      agentguardVersion: "test", policy: loaded.policy, policyFile: "p", scenarios: set.scenarios, suiteHash: set.suiteHash,
+      drainproofVersion: "test", policy: loaded.policy, policyFile: "p", scenarios: set.scenarios, suiteHash: set.suiteHash,
       target: { type: "module", module: "guard.mjs", factory }, filter: { scenarioIds: ["unknown-recipient-blocked"] },
       redaction: { secrets: ["MYSECRETVALUE123"] },
     });
@@ -266,7 +266,7 @@ describe("reports", () => {
   it("renders markdown with findings and a limitations note", async () => {
     const report = await runWithPolicyYaml(defaultYaml.replace('max_daily_spend: "100"', 'max_daily_spend: "1000"'));
     const md = renderMarkdown(report);
-    expect(md).toMatch(/^# ❌ AgentGuard CI: FAILED/);
+    expect(md).toMatch(/^# ❌ Drainproof: FAILED/);
     expect(md).toContain("## Findings");
     expect(md).toContain("daily-spend-would-exceed-limit");
     expect(md).toContain("not proof");

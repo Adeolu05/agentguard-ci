@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { main } from "./main.js";
 
-// If stdout is closed early (e.g. `agentguard test | head`), stop writing but let the
+// If stdout is closed early (e.g. `drainproof test | head`), stop writing but let the
 // run finish so the report is still saved and the exit code is still correct.
 let stdoutClosed = false;
 process.stdout.on("error", (err: NodeJS.ErrnoException) => {

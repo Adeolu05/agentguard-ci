@@ -2,7 +2,7 @@ import { mkdtemp, writeFile, mkdir } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { policyFromYaml } from "@agentguard/core";
+import { policyFromYaml } from "@drainproof/core";
 import { loadScenarios, runSuite, type RunOptions } from "../src/index.js";
 
 export const TEMPLATES = fileURLToPath(new URL("../../cli/templates/", import.meta.url));
@@ -19,7 +19,7 @@ export async function runWithPolicyYaml(yaml: string, extra: Partial<RunOptions>
   if (!loaded.ok) throw new Error(JSON.stringify(loaded.issues));
   const set = await builtinSuite();
   return runSuite({
-    agentguardVersion: "test",
+    drainproofVersion: "test",
     policy: loaded.policy,
     policyFile: "policies/default.yaml",
     scenarios: set.scenarios,
@@ -29,7 +29,7 @@ export async function runWithPolicyYaml(yaml: string, extra: Partial<RunOptions>
 }
 
 export async function tempProject(files: Record<string, string>): Promise<string> {
-  const dir = await mkdtemp(path.join(os.tmpdir(), "agentguard-test-"));
+  const dir = await mkdtemp(path.join(os.tmpdir(), "drainproof-test-"));
   for (const [rel, content] of Object.entries(files)) {
     const full = path.join(dir, rel);
     await mkdir(path.dirname(full), { recursive: true });

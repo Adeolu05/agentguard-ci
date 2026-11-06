@@ -1,11 +1,11 @@
 # Scenarios
 
-A scenario is a YAML file that encodes one security property as a short program: a starting state, a sequence of steps, and the expected outcome of each step. Scenarios are discovered recursively, as `*.yaml` or `*.yml` files, under the directories listed in `agentguard.yaml`. They are strictly validated before anything runs. A malformed scenario is an error (exit code 2); it is never silently skipped or passed.
+A scenario is a YAML file that encodes one security property as a short program: a starting state, a sequence of steps, and the expected outcome of each step. Scenarios are discovered recursively, as `*.yaml` or `*.yml` files, under the directories listed in `drainproof.yaml`. They are strictly validated before anything runs. A malformed scenario is an error (exit code 2); it is never silently skipped or passed.
 
 ```bash
-agentguard scenarios validate
-agentguard scenarios list --category approval-workflow
-agentguard test --scenario unknown-recipient-blocked
+drainproof scenarios validate
+drainproof scenarios list --category approval-workflow
+drainproof test --scenario unknown-recipient-blocked
 ```
 
 ## Why scenarios use concrete values
@@ -78,10 +78,10 @@ Every scenario runs in isolation, with a fresh ledger, its own clock and a fresh
 
 ## Custom targets
 
-By default scenarios run against AgentGuard's engine with your policy. To test **your own guard**, which might be hand-written checks, a wrapper around your agent's payment tool, or a framework adapter, use a module target:
+By default scenarios run against Drainproof's engine with your policy. To test **your own guard**, which might be hand-written checks, a wrapper around your agent's payment tool, or a framework adapter, use a module target:
 
 ```yaml
-# agentguard.yaml
+# drainproof.yaml
 target:
   type: module
   module: ./guard.mjs
@@ -116,7 +116,7 @@ Rules:
 - A target can also skip individual scenarios it has no equivalent for by implementing `unsupported(scenario)`. It is called after the capability check and before any step; a string return value becomes the skip reason, `undefined` runs the scenario, and anything else is an `ERROR`. Skips never count as passes, and a run in which every scenario is skipped is not a pass. See [`examples/near-vault`](../examples/near-vault) for a target that uses it.
 - `context.seed` contains the historical reservations the scenario starts with. A guard that keeps no spending history cannot honour it, so daily-limit scenarios will (correctly) fail.
 
-See [`examples/basic-agent`](../examples/basic-agent) for a naive guard (16 failures) and a guard built on `@agentguard/core` (40 passes).
+See [`examples/basic-agent`](../examples/basic-agent) for a naive guard (16 failures) and a guard built on `@drainproof/core` (40 passes).
 
 ## Writing good scenarios
 

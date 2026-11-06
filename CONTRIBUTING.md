@@ -29,7 +29,7 @@ New built-in scenarios go in `packages/cli/templates/scenarios/<category>/`. A g
 - has a severity justified by [docs/findings.md](docs/findings.md) and a concrete remediation;
 - passes against the default policy and fails against a policy that violates the property. Add a runner test that shows the failure if the property is new.
 
-Run `pnpm test` and `pnpm agentguard test --config examples/payment-policy/agentguard.yaml` before opening a pull request.
+Run `pnpm test` and `pnpm drainproof test --config examples/payment-policy/drainproof.yaml` before opening a pull request.
 
 ## Integrations
 

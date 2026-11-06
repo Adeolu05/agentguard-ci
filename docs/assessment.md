@@ -4,7 +4,7 @@ Date: 2026-11-04 (external-requirements table updated 2026-11-05)
 
 ## Current repository state
 
-The working directory was empty (no Git history, no source files). AgentGuard CI is being built from scratch in this repository.
+The working directory was empty (no Git history, no source files). Drainproof is being built from scratch in this repository.
 
 Toolchain: Node.js 22.23, pnpm 10.28.
 
@@ -21,13 +21,13 @@ Toolchain: Node.js 22.23, pnpm 10.28.
 
 A pnpm TypeScript monorepo (strict mode, ESM):
 
-- `packages/core` (`@agentguard/core`): exact amounts (BigInt), the strict policy schema (zod), the deterministic policy engine, the ledger interface and a reference in-memory ledger with atomic reservation, and approvals bound to the proposal digest and policy hash. It has no I/O beyond what the caller injects.
-- `packages/runner` (`@agentguard/runner`): the project config, the scenario schema and loader, the scenario runner (steps, concurrency, isolation), target adapters (the built-in engine or a developer's own guard module), the report model, findings, redaction, and JSON/Markdown rendering.
-- `packages/cli` (`@agentguard/cli`): the `agentguard` binary with `init`, `policy validate`, `scenarios validate`, `test`, `report` and `list`. It also ships the built-in scenario library and project templates.
-- `packages/near` (`@agentguard/near`): NEAR account-ID validation, yoctoNEAR handling, and an execution adapter built on `near-api-js` that sits behind an explicit authorisation boundary and is disabled by default.
+- `packages/core` (`@drainproof/core`): exact amounts (BigInt), the strict policy schema (zod), the deterministic policy engine, the ledger interface and a reference in-memory ledger with atomic reservation, and approvals bound to the proposal digest and policy hash. It has no I/O beyond what the caller injects.
+- `packages/runner` (`@drainproof/runner`): the project config, the scenario schema and loader, the scenario runner (steps, concurrency, isolation), target adapters (the built-in engine or a developer's own guard module), the report model, findings, redaction, and JSON/Markdown rendering.
+- `packages/cli` (`@drainproof/cli`): the `drainproof` binary with `init`, `policy validate`, `scenarios validate`, `test`, `report` and `list`. It also ships the built-in scenario library and project templates.
+- `packages/near` (`@drainproof/near`): NEAR account-ID validation, yoctoNEAR handling, and an execution adapter built on `near-api-js` that sits behind an explicit authorisation boundary and is disabled by default.
 - `apps/web`: a read-only Next.js dashboard that reads the JSON run reports written by the CLI.
 
-Run history is persisted as one JSON report file per run (`.agentguard/runs/<runId>.json`). The CLI and the dashboard share this file contract, validated with the same zod schema. SQLite was considered and deferred. Files are enough for local history, need no native modules, and are trivially uploadable as CI artifacts.
+Run history is persisted as one JSON report file per run (`.drainproof/runs/<runId>.json`). The CLI and the dashboard share this file contract, validated with the same zod schema. SQLite was considered and deferred. Files are enough for local history, need no native modules, and are trivially uploadable as CI artifacts.
 
 ## Critical technical uncertainties
 
@@ -37,7 +37,7 @@ Run history is persisted as one JSON report file per run (`.agentguard/runs/<run
 
 ## Smallest viable end-to-end implementation
 
-`agentguard init` → `agentguard policy validate` → `agentguard test` produces a terminal summary, a JSON report and a Markdown report with findings. A deliberately loosened policy makes `agentguard test` exit with code 1, and GitHub Actions fails on it.
+`drainproof init` → `drainproof policy validate` → `drainproof test` produces a terminal summary, a JSON report and a Markdown report with findings. A deliberately loosened policy makes `drainproof test` exit with code 1, and GitHub Actions fails on it.
 
 ## Scope
 

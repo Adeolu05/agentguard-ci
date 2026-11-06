@@ -2,8 +2,8 @@ import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { policyFromYaml } from "@agentguard/core";
-import { loadScenarios, runSuite } from "@agentguard/runner";
+import { policyFromYaml } from "@drainproof/core";
+import { loadScenarios, runSuite } from "@drainproof/runner";
 import { loadPolicyStatus, loadRun, loadRuns, scenarioLibrary } from "./data";
 
 const ROOT = path.resolve(import.meta.dirname, "../../..");
@@ -15,7 +15,7 @@ async function realReport(policyText: string) {
   if (!loaded.ok) throw new Error("policy");
   const set = await loadScenarios(["packages/cli/templates/scenarios"], ROOT);
   return runSuite({
-    agentguardVersion: "test",
+    drainproofVersion: "test",
     policy: loaded.policy,
     policyFile: "policy.yaml",
     scenarios: set.scenarios,
@@ -25,10 +25,10 @@ async function realReport(policyText: string) {
 }
 
 beforeEach(async () => {
-  dir = await mkdtemp(path.join(os.tmpdir(), "agentguard-web-"));
-  process.env.AGENTGUARD_RUNS_DIR = dir;
-  delete process.env.AGENTGUARD_DEMO;
-  delete process.env.AGENTGUARD_PROJECT;
+  dir = await mkdtemp(path.join(os.tmpdir(), "drainproof-web-"));
+  process.env.DRAINPROOF_RUNS_DIR = dir;
+  delete process.env.DRAINPROOF_DEMO;
+  delete process.env.DRAINPROOF_PROJECT;
 });
 afterEach(() => {
   process.env = { ...env };
@@ -36,7 +36,7 @@ afterEach(() => {
 
 describe("dashboard data layer", () => {
   it("reports a missing directory as empty, not as an error or a pass", async () => {
-    process.env.AGENTGUARD_RUNS_DIR = path.join(dir, "missing");
+    process.env.DRAINPROOF_RUNS_DIR = path.join(dir, "missing");
     const r = await loadRuns();
     expect(r.runs).toEqual([]);
     expect(r.dirMissing).toBe(true);
@@ -69,15 +69,15 @@ describe("dashboard data layer", () => {
   });
 
   it("validates the configured project policy live", async () => {
-    process.env.AGENTGUARD_PROJECT = path.join(ROOT, "examples/payment-policy/agentguard.yaml");
+    process.env.DRAINPROOF_PROJECT = path.join(ROOT, "examples/payment-policy/drainproof.yaml");
     const ok = await loadPolicyStatus();
     expect(ok.kind).toBe("valid");
-    process.env.AGENTGUARD_PROJECT = path.join(dir, "nope.yaml");
+    process.env.DRAINPROOF_PROJECT = path.join(dir, "nope.yaml");
     expect((await loadPolicyStatus()).kind).toBe("invalid");
   });
 
   it("serves bundled demo reports only in demo mode, and they are genuine reports", async () => {
-    process.env.AGENTGUARD_DEMO = "1";
+    process.env.DRAINPROOF_DEMO = "1";
     const cwd = process.cwd();
     process.chdir(path.join(ROOT, "apps/web"));
     try {

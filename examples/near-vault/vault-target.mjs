@@ -1,4 +1,4 @@
-// The AgentGuard Vault as a scenario target: the built-in security scenarios run against
+// The Drainproof Vault as a scenario target: the built-in security scenarios run against
 // the real contract on a local NEAR sandbox (never testnet or mainnet).
 //
 // Each scenario gets a fresh sandbox and vault, started on its first proposal. Every
@@ -11,8 +11,8 @@
 // this target maps the policy's single asset onto the vault's integer unit: limits and
 // amounts keep their exact atomic values (5 USDC = 5000000 units), which is all the
 // contract compares.
-import { dailyWindow, parseDecimalAmount } from "@agentguard/core";
-import { checkNearAccountId, vaultPolicyFromPolicy } from "@agentguard/near";
+import { dailyWindow, parseDecimalAmount } from "@drainproof/core";
+import { checkNearAccountId, vaultPolicyFromPolicy } from "@drainproof/near";
 import { Account, KeyPair, NEAR, actions, startVault } from "./lib/sandbox.mjs";
 
 const NETWORK = "near-testnet";
@@ -164,7 +164,7 @@ export function createTarget({ policy, clock, seed }) {
   }
 
   return {
-    name: "agentguard-vault-sandbox",
+    name: "drainproof-vault-sandbox",
     capabilities: { reasonCodes: true, approvals: false, lifecycle: false, ledgerInspection: true, policyReload: false, failureInjection: false },
 
     unsupported(scenario) {

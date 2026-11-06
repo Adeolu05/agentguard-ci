@@ -1,11 +1,11 @@
-// Deploys the AgentGuard Vault to NEAR TESTNET. It refuses any other network.
+// Deploys the Drainproof Vault to NEAR TESTNET. It refuses any other network.
 //
-//   AGENTGUARD_NEAR_EXECUTION=testnet
+//   DRAINPROOF_NEAR_EXECUTION=testnet
 //   NEAR_TESTNET_ACCOUNT_ID=<owner>.testnet            the owner: pays for and controls the vault
 //   NEAR_TESTNET_PRIVATE_KEY=ed25519:...               the owner's testnet key
-//   AGENTGUARD_VAULT_ACCOUNT_ID=vault.<owner>.testnet  created by this script; must not exist yet
-//   AGENTGUARD_AGENT_ACCOUNT_ID=<agent>.testnet        the only account allowed to request payments
-//   AGENTGUARD_VAULT_FUNDING=3                         NEAR moved into the vault (optional, default 3)
+//   DRAINPROOF_VAULT_ACCOUNT_ID=vault.<owner>.testnet  created by this script; must not exist yet
+//   DRAINPROOF_AGENT_ACCOUNT_ID=<agent>.testnet        the only account allowed to request payments
+//   DRAINPROOF_VAULT_FUNDING=3                         NEAR moved into the vault (optional, default 3)
 //   node deploy.mjs [policy.yaml] [--dry-run]
 //
 // The contract's code needs about 1.9 NEAR of storage stake, so with the default funding
@@ -17,7 +17,7 @@
 //  2. The vault account deploys the contract and calls `new` in the same transaction, so
 //     nobody can initialise it in between (`new` is private to the vault account).
 import { isDeepStrictEqual } from "node:util";
-import { checkDirectSubAccount } from "@agentguard/near";
+import { checkDirectSubAccount } from "@drainproof/near";
 import { actions } from "near-api-js";
 import { loadWasm } from "./lib/wasm.mjs";
 import { loadVaultPolicy } from "./lib/policy.mjs";
@@ -32,12 +32,12 @@ await runScript(async () => {
   const { vaultPolicy } = await loadVaultPolicy(policyFile);
 
   const ownerId = testnetAccountFromEnv("NEAR_TESTNET_ACCOUNT_ID");
-  const vaultId = testnetAccountFromEnv("AGENTGUARD_VAULT_ACCOUNT_ID");
-  const agentId = testnetAccountFromEnv("AGENTGUARD_AGENT_ACCOUNT_ID");
+  const vaultId = testnetAccountFromEnv("DRAINPROOF_VAULT_ACCOUNT_ID");
+  const agentId = testnetAccountFromEnv("DRAINPROOF_AGENT_ACCOUNT_ID");
   const sub = checkDirectSubAccount(vaultId, ownerId);
-  if (!sub.ok) throw new Refusal(`AGENTGUARD_VAULT_ACCOUNT_ID: ${sub.message}`);
+  if (!sub.ok) throw new Refusal(`DRAINPROOF_VAULT_ACCOUNT_ID: ${sub.message}`);
   if (new Set([ownerId, vaultId, agentId]).size !== 3) throw new Refusal("the owner, vault and agent must be three different accounts");
-  const funding = nearToYocto(process.env.AGENTGUARD_VAULT_FUNDING || "3", "AGENTGUARD_VAULT_FUNDING");
+  const funding = nearToYocto(process.env.DRAINPROOF_VAULT_FUNDING || "3", "DRAINPROOF_VAULT_FUNDING");
   const initArgs = { owner_id: ownerId, agent_id: agentId, policy: vaultPolicy };
 
   console.log(`Vault ${vaultId}: owner ${ownerId}, agent ${agentId}, funding ${funding} yoctoNEAR`);

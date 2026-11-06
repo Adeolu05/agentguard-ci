@@ -1,18 +1,18 @@
 # CLI reference
 
 ```text
-agentguard init [dir] [--force] [--github-actions]
-agentguard policy validate [policy.yaml] [--config <file>]
-agentguard scenarios validate [--config <file>]
-agentguard scenarios list [--category <c>] [--config <file>]
-agentguard test [--scenario <id>]... [--category <c>]... [options]
-agentguard report [--run <id>] [--format markdown|json] [--output <file>] [--config <file>]
-agentguard --version | --help
+drainproof init [dir] [--force] [--github-actions]
+drainproof policy validate [policy.yaml] [--config <file>]
+drainproof scenarios validate [--config <file>]
+drainproof scenarios list [--category <c>] [--config <file>]
+drainproof test [--scenario <id>]... [--category <c>]... [options]
+drainproof report [--run <id>] [--format markdown|json] [--output <file>] [--config <file>]
+drainproof --version | --help
 ```
 
 The CLI works without an account, telemetry, network access or paid services. It is non-interactive and safe to run in CI. Colours are disabled when stdout is not a TTY, when `NO_COLOR` is set, or when `--no-color` is passed.
 
-## Project file (`agentguard.yaml`)
+## Project file (`drainproof.yaml`)
 
 ```yaml
 version: 1
@@ -24,16 +24,16 @@ target:
   type: engine                        # or: type: module, module: ./guard.mjs
 integrations:                         # optional
   near:
-    validate_account_ids: true        # add NEAR account-ID validation (needs the optional @agentguard/near package)
+    validate_account_ids: true        # add NEAR account-ID validation (needs the optional @drainproof/near package)
 reports:
-  dir: .agentguard/runs               # default
+  dir: .drainproof/runs               # default
 ```
 
-Unknown keys are rejected. `--config` selects another project file. The default is `./agentguard.yaml`.
+Unknown keys are rejected. `--config` selects another project file. The default is `./drainproof.yaml`.
 
 ## Commands
 
-**`init`** copies a runnable project into `dir` (default `.`): the project file, a default policy and the 40 built-in scenarios. It refuses to overwrite existing files unless you pass `--force`. `--github-actions` also writes `.github/workflows/agentguard.yml`.
+**`init`** copies a runnable project into `dir` (default `.`): the project file, a default policy and the 40 built-in scenarios. It refuses to overwrite existing files unless you pass `--force`. `--github-actions` also writes `.github/workflows/drainproof.yml`.
 
 **`policy validate`** validates a policy file (by default, the project's policy) and prints its hash, assets, networks and warnings. Errors include `file:line:column field: message`.
 
@@ -70,7 +70,7 @@ The schema is `runReportSchema` in `packages/runner/src/report.ts`; the dashboar
 
 - `runId`, `startedAt`, `completedAt`, `durationMs`;
 - `status` (`PASSED`, `FAILED` or `ERROR`) and `exitCode`;
-- `agentguardVersion`;
+- `drainproofVersion`;
 - `executionMode`, which is always `simulation` for scenario runs;
 - `policy`: `file`, `hash`, `agentId`, `declaredExecutionMode`, `warnings` and the validated `document`;
 - `suite`: `hash` and `scenarioCount` (the hash covers every scenario definition);
@@ -80,7 +80,7 @@ The schema is `runReportSchema` in `packages/runner/src/report.ts`; the dashboar
 - `scenarios[]`: per-step expected and observed results;
 - `findings[]`.
 
-The policy hash, suite hash, scenario definition hashes and AgentGuard version identify exactly what ran, so a run can be reproduced.
+The policy hash, suite hash, scenario definition hashes and Drainproof version identify exactly what ran, so a run can be reproduced.
 
 ## Redaction
 

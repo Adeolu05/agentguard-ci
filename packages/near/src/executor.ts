@@ -1,4 +1,4 @@
-import type { PolicyEngine, Reservation } from "@agentguard/core";
+import type { PolicyEngine, Reservation } from "@drainproof/core";
 import { checkNearAccountId, isImplicitAccountId } from "./account-id.js";
 
 /**
@@ -68,7 +68,7 @@ function isTestnetSigner(id: string): boolean {
 }
 
 /**
- * Executes AgentGuard-authorised reservations as native NEAR transfers on testnet.
+ * Executes Drainproof-authorised reservations as native NEAR transfers on testnet.
  *
  * Safety properties:
  *  - Only `near-testnet` reservations of the native `NEAR` asset are executed.

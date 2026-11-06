@@ -3,10 +3,10 @@
 //
 //   node push-policy.mjs [policy.yaml]           dry run: prints the exact on-chain arguments
 //   node push-policy.mjs [policy.yaml] --send    sends them, with these variables:
-//     AGENTGUARD_NEAR_EXECUTION=testnet
+//     DRAINPROOF_NEAR_EXECUTION=testnet
 //     NEAR_TESTNET_ACCOUNT_ID=<owner>.testnet    the vault's owner
 //     NEAR_TESTNET_PRIVATE_KEY=ed25519:...       the owner's full-access key (owner calls attach 1 yoctoNEAR)
-//     AGENTGUARD_VAULT_ACCOUNT_ID=vault.<owner>.testnet
+//     DRAINPROOF_VAULT_ACCOUNT_ID=vault.<owner>.testnet
 //
 // A policy that cannot be represented exactly on-chain (another asset, another network,
 // recipients that are not testnet accounts, values out of range) is refused, never rounded.
@@ -28,7 +28,7 @@ await runScript(async () => {
     return;
   }
 
-  const vaultId = testnetAccountFromEnv("AGENTGUARD_VAULT_ACCOUNT_ID");
+  const vaultId = testnetAccountFromEnv("DRAINPROOF_VAULT_ACCOUNT_ID");
   const owner = await connectTestnet();
   const config = await view(owner.provider, vaultId, "get_config");
   if (config.owner_id !== owner.signerId) throw new Refusal(`the vault's owner is ${config.owner_id}, not ${owner.signerId}`);

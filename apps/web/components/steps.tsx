@@ -1,4 +1,4 @@
-import type { RunReport } from "@agentguard/runner";
+import type { RunReport } from "@drainproof/runner";
 
 type ScenarioResult = RunReport["scenarios"][number];
 

@@ -76,7 +76,7 @@ export const runReportSchema = z.object({
   durationMs: z.number().min(0),
   status: z.enum(RUN_STATUSES),
   exitCode: z.int(),
-  agentguardVersion: z.string(),
+  drainproofVersion: z.string(),
   /** How proposals were handled during this run. Scenario runs are always "simulation". */
   executionMode: z.enum(["simulation", "testnet"]),
   project: z.object({ name: z.string().optional() }),

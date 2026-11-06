@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { policyFromYaml } from "@agentguard/core";
+import { policyFromYaml } from "@drainproof/core";
 import { VAULT_MAX_RECIPIENTS, vaultPolicyFromPolicy } from "../src/index.js";
 
 const load = (yaml: string) => {

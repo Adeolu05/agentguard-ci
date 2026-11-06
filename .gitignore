@@ -3,7 +3,7 @@ dist/
 .next/
 coverage/
 *.tsbuildinfo
-.agentguard/
+.drainproof/
 .env
 .env.*
 !.env.example

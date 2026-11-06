@@ -1,6 +1,6 @@
 # Limitations
 
-Read this before relying on AgentGuard.
+Read this before relying on Drainproof.
 
 ## What a passing suite means
 
@@ -8,7 +8,7 @@ A passing suite means the tested behaviours hold for the scenarios you ran, unde
 
 ## Enforcement
 
-- AgentGuard enforces only what is routed through `PolicyEngine.authorize()` and `beginExecution()`. An agent with direct access to a signing key, or another execution path, bypasses it entirely.
+- Drainproof enforces only what is routed through `PolicyEngine.authorize()` and `beginExecution()`. An agent with direct access to a signing key, or another execution path, bypasses it entirely.
 - `ALLOW` does not prove that a wallet, contract or payment provider applies the same rules.
 - The engine validates *proposals*. It does not inspect what a signer actually signs. An executor that builds a different transaction from the one that was authorised defeats it. The NEAR executor builds the transfer from the stored reservation, not from agent input.
 
@@ -37,6 +37,6 @@ A passing suite means the tested behaviours hold for the scenarios you ran, unde
 
 ## Operational
 
-- `@agentguard/*` packages are not published to npm yet. Other projects install them from local tarballs (`pnpm pack:local`, see [adoption.md](adoption.md)).
+- `@drainproof/*` packages are not published to npm yet. Other projects install them from local tarballs (`pnpm pack:local`, see [adoption.md](adoption.md)).
 - The dashboard has no authentication. Run it locally, or behind your own access control. It is read-only.
 - SARIF output is not implemented.

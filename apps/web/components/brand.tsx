@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useId } from "react";
 
-/** AgentGuard mark: a shield with a check, stroked with the brand gradient. */
+/** Drainproof mark: a shield with a check, stroked with the brand gradient. */
 export function LogoMark({ className = "h-7 w-7" }: { className?: string }) {
   const id = useId();
   return (
@@ -24,7 +24,7 @@ export function Wordmark({ href = "/" }: { href?: string }) {
   return (
     <Link href={href} className="flex min-h-11 items-center gap-2.5 font-display text-[1.05rem] font-semibold tracking-tight sm:min-h-9">
       <LogoMark />
-      AgentGuard <span className="text-muted">CI</span>
+      Drainproof
     </Link>
   );
 }

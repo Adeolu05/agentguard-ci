@@ -1,8 +1,8 @@
 // The agent loop: an LLM with two tools, read_page and propose_payment. Every payment the model
-// proposes goes through AgentGuard's authorize() first. Execution is simulated off-chain, or,
-// with a vault, sent to the AgentGuard Vault contract on a local NEAR node or testnet.
+// proposes goes through Drainproof's authorize() first. Execution is simulated off-chain, or,
+// with a vault, sent to the Drainproof Vault contract on a local NEAR node or testnet.
 //
-// AgentGuard does not try to detect the injection. It applies the deterministic policy to
+// Drainproof does not try to detect the injection. It applies the deterministic policy to
 // whatever the model proposes.
 import { readFileSync } from "node:fs";
 
@@ -112,7 +112,7 @@ export async function runAgent({ model, engine, vault, out = console.log, maxTur
         const proposal = { requestId: `llm-payment-${n}`, agentId: AGENT_ID, networkId: NETWORK_ID, recipientId: a.recipient, amount: a.amount, assetId: a.asset, ...(a.memo === undefined ? {} : { memo: a.memo }) };
         out(`\n  ▶ model proposed: ${JSON.stringify(a.amount)} ${JSON.stringify(a.asset)} → ${JSON.stringify(a.recipient)}${a.memo === undefined ? "" : `, memo ${JSON.stringify(a.memo)}`}`);
         const e = await engine.authorize(proposal);
-        out(`    AgentGuard:  ${e.decision}${fmtReasons(e.reasonCodes)}`);
+        out(`    Drainproof:  ${e.decision}${fmtReasons(e.reasonCodes)}`);
         let executed = false;
         let vaultResult;
         if (e.decision === "ALLOW" && !e.replay) {
@@ -140,7 +140,7 @@ export async function runAgent({ model, engine, vault, out = console.log, maxTur
           }
         }
         payments.push({ proposal, decision: e.decision, reasonCodes: e.reasonCodes, executed, vault: vaultResult, allowlisted: allowlist.includes(a.recipient) });
-        // The model sees only AgentGuard's decision, so the conversation is the same with or without a vault.
+        // The model sees only Drainproof's decision, so the conversation is the same with or without a vault.
         result = { decision: e.decision, reason_codes: e.reasonCodes, execution: e.decision === "ALLOW" ? "attempted" : "not attempted" };
       } else {
         out(`  model called an unknown tool ${JSON.stringify(name)}`);

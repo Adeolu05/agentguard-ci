@@ -3,24 +3,24 @@
 // refuses any other network.
 //
 // Run once, during setup, by whoever holds the agent account's full-access key:
-//   AGENTGUARD_NEAR_EXECUTION=testnet
+//   DRAINPROOF_NEAR_EXECUTION=testnet
 //   NEAR_TESTNET_ACCOUNT_ID=<agent>.testnet        the agent account
 //   NEAR_TESTNET_PRIVATE_KEY=ed25519:...           its FULL-ACCESS key, for this setup step only
-//   AGENTGUARD_VAULT_ACCOUNT_ID=vault.<owner>.testnet
-//   AGENTGUARD_AGENT_ALLOWANCE=0.25                NEAR the new key may spend on gas (optional)
-//   AGENTGUARD_AGENT_PUBLIC_KEY=ed25519:...        optional: add this public key instead
+//   DRAINPROOF_VAULT_ACCOUNT_ID=vault.<owner>.testnet
+//   DRAINPROOF_AGENT_ALLOWANCE=0.25                NEAR the new key may spend on gas (optional)
+//   DRAINPROOF_AGENT_PUBLIC_KEY=ed25519:...        optional: add this public key instead
 //   node add-agent-key.mjs
 //
-// Without AGENTGUARD_AGENT_PUBLIC_KEY, a new key pair is generated in memory and its private
+// Without DRAINPROOF_AGENT_PUBLIC_KEY, a new key pair is generated in memory and its private
 // key is printed once; it is never written anywhere. The agent runtime then uses only that
-// key, as AGENTGUARD_AGENT_PRIVATE_KEY.
+// key, as DRAINPROOF_AGENT_PRIVATE_KEY.
 import { isDeepStrictEqual } from "node:util";
 import { KeyPair, PublicKey, actions } from "near-api-js";
 import { Refusal, connectTestnet, nearToYocto, printOutcome, runScript, send, testnetAccountFromEnv, view } from "./lib/testnet.mjs";
 
 await runScript(async () => {
-  const vaultId = testnetAccountFromEnv("AGENTGUARD_VAULT_ACCOUNT_ID");
-  const allowance = nearToYocto(process.env.AGENTGUARD_AGENT_ALLOWANCE || "0.25", "AGENTGUARD_AGENT_ALLOWANCE");
+  const vaultId = testnetAccountFromEnv("DRAINPROOF_VAULT_ACCOUNT_ID");
+  const allowance = nearToYocto(process.env.DRAINPROOF_AGENT_ALLOWANCE || "0.25", "DRAINPROOF_AGENT_ALLOWANCE");
   const agent = await connectTestnet();
 
   let config;
@@ -35,11 +35,11 @@ await runScript(async () => {
 
   let keyPair;
   let publicKey;
-  if (process.env.AGENTGUARD_AGENT_PUBLIC_KEY) {
+  if (process.env.DRAINPROOF_AGENT_PUBLIC_KEY) {
     try {
-      publicKey = PublicKey.fromString(process.env.AGENTGUARD_AGENT_PUBLIC_KEY);
+      publicKey = PublicKey.fromString(process.env.DRAINPROOF_AGENT_PUBLIC_KEY);
     } catch (err) {
-      throw new Refusal(`AGENTGUARD_AGENT_PUBLIC_KEY is not a valid public key: ${err.message}`);
+      throw new Refusal(`DRAINPROOF_AGENT_PUBLIC_KEY is not a valid public key: ${err.message}`);
     }
   } else {
     keyPair = KeyPair.fromRandom("ed25519");
@@ -71,7 +71,7 @@ await runScript(async () => {
 
   if (keyPair) {
     console.log("\nPrivate key of the new function-call key (shown once, testnet only).");
-    console.log("Keep it in your secret store and give it to the agent as AGENTGUARD_AGENT_PRIVATE_KEY:");
+    console.log("Keep it in your secret store and give it to the agent as DRAINPROOF_AGENT_PRIVATE_KEY:");
     console.log(`  ${keyPair.toString()}`);
   }
   console.log(`\nTo revoke it later: near account delete-keys ${agent.signerId} public-keys ${publicKey.toString()} network-config testnet sign-with-keychain send`);

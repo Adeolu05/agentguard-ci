@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Regenerates apps/web/demo-runs/ by running the real AgentGuard CLI against the bundled
+# Regenerates apps/web/demo-runs/ by running the real Drainproof CLI against the bundled
 # examples. Every demo report is genuine CLI output; nothing is hand-written.
 # Usage (from the repository root, after `pnpm build`): bash apps/web/scripts/generate-demo-runs.sh
 set -euo pipefail
@@ -24,7 +24,7 @@ run() { # run <label> <config> ; tolerate non-zero exit codes (failures are the 
 }
 
 # 1. Baseline: default payment policy, all scenarios pass.
-run "baseline" "$ROOT/examples/payment-policy/agentguard.yaml"
+run "baseline" "$ROOT/examples/payment-policy/drainproof.yaml"
 
 # 2. Regression: a policy change allowlists an attacker and raises the per-transaction limit.
 # The copy sits next to the original so scenario paths in the report stay repository-relative.
@@ -33,15 +33,15 @@ rm -rf "$REGRESSED" && cp -r "$ROOT/examples/payment-policy" "$REGRESSED"
 trap 'rm -rf "$WORK" "$REGRESSED"' EXIT
 sed -i.bak -e 's/    - data-provider-example/    - data-provider-example\n    - attacker-wallet/' \
   -e 's/max_transaction_amount: "25"/max_transaction_amount: "250"/' "$REGRESSED/policy.yaml"
-run "regression" "$REGRESSED/agentguard.yaml"
+run "regression" "$REGRESSED/drainproof.yaml"
 
 # 3. Fixed again.
-run "fixed" "$ROOT/examples/payment-policy/agentguard.yaml"
+run "fixed" "$ROOT/examples/payment-policy/drainproof.yaml"
 
 # 4. A hand-rolled guard tested as a custom target (fails, with skipped scenarios).
-run "naive guard" "$ROOT/examples/basic-agent/agentguard.yaml"
+run "naive guard" "$ROOT/examples/basic-agent/drainproof.yaml"
 
 # 5. NEAR testnet policy suite (offline; no transactions).
-run "near" "$ROOT/examples/near-testnet/agentguard.yaml"
+run "near" "$ROOT/examples/near-testnet/drainproof.yaml"
 
 ls -1 "$OUT"

@@ -76,7 +76,7 @@ const POLICY = [
 ];
 
 const CI = [
-  { text: "- run: npx --no-install agentguard test", tone: "plain" as const },
+  { text: "- run: npx --no-install drainproof test", tone: "plain" as const },
   { text: "", tone: "plain" as const },
   { text: "# exit 0  all required scenarios passed", tone: "pass" as const },
   { text: "# exit 1  a security scenario failed", tone: "fail" as const },
@@ -124,7 +124,7 @@ export default function LandingPage() {
               Know what your AI agent <span className="text-gradient">can spend</span> before it does.
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted">
-              AgentGuard CI is a security test suite for AI agents with wallets. Write a transaction policy, attack it with 40 adversarial
+              Drainproof is a security test suite for AI agents with wallets. Write a transaction policy, attack it with 40 adversarial
               scenarios, and fail the pull request the moment a guardrail regresses.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -143,7 +143,7 @@ export default function LandingPage() {
             <Terminal
             title="after someone allowlisted attacker-wallet"
             lines={[
-              { text: "agentguard test --quiet", tone: "cmd" },
+              { text: "drainproof test --quiet", tone: "cmd" },
               { text: "Running 40 scenarios", tone: "muted" },
               { text: "" },
               { text: "FAIL    instruction-injection-in-memo", tone: "fail" },
@@ -178,7 +178,7 @@ export default function LandingPage() {
       <section id="problem" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 sm:py-28">
         <SectionHeading eyebrow="The problem" title="Agents follow instructions. Including the wrong ones.">
           A payment agent can be talked into paying the wrong account, paying twice or blowing its budget. Unit tests rarely cover any of
-          it, so AgentGuard ships the attacks as executable scenarios.
+          it, so Drainproof ships the attacks as executable scenarios.
         </SectionHeading>
         <div className="mt-12 grid gap-4 sm:grid-cols-2">
           {PROBLEMS.map((p) => (
@@ -219,7 +219,7 @@ export default function LandingPage() {
                 className="mt-5 flex-1"
                 title="terminal"
                 lines={[
-                  { text: "agentguard test", tone: "cmd" },
+                  { text: "drainproof test", tone: "cmd" },
                   { text: "PASS    approval-not-transferable", tone: "pass" },
                   { text: "PASS    concurrent-requests-respect-daily-limit", tone: "pass" },
                   { text: "PASS    negative-amount", tone: "pass" },
@@ -234,7 +234,7 @@ export default function LandingPage() {
               <p className="mt-2 text-muted">
                 One CI step. A loosened limit or a new payee fails the pull request with a finding that explains why.
               </p>
-              <Terminal className="mt-5 flex-1" title=".github/workflows/agentguard.yml" lines={CI} />
+              <Terminal className="mt-5 flex-1" title=".github/workflows/drainproof.yml" lines={CI} />
             </li>
           </ol>
         </div>
@@ -262,7 +262,7 @@ export default function LandingPage() {
           <div aria-hidden="true" className="absolute inset-0 -z-10 bg-glow opacity-80" />
           <div className="grid gap-10 lg:grid-cols-2">
             <SectionHeading eyebrow="Built for NEAR" title="From policy decision to testnet transfer, behind one gate.">
-              The NEAR package validates account IDs, handles 24-decimal yoctoNEAR exactly, and executes only reservations that AgentGuard
+              The NEAR package validates account IDs, handles 24-decimal yoctoNEAR exactly, and executes only reservations that Drainproof
               authorised, with a single broadcast and no automatic re-signing.
             </SectionHeading>
             <div>
@@ -306,9 +306,9 @@ export default function LandingPage() {
             lines={[
               { text: `git clone ${GITHUB}.git`, tone: "cmd" },
               { text: "cd agentguard-ci && pnpm install && pnpm build", tone: "cmd" },
-              { text: 'alias agentguard="node $PWD/packages/cli/dist/bin.js"', tone: "cmd" },
-              { text: "mkdir ~/my-agent && cd ~/my-agent && agentguard init", tone: "cmd" },
-              { text: "agentguard test", tone: "cmd" },
+              { text: 'alias drainproof="node $PWD/packages/cli/dist/bin.js"', tone: "cmd" },
+              { text: "mkdir ~/my-agent && cd ~/my-agent && drainproof init", tone: "cmd" },
+              { text: "drainproof test", tone: "cmd" },
               { text: "" },
               { text: "Result: PASSED  (exit code 0)", tone: "pass" },
             ]}

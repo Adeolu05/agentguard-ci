@@ -1,20 +1,20 @@
 # Architecture
 
 ```text
-                   agentguard.yaml ── policy.yaml ── scenarios/**/*.yaml
+                   drainproof.yaml ── policy.yaml ── scenarios/**/*.yaml
                           │               │                │
                           ▼               ▼                ▼
  ┌──────────────┐   ┌───────────────────────────────────────────────┐
- │ @agentguard/ │   │ @agentguard/runner                             │
+ │ @drainproof/ │   │ @drainproof/runner                             │
  │ cli          │──▶│  project + scenario loading (strict schemas)   │
  │  init/test/  │   │  runScenario: isolated clock, ledger, keys     │──▶ RunReport (JSON)
  │  report …    │   │  targets: engine │ custom module (shape-checked)│     │  + Markdown
  └──────────────┘   │  findings, severity, redaction                 │     │
                     └──────────────┬────────────────────────────────┘     ▼
-                                   │                              .agentguard/runs/*.json
+                                   │                              .drainproof/runs/*.json
                                    ▼                                       │
                     ┌───────────────────────────────────┐                  ▼
-                    │ @agentguard/core                   │       apps/web (read-only
+                    │ @drainproof/core                   │       apps/web (read-only
                     │  amounts (BigInt)  policy schema   │        dashboard, validates
                     │  PolicyEngine: authorize / gate    │        every report)
                     │  Ledger (runExclusive) approvals   │
@@ -22,7 +22,7 @@
                                    │ validators, beginExecution
                                    ▼
                     ┌───────────────────────────────────┐
-                    │ @agentguard/near                   │
+                    │ @drainproof/near                   │
                     │  account-ID validator              │
                     │  NearTestnetExecutor ─▶ near-api-js│──▶ NEAR testnet RPC (opt-in)
                     └───────────────────────────────────┘
@@ -54,7 +54,7 @@ if (evaluation.decision === "ALLOW" && !evaluation.replay) {
 }
 ```
 
-AgentGuard protects only the paths that go through `authorize()` and `beginExecution()`. Keep the signing key in a component that refuses to sign without a successful `beginExecution()`. Never give it to the agent. See [threat-model.md](threat-model.md).
+Drainproof protects only the paths that go through `authorize()` and `beginExecution()`. Keep the signing key in a component that refuses to sign without a successful `beginExecution()`. Never give it to the agent. See [threat-model.md](threat-model.md).
 
 ## Architecture decisions
 

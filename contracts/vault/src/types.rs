@@ -8,7 +8,7 @@ pub const MAX_RECIPIENTS: usize = 100;
 /// At most this many requests may wait for approval at once (bounds storage and the owner's queue).
 pub const MAX_PENDING: u32 = 50;
 /// Identifiers (request IDs, idempotency keys): 1 to 128 printable ASCII characters,
-/// the same rule as the AgentGuard core engine.
+/// the same rule as the Drainproof core engine.
 pub const MAX_IDENTIFIER_LEN: usize = 128;
 /// Memos: at most 256 characters, the same limit as the core engine.
 pub const MAX_MEMO_CHARS: usize = 256;
@@ -19,7 +19,7 @@ pub const MAX_APPROVAL_TTL_SECONDS: u32 = 7 * 24 * 3600;
 /// Maximum length of the recorded source-policy hash.
 pub const MAX_POLICY_HASH_LEN: usize = 128;
 
-/// Reason codes. Names shared with `@agentguard/core` mean the same rule.
+/// Reason codes. Names shared with `@drainproof/core` mean the same rule.
 pub mod reason {
     pub const REQUEST_ID_INVALID: &str = "REQUEST_ID_INVALID";
     pub const RECIPIENT_INVALID: &str = "RECIPIENT_INVALID";

@@ -1,4 +1,4 @@
-// AgentGuard Vault demo: one payment that goes through and one that the vault blocks, with
+// Drainproof Vault demo: one payment that goes through and one that the vault blocks, with
 // the event logs the contract writes.
 //
 // Default: a local NEAR sandbox. No account, key or testnet access is needed; it needs the
@@ -6,10 +6,10 @@
 //
 // Testnet (opt-in): send the same two requests to your deployed vault, signed with the
 // agent's function-call key:
-//   AGENTGUARD_NEAR_EXECUTION=testnet
-//   AGENTGUARD_VAULT_ACCOUNT_ID=vault.<owner>.testnet
-//   AGENTGUARD_AGENT_ACCOUNT_ID=<agent>.testnet
-//   AGENTGUARD_AGENT_PRIVATE_KEY=ed25519:...   the agent's FUNCTION-CALL key (add-agent-key.mjs)
+//   DRAINPROOF_NEAR_EXECUTION=testnet
+//   DRAINPROOF_VAULT_ACCOUNT_ID=vault.<owner>.testnet
+//   DRAINPROOF_AGENT_ACCOUNT_ID=<agent>.testnet
+//   DRAINPROOF_AGENT_PRIVATE_KEY=ed25519:...   the agent's FUNCTION-CALL key (add-agent-key.mjs)
 //   RECIPIENT=<an existing testnet account in the vault's allowlist>
 //   node demo.mjs
 import { logsOf } from "./lib/outcome.mjs";
@@ -75,9 +75,9 @@ async function sandboxDemo() {
 }
 
 async function testnetDemo() {
-  const vaultId = testnetAccountFromEnv("AGENTGUARD_VAULT_ACCOUNT_ID");
-  const agentId = testnetAccountFromEnv("AGENTGUARD_AGENT_ACCOUNT_ID");
-  const agentKey = requireEnv("AGENTGUARD_AGENT_PRIVATE_KEY");
+  const vaultId = testnetAccountFromEnv("DRAINPROOF_VAULT_ACCOUNT_ID");
+  const agentId = testnetAccountFromEnv("DRAINPROOF_AGENT_ACCOUNT_ID");
+  const agentKey = requireEnv("DRAINPROOF_AGENT_PRIVATE_KEY");
   const recipient = testnetAccountFromEnv("RECIPIENT");
   const agent = await connectTestnet({ ...process.env, NEAR_TESTNET_ACCOUNT_ID: agentId, NEAR_TESTNET_PRIVATE_KEY: agentKey });
   const policy = await view(agent.provider, vaultId, "get_policy");
@@ -111,6 +111,6 @@ async function testnetDemo() {
 }
 
 await runScript(async () => {
-  if (process.env.AGENTGUARD_NEAR_EXECUTION === "testnet") await testnetDemo();
+  if (process.env.DRAINPROOF_NEAR_EXECUTION === "testnet") await testnetDemo();
   else await sandboxDemo();
 });

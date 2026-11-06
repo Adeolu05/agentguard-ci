@@ -2,19 +2,19 @@
 
 ## Scope
 
-AgentGuard evaluates **proposed** financial actions against an explicit policy, records authorised spending, and gates execution. It also tests that this behaviour, or the behaviour of a guard you wrote, matches a security specification (the scenarios). This document covers the engine, the ledger, approvals, the execution gate, the CLI and runner, reports, the dashboard, the NEAR adapter and the AgentGuard Vault contract.
+Drainproof evaluates **proposed** financial actions against an explicit policy, records authorised spending, and gates execution. It also tests that this behaviour, or the behaviour of a guard you wrote, matches a security specification (the scenarios). This document covers the engine, the ledger, approvals, the execution gate, the CLI and runner, reports, the dashboard, the NEAR adapter and the Drainproof Vault contract.
 
 ## Assets
 
 | Asset | Where it lives |
 | --- | --- |
-| Signing material (wallet keys) | Outside AgentGuard. Only the NEAR executor touches a key: a **testnet** key from the environment, kept inside a closure. |
+| Signing material (wallet keys) | Outside Drainproof. Only the NEAR executor touches a key: a **testnet** key from the environment, kept inside a closure. |
 | Approval signing key | The approval service. The engine holds a verifier. |
 | API credentials and CI secrets | The CI secret store. Never read by scenarios or written to reports. |
 | Policy configuration | YAML in the repository, under code review. |
 | Approval records and ledger state | The ledger implementation. |
 | Transaction integrity (amount, recipient, network, asset) | The proposal digest and the execution gate. |
-| Test reports | `.agentguard/runs`, CI artifacts and the dashboard. |
+| Test reports | `.drainproof/runs`, CI artifacts and the dashboard. |
 | Developer repositories | CI with `contents: read` permissions only. |
 
 ## Threats and controls
@@ -42,7 +42,7 @@ AgentGuard evaluates **proposed** financial actions against an explicit policy, 
 | Dashboard misuse | Read-only; route parameters checked against strict patterns (no path traversal); every report schema-validated; security headers | data-layer tests |
 | Compromised dependency | Lockfile and frozen installs in CI; actions pinned to commit SHAs; small dependency set | CI configuration |
 
-## AgentGuard Vault (on-chain)
+## Drainproof Vault (on-chain)
 
 The vault (`contracts/vault`) holds the funds; the agent holds only a function-call key for `request_payment`. Its full design is in [vault-design.md](vault-design.md). Unit tests are in `contracts/vault/src/tests.rs`; sandbox tests, against a real local NEAR node, are in `examples/near-vault/test/vault.sandbox.test.ts`.
 
@@ -64,9 +64,9 @@ An independent adversarial review (November 2026) tried to break these guarantee
 
 ## Out of scope and residual risks
 
-- **Bypass of the enforcement point.** If the agent, or anything it controls, can reach a signing key without `authorize()` and `beginExecution()`, AgentGuard cannot stop it. The key must sit behind a component that enforces the gate.
+- **Bypass of the enforcement point.** If the agent, or anything it controls, can reach a signing key without `authorize()` and `beginExecution()`, Drainproof cannot stop it. The key must sit behind a component that enforces the gate.
 - **Wallet- or chain-level enforcement.** `ALLOW` is not proof that a wallet, smart contract or payment provider independently enforces the same rules.
-- **LLM behaviour.** AgentGuard does not detect or prevent prompt injection. It limits what an injected agent can achieve, within the policy.
+- **LLM behaviour.** Drainproof does not detect or prevent prompt injection. It limits what an injected agent can achieve, within the policy.
 - **Multi-process ledgers.** The in-memory reference ledger only serialises within one process.
 - **Symmetric approval keys.** Whoever can verify grants can also issue them.
 - **Finite test suites.** Passing the scenarios proves only the tested properties under the tested conditions.

@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
-import { policyFromYaml } from "@agentguard/core";
-import { vaultPolicyFromPolicy } from "@agentguard/near";
+import { policyFromYaml } from "@drainproof/core";
+import { vaultPolicyFromPolicy } from "@drainproof/near";
 import { Refusal } from "./testnet.mjs";
 
 export const DEFAULT_POLICY_FILE = new URL("../policy.yaml", import.meta.url);

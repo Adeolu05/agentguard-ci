@@ -1,7 +1,7 @@
 {
-  "name": "@agentguard/runner",
+  "name": "@drainproof/runner",
   "version": "0.1.0",
-  "description": "Scenario runner, reports and findings for AgentGuard CI.",
+  "description": "Scenario runner, reports and findings for Drainproof.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,7 +20,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@agentguard/core": "workspace:*",
+    "@drainproof/core": "workspace:*",
     "yaml": "^2.9.1",
     "zod": "^4.6.7"
   }

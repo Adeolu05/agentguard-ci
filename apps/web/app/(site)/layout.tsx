@@ -50,7 +50,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5 font-display font-semibold">
-              <LogoMark className="h-6 w-6" /> AgentGuard CI
+              <LogoMark className="h-6 w-6" /> Drainproof
             </div>
             <p className="mt-3 max-w-sm text-sm text-muted">
               Passing the suite shows the tested properties hold under the tested conditions. It is not proof that an agent is secure in general.{" "}
