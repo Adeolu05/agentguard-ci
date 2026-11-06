@@ -15,7 +15,7 @@ These rules were confirmed by the project owner from the official NEAR HACKATHON
 
 | Requirement | Status |
 | --- | --- |
-| Public repository | Done: https://github.com/Adeolu05/agentguard-ci |
+| Public repository | Done: https://github.com/Adeolu05/drainproof |
 | README with "do X, see Y" steps an AI judge can follow | Done: [For judges: verify in 5 minutes](../README.md#for-judges-verify-in-5-minutes). Every command was run from a fresh clone on 2026-11-05 and the expected output is the real output. |
 | Public X demo post that states the project was built at NEAR HACKATHON, with a video or screenshots | **To do (owner).** Screenshots are in `docs/images/` and the demo script is [demo.md](demo.md). |
 | A mainnet NEAR account for the prize payout | **To do (owner).** Only the account ID is submitted. No mainnet key belongs anywhere in this repository, and nothing in it signs on mainnet. |
@@ -65,7 +65,7 @@ NEAR's role: the NEAR package validates NEAR account IDs (including mainnet acco
 - [x] Quick-start works in a clean directory (`drainproof init`, `policy validate`, `test`)
 - [x] Help and error messages include file, line and field locations
 - [x] JSON and Markdown reports
-- [x] GitHub Actions workflows run on GitHub ([Actions](https://github.com/Adeolu05/agentguard-ci/actions))
+- [x] GitHub Actions workflows run on GitHub ([Actions](https://github.com/Adeolu05/drainproof/actions))
 - [x] An intentional policy violation makes the suite exit with code 1, locally and in the CI `regression-gate` job
 
 ### Dashboard
@@ -119,7 +119,7 @@ See [demo.md](demo.md): a three-minute script with the real output of every comm
 ## Evidence to include
 
 - `pnpm check` output (all tests passing).
-- A CI run link from https://github.com/Adeolu05/agentguard-ci/actions.
+- A CI run link from https://github.com/Adeolu05/drainproof/actions.
 - JSON and Markdown reports from the demo.
 - Dashboard screenshots (`docs/images/`).
 - A NEAR testnet transaction hash and explorer link, **only** if a run was actually executed and verified against the network.

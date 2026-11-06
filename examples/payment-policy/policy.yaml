@@ -1,4 +1,4 @@
-# AgentGuard transaction policy. Schema reference: docs/policy-schema.md
+# Drainproof transaction policy. Schema reference: docs/policy-schema.md
 # Amounts are quoted decimal strings in whole asset units; unquoted numbers are rejected.
 version: 1
 

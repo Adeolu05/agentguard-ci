@@ -9,7 +9,7 @@ Requirements: Node.js 22.22 or newer and pnpm 10 (`corepack enable` provides pnp
 **1. Install and build.**
 
 ```bash
-git clone https://github.com/Adeolu05/agentguard-ci.git && cd agentguard-ci
+git clone https://github.com/Adeolu05/drainproof.git && cd drainproof
 pnpm install --frozen-lockfile && pnpm build
 ```
 
@@ -176,7 +176,7 @@ Requirements: Node.js 22.22 or newer, and pnpm 10.
 The packages are not yet published to npm. Run them from this repository:
 
 ```bash
-git clone https://github.com/Adeolu05/agentguard-ci.git && cd agentguard-ci
+git clone https://github.com/Adeolu05/drainproof.git && cd drainproof
 pnpm install
 pnpm build
 ```
@@ -352,7 +352,7 @@ Verified on 2026-11-06 (Node 24.10.0, pnpm 10.28.0, Linux), unless a line gives 
 - The CLI quick-start works, an intentional policy violation exits with code 1, and the example suites pass.
 - `pnpm bench` (after `pnpm build`): over four runs on an Intel Core i7-1185G7, `authorize()` took a mean of 22.0 to 27.2 µs (p99 61 to 74 µs), against a target of under 10 ms. The 40-scenario suite took 14 to 22 ms in the runner, or 212 to 286 ms wall time including Node startup. Timings depend on the machine and its load.
 - Drainproof Vault, on a local NEAR node: `cargo test` passes 40 unit tests, `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check` are clean, `pnpm test:vault` passes 30 integration tests, and 16 of the 40 built-in scenarios pass against the contract (24 skipped, each with its reason). See [Verify the vault yourself](#verify-the-vault-yourself-optional).
-- GitHub Actions: the four original CI jobs (checks, example suites, regression gate, dashboard build) [pass on GitHub](https://github.com/Adeolu05/agentguard-ci/actions). The vault job was added since and has not run on GitHub yet.
+- GitHub Actions: the four original CI jobs (checks, example suites, regression gate, dashboard build) [pass on GitHub](https://github.com/Adeolu05/drainproof/actions). The vault job was added since and has not run on GitHub yet.
 - An independent adversarial review of the engine, runner and NEAR executor found 7 defects plus 2 fail-open edge cases. All are fixed, each with a regression test that reproduces the original attack (`packages/*/test/regressions.test.ts` and the NEAR tests).
 
 Not yet verified:

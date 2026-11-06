@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-export const GITHUB = "https://github.com/Adeolu05/agentguard-ci";
+export const GITHUB = "https://github.com/Adeolu05/drainproof";
 export const docUrl = (file: string) => `${GITHUB}/blob/main/docs/${file}`;
 
 export function Eyebrow({ children }: { children: ReactNode }) {

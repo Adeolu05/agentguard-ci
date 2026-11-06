@@ -5,7 +5,7 @@ The `@drainproof/*` packages are not published to npm yet. Until they are, insta
 ## 1. Build the tarballs (in a clone of this repository)
 
 ```bash
-git clone https://github.com/Adeolu05/agentguard-ci.git && cd agentguard-ci
+git clone https://github.com/Adeolu05/drainproof.git && cd drainproof
 pnpm install
 pnpm pack:local /path/to/your-project/vendor/drainproof
 ```

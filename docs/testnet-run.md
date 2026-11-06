@@ -26,7 +26,7 @@ One difference to know about: `tools/cli.mdx` documents a `near generate-keypair
 - This repository, built:
 
   ```bash
-  git clone https://github.com/Adeolu05/agentguard-ci.git && cd agentguard-ci
+  git clone https://github.com/Adeolu05/drainproof.git && cd drainproof
   pnpm install
   pnpm build
   ```

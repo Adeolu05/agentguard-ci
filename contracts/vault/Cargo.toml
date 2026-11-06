@@ -4,7 +4,7 @@ description = "Drainproof Vault: an on-chain spending guard for AI agents on NEA
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
-repository = "https://github.com/Adeolu05/agentguard-ci"
+repository = "https://github.com/Adeolu05/drainproof"
 publish = false
 
 [lib]

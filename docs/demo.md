@@ -5,7 +5,7 @@ Every command below was run on 2026-11-04 from a fresh clone of `main`, and the 
 ## Preparation (off camera, about 2 minutes)
 
 ```bash
-git clone https://github.com/Adeolu05/agentguard-ci.git && cd agentguard-ci
+git clone https://github.com/Adeolu05/drainproof.git && cd drainproof
 pnpm install && pnpm build
 alias drainproof="node $PWD/packages/cli/dist/bin.js"
 export REPO=$PWD

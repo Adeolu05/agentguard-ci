@@ -305,7 +305,7 @@ export default function LandingPage() {
             title="quick start"
             lines={[
               { text: `git clone ${GITHUB}.git`, tone: "cmd" },
-              { text: "cd agentguard-ci && pnpm install && pnpm build", tone: "cmd" },
+              { text: "cd drainproof && pnpm install && pnpm build", tone: "cmd" },
               { text: 'alias drainproof="node $PWD/packages/cli/dist/bin.js"', tone: "cmd" },
               { text: "mkdir ~/my-agent && cd ~/my-agent && drainproof init", tone: "cmd" },
               { text: "drainproof test", tone: "cmd" },
