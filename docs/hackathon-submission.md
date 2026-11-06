@@ -19,7 +19,7 @@ These rules were confirmed by the project owner from the official NEAR HACKATHON
 | README with "do X, see Y" steps an AI judge can follow | Done: [For judges: verify in 5 minutes](../README.md#for-judges-verify-in-5-minutes). Every command was run from a fresh clone on 2026-11-05 and the expected output is the real output. |
 | Public X demo post that states the project was built at NEAR HACKATHON, with a video or screenshots | **To do (owner).** Screenshots are in `docs/images/` and the demo script is [demo.md](demo.md). |
 | A mainnet NEAR account for the prize payout | **To do (owner).** Only the account ID is submitted. No mainnet key belongs anywhere in this repository, and nothing in it signs on mainnet. |
-| "What did you build?" description, 20 to 2,000 characters, covering the problem, the implementation and NEAR's role | **Draft below** (1,386 characters, counted with `wc -m`). To be revised after the vault and LLM demo phases. |
+| "What did you build?" description, 20 to 2,000 characters, covering the problem, the implementation and NEAR's role | **Draft below** (1,613 characters, counted with `wc -m`). Covers the vault; to be revised after the LLM demo phase. |
 | No secrets anywhere in the git history | **Pending** a full-history secret scan in the final audit. By design, keys are only read from environment variables, which `.env.example` documents with empty values. |
 
 ## "What did you build?" (draft)
@@ -31,7 +31,7 @@ Problem: an agent with a wallet can be talked into paying the wrong account, pay
 
 Implementation: a deterministic TypeScript policy engine (no LLM in the decision) evaluates every proposed payment against a YAML policy: per-transaction and daily limits, recipient and network allowlists, and human-approval thresholds. Amounts use exact integer arithmetic. Spending is reserved atomically, retries are idempotent, approvals are bound to the exact payment, and every error fails closed. A CLI runs 40 adversarial scenarios (prompt injection, boundary amounts, races, replayed approvals, malformed input) against that policy or against your own guard, writes reports, and exits non-zero so CI blocks unsafe changes. A read-only dashboard shows the results.
 
-NEAR's role: the NEAR package validates NEAR account IDs (including mainnet accounts on testnet), enforces limits in exact 24-decimal yoctoNEAR, and executes only payments the engine authorised on NEAR testnet, behind an execution gate that refuses stale policies, never broadcasts twice and refuses to sign unless the RPC reports testnet. Mainnet signing is not supported.
+NEAR's role: the NEAR package validates NEAR account IDs (including mainnet accounts on testnet), enforces limits in exact 24-decimal yoctoNEAR, and executes only payments the engine authorised on NEAR testnet, behind an execution gate that refuses stale policies, never broadcasts twice and refuses to sign unless the RPC reports testnet. A NEAR smart contract, the AgentGuard Vault, holds the funds and enforces the same policy on-chain; the agent holds only a function-call key for one method, so even a compromised agent can only make payments the policy allows. Mainnet signing is not supported.
 ```
 
 ## Before sending (the submission cannot be edited)
@@ -83,6 +83,15 @@ NEAR's role: the NEAR package validates NEAR account IDs (including mainnet acco
 - [x] Blocked proposals make no RPC request; at most one broadcast per reservation (near-api-js retry layers neutralised)
 - [x] Integration limitations documented (`docs/integrations.md`)
 - [ ] Live testnet run recorded and verified against the network (see the README's [Live testnet run](../README.md#live-testnet-run))
+
+### AgentGuard Vault (NEAR contract)
+- [x] Contract in Rust (`near-sdk` 5.30.0), built with `cargo-near` 0.22.0; design and threat model in [vault-design.md](vault-design.md)
+- [x] The agent holds only a function-call key for `request_payment`; owner methods need the owner and exactly 1 yoctoNEAR
+- [x] 40 unit tests and 30 tests on a local NEAR node; 16 of the 40 built-in scenarios pass against the contract and 24 are skipped with reasons
+- [x] Expired approval requests cannot jam the 50-slot approval queue (review fix, with unit and sandbox tests)
+- [x] CI job defined (`vault` in `.github/workflows/ci.yml`)
+- [ ] CI job has run on GitHub (it runs on pull requests and `main` only)
+- [ ] Deployed and exercised on testnet
 
 ### Project delivery
 - [x] Repository is public

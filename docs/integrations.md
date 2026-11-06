@@ -64,10 +64,18 @@ If a first broadcast landed but its response was lost, these could combine into 
   NEAR_TESTNET_RPC_URL=https://...            # optional; must be https and not look like mainnet
   ```
 
+### AgentGuard Vault (on-chain enforcement)
+
+The executor above signs native transfers, which needs a full-access key. The [AgentGuard Vault](vault-design.md) removes that requirement: a NEAR contract (`contracts/vault`, Rust, `near-sdk` 5.30.0) holds the funds and enforces the policy itself (recipient allowlist, per-transaction and daily limits, owner approval above a threshold with expiry, idempotency, pause). The agent holds only a function-call key that can call `request_payment` on the vault and nothing else, so even a fully compromised agent can only make payments the policy allows.
+
+- `vaultPolicyFromPolicy(policy)` in `@agentguard/near` converts a YAML policy into the vault's on-chain policy, or lists why it cannot (one asset `NEAR` with 24 decimals, `near-testnet` only, valid account IDs).
+- `checkTestnetAccountId` and `checkDirectSubAccount` guard the testnet scripts in [`examples/near-vault`](../examples/near-vault) (`deploy.mjs`, `add-agent-key.mjs`, `push-policy.mjs`), which refuse to sign unless the RPC reports `testnet`.
+- **Tested on a local NEAR node only** (nearcore 2.14.0 through the official `near-sandbox` package): 40 contract unit tests, 30 sandbox integration tests, and 16 of the 40 built-in scenarios run against the contract (24 skipped, each with its reason). The vault has **not** been deployed to testnet, and no vault transaction is claimed. Run it with the commands in [examples/near-vault/README.md](../examples/near-vault/README.md).
+
 ### What is not done
 
 - **Live testnet run: pending.** No live testnet transaction has been executed or verified, and none is claimed. Treat the on-chain path as unverified until the procedure in [testnet-run.md](testnet-run.md) has been run and its result recorded in the README's [Live testnet run](../README.md#live-testnet-run) section.
-- The executor signs with a **full-access key**, because native transfers need one. Whoever holds that key can do anything with the account, so use a dedicated testnet account and delete the key after the run (the guide shows how).
+- The executor signs with a **full-access key**, because native transfers need one. Whoever holds that key can do anything with the account, so use a dedicated testnet account and delete the key after the run (the guide shows how). The vault avoids this for the agent (see above), but it has not run on testnet yet.
 - Only native NEAR transfers. Fungible tokens (NEP-141), function calls and meta-transactions are not supported.
 - No mainnet support, by design.
 
